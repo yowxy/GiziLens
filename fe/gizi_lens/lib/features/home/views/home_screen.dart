@@ -155,6 +155,40 @@ class HomeScreen extends StatelessWidget {
                       subtitle: 'Skor Gizi • Energi 520 kkal • 3 Bar Nutrisi',
                       onTap: () => context.go(RouteNames.splash04),
                     ),
+                    const SizedBox(height: 16),
+                    const Divider(color: AppColors.borderLight, height: 1),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.verified_user_rounded,
+                          size: 18,
+                          color: AppColors.primaryDeep,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Slicing Desain Auth (1auth & 2auth):',
+                          style: AppTypography.titleSmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primaryDark,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _InspectionButton(
+                      number: 'A1',
+                      title: 'Login Petugas (1auth.png)',
+                      subtitle: 'Portal Resmi Auditor SPPG • Kredensial & Akses Terkelola',
+                      onTap: () => context.go(RouteNames.login),
+                    ),
+                    const SizedBox(height: 8),
+                    _InspectionButton(
+                      number: 'A2',
+                      title: 'Lengkapi Profil Petugas (2auth.png)',
+                      subtitle: 'Verifikasi BGN • Pilih Peran Operasional & Buka Dasbor',
+                      onTap: () => context.go(RouteNames.completeProfile),
+                    ),
                   ],
                 ),
               ),
@@ -168,6 +202,19 @@ class HomeScreen extends StatelessWidget {
                 ),
                 onPressed: () {
                   context.go(RouteNames.splash);
+                },
+              ),
+              const SizedBox(height: 10),
+              AppButton(
+                text: 'Buka Halaman Login (1auth)',
+                backgroundColor: AppColors.buttonAuth,
+                leadingIcon: const Icon(
+                  Icons.login_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: () {
+                  context.go(RouteNames.login);
                 },
               ),
               const SizedBox(height: 14),

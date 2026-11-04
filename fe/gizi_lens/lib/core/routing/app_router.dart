@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/views/complete_profile_screen.dart';
+import '../../features/auth/views/login_screen.dart';
 import '../../features/home/views/home_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
 import '../../features/splash/views/splash_screen.dart';
@@ -77,6 +79,76 @@ class AppRouter {
             );
           },
           transitionDuration: const Duration(milliseconds: 350),
+        ),
+      ),
+      // Auth 1 (Login - 1auth.png)
+      GoRoute(
+        path: RouteNames.login,
+        name: 'login',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      // Auth 1 Alias (Quick inspection)
+      GoRoute(
+        path: RouteNames.auth1,
+        name: 'auth1',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: LoginScreen(),
+        ),
+      ),
+      // Auth 2 (Complete Profile - 2auth.png)
+      GoRoute(
+        path: RouteNames.completeProfile,
+        name: 'completeProfile',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CompleteProfileScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      // Auth 2 Alias (Quick inspection)
+      GoRoute(
+        path: RouteNames.auth2,
+        name: 'auth2',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: CompleteProfileScreen(),
         ),
       ),
       GoRoute(

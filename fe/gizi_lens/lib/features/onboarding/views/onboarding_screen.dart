@@ -49,14 +49,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _handleNext() {
     if (_controller.isLastPage) {
-      context.go(RouteNames.home);
+      context.go(RouteNames.login);
     } else {
       _controller.nextPage();
     }
   }
 
   void _handleSkip() {
-    context.go(RouteNames.home);
+    context.go(RouteNames.login);
   }
 
   @override

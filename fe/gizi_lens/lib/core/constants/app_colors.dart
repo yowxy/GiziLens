@@ -41,4 +41,17 @@ class AppColors {
   static const Color shadowMedium = Color(0x140F261E);
 
   static const Color watermarkLine = Color(0xFFDDE4D8);
+
+  // Auth & Profile Screen Specific Colors
+  static const Color buttonAuth = Color(0xFF717975);
+  static const Color buttonAuthPressed = Color(0xFF5F6662);
+  static const Color infoCardBg = Color(0xFFF0EEE7);
+  static const Color infoCardBorder = Color(0xFFE4DFD5);
+  static const Color portalBadgeBg = Color(0xFFDEE9DF);
+  static const Color portalBadgeText = Color(0xFF1B493B);
+  static const Color verifiedBgnBg = Color(0xFFDDF2E3);
+  static const Color verifiedBgnText = Color(0xFF1E6C45);
+  static const Color inputLockedBg = Color(0xFFF0EEE7);
+  static const Color iconFieldMuted = Color(0xFF6B7F73);
+  static const Color avatarDark = Color(0xFF0C2E24);
 }

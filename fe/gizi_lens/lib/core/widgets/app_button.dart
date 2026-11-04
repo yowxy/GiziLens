@@ -91,7 +91,7 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
             ),
             child: widget.isLoading
                 ? SizedBox(
@@ -104,16 +104,20 @@ class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMix
                   )
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       if (widget.leadingIcon != null) ...[
                         widget.leadingIcon!,
                         const SizedBox(width: 8),
                       ],
-                      Text(
-                        widget.text,
-                        style: AppTypography.button.copyWith(
-                          color: widget.textColor,
+                      Flexible(
+                        child: Text(
+                          widget.text,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.button.copyWith(
+                            color: widget.textColor,
+                          ),
                         ),
                       ),
                       if (widget.trailingIcon != null) ...[
