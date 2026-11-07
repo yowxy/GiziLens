@@ -12,6 +12,7 @@ class RouteNames {
   static const String home = '/home';
   static const String dashboard = '/dashboard';
   static const String history = '/history';
+  static const String menuInspection = '/inspection/batch';
 
   // Splash Inspection Routes
   static const String splash01 = '/splash-01';
@@ -25,4 +26,5 @@ class RouteNames {
   static const String refRegister = '/ref-register';
   static const String refOtp = '/ref-otp';
   static const String refRegisterSuccess = '/ref-register-success';
+  static const String refMenuInspection = '/ref-menu-inspection';
 }

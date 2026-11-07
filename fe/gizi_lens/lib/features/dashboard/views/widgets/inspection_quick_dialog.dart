@@ -110,6 +110,13 @@ class InspectionQuickDialog extends StatelessWidget {
           const Divider(color: AppColors.borderLight, height: 16),
           _buildItem(
             context,
+            code: '05',
+            title: 'Input Data Batch & Periksa Menu',
+            subtitle: 'Langkah 1 dari 4: Data Batch • Target AKG',
+            route: RouteNames.menuInspection,
+          ),
+          _buildItem(
+            context,
             code: 'H1',
             title: 'Riwayat Pemeriksaan (history.png)',
             subtitle: 'Monitoring Gizi MBG • Status Filter & Pencarian',

@@ -8,6 +8,7 @@ import '../../features/auth/views/register_screen.dart';
 import '../../features/auth/views/register_success_screen.dart';
 import '../../features/dashboard/views/dashboard_screen.dart';
 import '../../features/history/views/history_screen.dart';
+import '../../features/inspection/views/menu_inspection_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
 import '../../features/splash/views/splash_screen.dart';
 import 'route_names.dart';
@@ -337,6 +338,40 @@ class AppRouter {
             );
           },
           transitionDuration: const Duration(milliseconds: 250),
+        ),
+      ),
+      // Menu Inspection Step 1: Data Batch (05 - Input Data Batch & Periksa Menu.png)
+      GoRoute(
+        path: RouteNames.menuInspection,
+        name: 'menuInspection',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const MenuInspectionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refMenuInspection,
+        name: 'refMenuInspection',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: MenuInspectionScreen(),
         ),
       ),
     ],

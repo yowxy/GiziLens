@@ -54,13 +54,17 @@ class HeroMenuCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    AppStrings.heroMenuTitle,
-                    style: AppTypography.titleLarge.copyWith(
-                      color: Colors.white,
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
+                  GestureDetector(
+                    onTap: onInspectTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Text(
+                      AppStrings.heroMenuTitle,
+                      style: AppTypography.titleLarge.copyWith(
+                        color: Colors.white,
+                        fontSize: 19,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

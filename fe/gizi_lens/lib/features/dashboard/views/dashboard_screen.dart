@@ -84,29 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _handleScanOmprengTap() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.headerDarkGreen,
-        content: const Row(
-          children: [
-            Icon(Icons.camera_alt_rounded, color: AppColors.accentAiCam, size: 20),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Membuka modul AI CAM pemindaian baki saji...',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'OK',
-          textColor: AppColors.accentGold,
-          onPressed: () {},
-        ),
-      ),
-    );
+    context.push(RouteNames.menuInspection);
   }
 
   @override

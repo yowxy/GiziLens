@@ -234,4 +234,42 @@ class AppStrings {
   static const String btnKembaliKeLogin = 'Kembali ke Login';
   static const String btnMasukDashboard = 'Masuk ke Dasbor';
   static const String autoRedirectingDashboard = 'Mengalihkan ke dasbor dalam';
+
+  // 05 - Input Data Batch & Periksa Menu.png Strings
+  static const String inspectionTitle = 'Pemeriksaan Menu';
+  static const String step1Of4 = 'Langkah 1 dari 4: Data Batch';
+  static const String batchInfoSectionTitle = 'Informasi Batch Operasional';
+  static const String batchDefinitionPrefix = 'Definisi Batch: ';
+  static const String batchDefinitionDesc =
+      'Kelompok porsi dengan kelompok sasaran yang sama, resep/komposisi yang sama, dan sesi distribusi yang sama.';
+  static const String batchCodeLabel = 'Nama / Kode Batch';
+  static const String rfidSyncedBadge = 'Tersinkronisasi RFID';
+  static const String defaultBatchCode = '#MBG-2024-CIB02';
+  static const String targetGroupLabel = 'Kelompok Penerima Sasaran';
+  static const String btnUbahAkg = 'Ubah AKG';
+  static const String defaultTargetGroup = 'SD Kelas 4 – 6 (10 – 12 Tahun)';
+  static const String targetAkgSessionLabel = 'Target AKG Sesi Ini:';
+  static const String defaultTargetAkgValue = '620 kkal • Protein 18–22g';
+  static const String sppgUnitLabel = 'Unit SPPG';
+  static const String lockedAutoBadge = 'Terkunci / Otomatis';
+  static const String defaultSppgUnit = 'SPPG Cibinong Sentral 02';
+  static const String schoolDestinationLabel = 'Tujuan Distribusi / Sekolah';
+  static const String defaultSchoolDestination = 'SMAN 1 Jakarta';
+  static const String schoolDestinationHint =
+      'Pilih atau masukkan nama sekolah tujuan';
+  static const String inspectionNotesLabel = 'Catatan Pemeriksaan';
+  static const String optionalBadge = 'Opsional';
+  static const String defaultInspectionNotes =
+      'Menu reguler nasi kuning telur balado dan oseng tempe kacang';
+  static const String inspectionNotesHint =
+      'Tambahkan catatan pemeriksaan jika diperlukan...';
+  static const String juknisVerificationNotice =
+      'Pencatatan diverifikasi dengan standar Juknis Badan Gizi Nasional (BGN).';
+  static const String btnContinueToUniformity =
+      'Lanjutkan ke Konfirmasi Keseragaman';
+  static const String aiCameraActiveStep2Notice =
+      'Kamera AI akan aktif pada Langkah 2';
+  static const String inspectionHelpTitle = 'Panduan Data Batch MBG';
+  static const String inspectionHelpContent =
+      'Langkah 1 memastikan parameter batch porsi, kelompok usia sasaran AKG, dan lokasi sekolah telah sesuai sebelum sistem mengaktifkan sensor kamera AI untuk mengukur gramatur dan keseragaman baki saji.';
 }
