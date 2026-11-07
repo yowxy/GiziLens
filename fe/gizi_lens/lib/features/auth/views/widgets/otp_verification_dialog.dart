@@ -3,7 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 
-/// Modal dialog matching 'Background+Border verifikasi.png'.
+/// Modal dialog confirming successful contact identity verification.
 class OtpVerificationDialog extends StatelessWidget {
   final VoidCallback onNext;
 

@@ -8,8 +8,13 @@ import '../../features/auth/views/register_screen.dart';
 import '../../features/auth/views/register_success_screen.dart';
 import '../../features/dashboard/views/dashboard_screen.dart';
 import '../../features/history/views/history_screen.dart';
+import '../../features/inspection/views/audit_confirmation_screen.dart';
+import '../../features/inspection/views/component_detection_screen.dart';
 import '../../features/inspection/views/menu_inspection_screen.dart';
+import '../../features/inspection/views/nutrition_analysis_screen.dart';
+import '../../features/inspection/views/scan_ompreng_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
+import '../../features/profile/views/profile_screen.dart';
 import '../../features/splash/views/splash_screen.dart';
 import 'route_names.dart';
 
@@ -87,7 +92,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 350),
         ),
       ),
-      // Auth 1 (Login - 1auth.png)
+      // Login
       GoRoute(
         path: RouteNames.login,
         name: 'login',
@@ -114,7 +119,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 320),
         ),
       ),
-      // Auth 1 Alias (Quick inspection)
+      // Login Alias
       GoRoute(
         path: RouteNames.auth1,
         name: 'auth1',
@@ -122,7 +127,7 @@ class AppRouter {
           child: LoginScreen(),
         ),
       ),
-      // Register Screen (02 registrasi.png)
+      // Registration
       GoRoute(
         path: RouteNames.register,
         name: 'register',
@@ -149,7 +154,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 320),
         ),
       ),
-      // Forgot Password Screen (Input email before OTP)
+      // Forgot Password
       GoRoute(
         path: RouteNames.forgotPassword,
         name: 'forgotPassword',
@@ -176,7 +181,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 320),
         ),
       ),
-      // OTP Verification Screen (otp.png)
+      // OTP Verification
       GoRoute(
         path: RouteNames.otpVerification,
         name: 'otpVerification',
@@ -211,7 +216,7 @@ class AppRouter {
           );
         },
       ),
-      // Registration Success Screen (02 registrasi berhasil.png)
+      // Registration Success
       GoRoute(
         path: RouteNames.registerSuccess,
         name: 'registerSuccess',
@@ -246,7 +251,7 @@ class AppRouter {
           );
         },
       ),
-      // Direct Reference Inspection Routes
+      // Direct Preview Routes
       GoRoute(
         path: RouteNames.refRegister,
         name: 'refRegister',
@@ -268,7 +273,7 @@ class AppRouter {
           child: RegisterSuccessScreen(autoRedirect: false),
         ),
       ),
-      // Auth 2 (Complete Profile - 2auth.png)
+      // Complete Profile
       GoRoute(
         path: RouteNames.completeProfile,
         name: 'completeProfile',
@@ -295,7 +300,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 320),
         ),
       ),
-      // Auth 2 Alias (Quick inspection)
+      // Complete Profile Alias
       GoRoute(
         path: RouteNames.auth2,
         name: 'auth2',
@@ -340,7 +345,7 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 250),
         ),
       ),
-      // Menu Inspection Step 1: Data Batch (05 - Input Data Batch & Periksa Menu.png)
+      // Menu Inspection Step 1: Batch Data
       GoRoute(
         path: RouteNames.menuInspection,
         name: 'menuInspection',
@@ -372,6 +377,164 @@ class AppRouter {
         name: 'refMenuInspection',
         pageBuilder: (context, state) => const MaterialPage(
           child: MenuInspectionScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.profile,
+        name: 'profile',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ProfileScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 250),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refProfile,
+        name: 'refProfile',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: ProfileScreen(),
+        ),
+      ),
+      // Inspection Step 2: Scan Ompreng
+      GoRoute(
+        path: RouteNames.scanOmpreng,
+        name: 'scanOmpreng',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ScanOmprengScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refScan,
+        name: 'refScan',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: ScanOmprengScreen(),
+        ),
+      ),
+      // Inspection Step 3: Component Detection
+      GoRoute(
+        path: RouteNames.componentDetection,
+        name: 'componentDetection',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ComponentDetectionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refComponents,
+        name: 'refComponents',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: ComponentDetectionScreen(),
+        ),
+      ),
+      // Inspection Step 4: Nutrition Analysis
+      GoRoute(
+        path: RouteNames.nutritionAnalysis,
+        name: 'nutritionAnalysis',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const NutritionAnalysisScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refAnalysis,
+        name: 'refAnalysis',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: NutritionAnalysisScreen(),
+        ),
+      ),
+      // Final Step: Audit Confirmation
+      GoRoute(
+        path: RouteNames.auditConfirmation,
+        name: 'auditConfirmation',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const AuditConfirmationScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refConfirmation,
+        name: 'refConfirmation',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: AuditConfirmationScreen(),
         ),
       ),
     ],

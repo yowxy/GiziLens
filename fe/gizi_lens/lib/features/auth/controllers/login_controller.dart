@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Controller handling the state and interactions for the Login screen (1auth).
+/// Controller handling the state and interactions for the Login screen.
 class LoginController extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController emailOrIdController = TextEditingController();

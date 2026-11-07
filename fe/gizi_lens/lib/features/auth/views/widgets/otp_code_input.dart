@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 
 /// Responsive 6-digit OTP code input widget with auto-advance, backspace handling,
-/// and paste support matching 'otp.png'.
+/// and paste support.
 class OtpCodeInput extends StatefulWidget {
   final int length;
   final ValueChanged<String> onChanged;

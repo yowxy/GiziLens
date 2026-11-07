@@ -12,7 +12,7 @@ import 'widgets/officer_id_locked_field.dart';
 import 'widgets/officer_profile_card.dart';
 import 'widgets/role_selection_card.dart';
 
-/// Pixel-perfect and buttery-smooth implementation of Complete Profile Screen (2auth.png).
+/// Complete profile screen for setup and verification of officer credentials.
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
 
@@ -225,8 +225,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-
-                      // Screen Header: Shield Icon + Title
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [

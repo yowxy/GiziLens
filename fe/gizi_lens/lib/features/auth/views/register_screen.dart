@@ -11,7 +11,7 @@ import '../../../../core/widgets/custom_text_field.dart';
 import '../controllers/register_controller.dart';
 import 'widgets/auth_footer.dart';
 
-/// Slicing of Registration Screen matching '02 registrasi.png'.
+/// Registration screen for new MBG officers and nutrition personnel.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 

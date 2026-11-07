@@ -15,7 +15,7 @@ import 'widgets/hero_menu_card.dart';
 import 'widgets/inspection_quick_dialog.dart';
 import 'widgets/period_filter_bar.dart';
 
-/// Pixel-perfect, enterprise-grade slicing of the Dashboard Screen (dashboard.png).
+/// Dashboard screen presenting compliance metrics, period filters, and quick actions.
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -210,6 +210,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             } else if (index == 2) {
               try {
                 context.go(RouteNames.history);
+              } catch (_) {}
+            } else if (index == 3) {
+              try {
+                context.go(RouteNames.profile);
               } catch (_) {}
             }
           },

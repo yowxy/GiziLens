@@ -64,7 +64,7 @@ class AppStrings {
   static const String serat = 'Serat';
   static const String seratPct = '20%';
 
-  // Auth 1 (Login) Strings
+  // Authentication and Login
   static const String portalResmiBadge = 'Portal Resmi Auditor SPPG / BGN';
   static const String loginTitle = 'Selamat datang di GiziLens';
   static const String loginSubtitle =
@@ -84,7 +84,7 @@ class AppStrings {
   static const String termsOfServiceMBG = 'Ketentuan Layanan MBG';
   static const String appVersionString = 'GiziLens Mobile v1.2.0';
 
-  // Auth 2 (Complete Profile) Strings
+  // Profile Completion
   static const String completeProfileTitle = 'Lengkapi Profil Petugas';
   static const String completeProfileSubtitle =
       'Verifikasi identitas operasional Anda untuk memastikan legalitas audit dan sertifikasi mutu porsi MBG.';
@@ -119,7 +119,7 @@ class AppStrings {
   static const String btnSkipProfile =
       'Lewati untuk saat ini (Gunakan data default)';
 
-  // Dashboard Strings (dashboard.png)
+  // Dashboard and Metrics
   static const String greetingMorning = 'Selamat pagi,';
   static const String dashboardOfficerName = 'Nurul Anggraini, S.Gz';
   static const String dashboardOfficerUnit = 'SPPG Cibinong Sentral 02';
@@ -150,7 +150,7 @@ class AppStrings {
   static const String navRiwayat = 'Riwayat';
   static const String navProfil = 'Profil';
 
-  // History Screen Strings
+  // History Screen
   static const String historyTitle = 'Riwayat Pemeriksaan';
   static const String historySubtitle =
       'Pantau seluruh hasil pemeriksaan ompreng yang telah dilakukan.';
@@ -162,13 +162,13 @@ class AppStrings {
   static const String tabTidakSesuai = 'Tidak Sesuai';
   static const String emptyHistoryTitle = 'Tidak Ada Riwayat';
 
-  // Auth Additional Strings (Register & Flow)
+  // Authentication Navigation
   static const String dontHaveAccount = 'Belum punya akun? ';
   static const String registerNow = 'Daftar Sekarang';
   static const String alreadyHaveAccount = 'Sudah punya akun? ';
   static const String loginNow = 'Masuk Sekarang';
 
-  // 02 registrasi.png Strings
+  // Registration
   static const String registerBadge = 'Registrasi Pengguna MBG';
   static const String registerTitle = 'Buat Akun GiziLens';
   static const String registerSubtitle =
@@ -191,7 +191,7 @@ class AppStrings {
   static const String agreePrivacyLink = 'Kebijakan Privasi.';
   static const String btnDaftarAkun = 'Daftar Akun';
 
-  // Forgot Password Strings
+  // Password Recovery
   static const String forgotPasswordBadge = 'Keamanan Akun MBG';
   static const String forgotPasswordTitle = 'Lupa Kata Sandi';
   static const String forgotPasswordSubtitle =
@@ -200,7 +200,7 @@ class AppStrings {
   static const String registeredEmailHint = 'nama@email.com';
   static const String btnSendOtp = 'Kirim Kode OTP';
 
-  // otp.png Strings
+  // OTP Verification
   static const String otpBadge = 'Keamanan Akun MBG';
   static const String otpTitle = 'Verifikasi Akun';
   static const String otpSubtitle =
@@ -216,13 +216,13 @@ class AppStrings {
   static const String smsHelp = 'Bantuan SMS';
   static const String btnVerifikasi = 'Verifikasi';
 
-  // Background+Border verifikasi.png (Dialog) Strings
+  // Verification Dialog
   static const String verificationSuccessTitle = 'Verifikasi Berhasil';
   static const String verificationSuccessSubtitle =
       'Identitas kontak berhasil diverifikasi.\nSelanjutnya lengkapi profil pengguna.';
   static const String btnSelanjutnya = 'Selanjutnya';
 
-  // 02 registrasi berhasil.png Strings
+  // Registration Success
   static const String registrationSuccessTitle = 'Pendaftaran Berhasil!';
   static const String registrationSuccessSubtitle =
       'Akun kamu berhasil dibuat. Silakan login menggunakan\nemail dan kata sandi yang telah kamu daftarkan.';
@@ -235,7 +235,7 @@ class AppStrings {
   static const String btnMasukDashboard = 'Masuk ke Dasbor';
   static const String autoRedirectingDashboard = 'Mengalihkan ke dasbor dalam';
 
-  // 05 - Input Data Batch & Periksa Menu.png Strings
+  // Menu Inspection Batch
   static const String inspectionTitle = 'Pemeriksaan Menu';
   static const String step1Of4 = 'Langkah 1 dari 4: Data Batch';
   static const String batchInfoSectionTitle = 'Informasi Batch Operasional';
@@ -244,7 +244,7 @@ class AppStrings {
       'Kelompok porsi dengan kelompok sasaran yang sama, resep/komposisi yang sama, dan sesi distribusi yang sama.';
   static const String batchCodeLabel = 'Nama / Kode Batch';
   static const String rfidSyncedBadge = 'Tersinkronisasi RFID';
-  static const String defaultBatchCode = '#MBG-2024-CIB02';
+  static const String defaultBatchCode = 'MBG-2024-CIB02';
   static const String targetGroupLabel = 'Kelompok Penerima Sasaran';
   static const String btnUbahAkg = 'Ubah AKG';
   static const String defaultTargetGroup = 'SD Kelas 4 – 6 (10 – 12 Tahun)';
@@ -272,4 +272,127 @@ class AppStrings {
   static const String inspectionHelpTitle = 'Panduan Data Batch MBG';
   static const String inspectionHelpContent =
       'Langkah 1 memastikan parameter batch porsi, kelompok usia sasaran AKG, dan lokasi sekolah telah sesuai sebelum sistem mengaktifkan sensor kamera AI untuk mengukur gramatur dan keseragaman baki saji.';
+
+  // Profile and Settings Screen
+  static const String profileScreenTitle = 'Akun & Profil Petugas';
+  static const String profileScreenSubtitle = 'Sistem Pengawasan SPPG';
+  static const String officerFullName = 'Nurul Anggraini, S.Gz';
+  static const String officerInitials = 'NA';
+  static const String officerVerifiedBgn = 'Ahli Gizi Lapangan (Terverifikasi BGN)';
+  static const String officerIdPrefix = 'ID Petugas: ';
+  static const String profileOfficerIdValue = 'SPPG-2024-CIB02-GZ';
+  static const String unitOperationalLabel = 'Unit Operasional: ';
+  static const String unitOperationalValue = 'SPPG Cibinong Sentral 02';
+  static const String unitOperationalRegion =
+      'Kabupaten Bogor, Jawa Barat • Zona Logistik Wilayah II';
+  static const String btnEditProfile = 'Edit Profil Petugas';
+
+  static const String sectionPreferenceTitle = 'Preferensi & Standar Gizi';
+  static const String badgeKemenkesBgn = 'Kemenkes / BGN';
+  static const String menuAkgTitle = 'Informasi Standar Referensi AKG';
+  static const String menuAkgSubtitle =
+      'Kepmenkes RI No. 28/2019 & Juknis MBG 2024';
+  static const String menuNotificationTitle = 'Pengaturan Notifikasi Audit';
+  static const String menuNotificationSubtitle =
+      'Pengingat batch, peringatan defisit porsi';
+
+  static const String sectionHelpTitle = 'Bantuan & Legalitas Operasional';
+  static const String menuSopTitle = 'Panduan Penggunaan & SOP Sampling';
+  static const String menuSopSubtitle = 'Modul inspeksi Scanning';
+  static const String menuHelpdeskTitle = 'Hubungi Helpdesk Admin SPPG';
+  static const String menuHelpdeskSubtitle = 'Layanan teknis pusat BGN';
+  static const String btnLogoutAccount = 'Keluar dari Akun';
+
+  // Modal Dialogs
+  static const String logoutDialogTitle = 'Keluar dari Akun?';
+  static const String logoutDialogBody1 =
+      'Anda perlu masuk kembali menggunakan email atau ID Petugas untuk mengakses data inspeksi. Data sesi pemeriksaan yang telah disimpan tetap aman dan terenkripsi di ';
+  static const String logoutDialogBodyBold = 'SPPG Cloud.';
+  static const String logoutDialogConfirmBtn = 'Ya, Keluar';
+  static const String logoutDialogCancelBtn = 'Batal / Tetap Masuk';
+
+  static const String saveProfileDialogTitle = 'Simpan Perubahan Profil?';
+  static const String saveProfileDialogSubtitle =
+      'Pastikan data profil yang kamu ubah sudah benar sebelum menyimpan perubahan.';
+  static const String saveProfileDialogInfo =
+      'Perubahan profil akan diterapkan pada akun kamu. Kamu masih bisa mengubah data profil kembali melalui menu ';
+  static const String saveProfileDialogInfoBold = 'Pengaturan Profil.';
+  static const String saveProfileDialogConfirmBtn = 'Ya, Simpan Perubahan';
+  static const String saveProfileDialogCancelBtn = 'Periksa Kembali';
+
+  static const String profileUpdatedSuccessTitle = 'Profil Berhasil Diperbarui!';
+  static const String profileUpdatedSuccessSubtitle =
+      'Perubahan data profil kamu berhasil disimpan.';
+  static const String profileUpdatedBackButton = 'Kembali ke Profil';
+
+  // Step 2: Scan Ompreng
+  static const String step2Of4 = 'Langkah 2 dari 4: Scan ompreng';
+  static const String lightingTip =
+      'Pastikan pencahayaan cukup\ndan ompreng terlihat jelas';
+  static const String ensurePhotoReady = 'Pastikan foto siap dianalisis';
+  static const String count0Of4 = '0/4 Terpenuhi';
+  static const String count4Of4 = '4/4 Terpenuhi';
+  static const String reqLighting = 'Pencahayaan cukup';
+  static const String reqWholeTray = 'Seluruh ompreng terlihat';
+  static const String reqCameraFocus = 'Kamera fokus';
+  static const String reqInFrame = 'Dalam batas bingkai';
+  static const String photoNotReadyTitle = 'Foto tidak siap dianalisis';
+  static const String photoNotReadySubtitle =
+      'Stabilkan posisi & tekan tombol shutter';
+  static const String photoReadyTitle = 'Foto siap dianalisis AI';
+  static const String photoReadySubtitle =
+      'Memproses segmentasi kompartemen...';
+  static const String positionCameraPrompt =
+      'Posisikan kamera tegak lurus (90°) di atas ompreng';
+
+  // Step 3: Deteksi Komponen
+  static const String step3Of4 = 'Langkah 3 dari 4: Deteksi komponen';
+  static const String segmentationProcessTitle = 'Proses Segmentasi AI';
+  static const String segmentationDone100 = '100% Selesai';
+  static const String segQualityVerified = 'Kualitas citra diverifikasi';
+  static const String seg4Compartments = 'Segmentasi 4 kompartemen';
+  static const String segGrammageCalculated = 'Estimasi gramatur dihitung';
+  static const String segNutrientReady = 'Penyiapan kalkulasi gizi';
+  static const String compartmentViewTitle = 'TAMPILAN PARTISI KOMPARTEMEN';
+  static const String detectedComponentsTitle = 'Daftar Komponen Terdeteksi';
+  static const String count5Ingredients = '5 Bahan';
+  static const String btnCheckAndCorrect = 'Periksa & Koreksi Komponen';
+  static const String btnRetakePhoto = 'Ulangi Foto';
+
+  // Step 4: Analisis Gizi
+  static const String step4Of4 = 'Langkah 4 dari 4: Analisis Gizi';
+  static const String targetAudienceTitle = 'Target Sasaran';
+  static const String targetAgePill = 'Usia 15–18 Tahun';
+  static const String targetAkgDescription =
+      'SMA • Basis MBG Makan Siang (30–35% AKG):\n762.5 kkal, Protein 21–24.5 g, Lemak 22.5–27.1 g, Karbohidrat 105–122.5 g, Serat: target simulasi 10–12 g.';
+  static const String targetNutritionDisclaimer =
+      'Nilai nutrisi merupakan estimasi berbasis database bahan pangan & berat porsi terverifikasi. Bukan hasil uji laboratorium.';
+  static const String summary5PillarsTitle = 'Ringkasan 5 Pilar Nutrisi';
+  static const String tolerancePill = 'Toleransi ±10%';
+  static const String btnViewRecommendations =
+      'Lihat Rekomendasi Menu (1 Catatan)';
+  static const String btnBackToComponents = 'Kembali ke Koreksi Komponen';
+
+  // Confirmation Step
+  static const String confirmationTitle = 'Simpan Hasil Pemeriksaan';
+  static const String confirmationSubtitle = 'Verifikasi Berita Acara Audit';
+  static const String sppgBadgeCode = 'SPPG #02';
+  static const String finalStageTitle = 'Tahap Akhir: Validasi Fisik & Digital';
+  static const String trayFraction = 'Baki 1/3';
+  static const String samplingProtocolTitle = 'PROTOKOL SAMPLING';
+  static const String defaultSamplingBatchCode = '#MBG-2024-CIB02';
+  static const String defaultSamplingSchool = 'SMAN 1 JAKARTA';
+  static const String targetGroupInfo = 'SMA (15–18 Thn)';
+  static const String targetGroupSession = 'Sesi Makan Siang';
+  static const String auditTimeDate = 'Hari ini, 24 Okt 2024';
+  static const String auditTimeClock = '10:28 WIB (Waktu Nyata)';
+  static const String verifierLabel = 'Petugas Verifikator:';
+  static const String verifierRolePill = 'Ahli Gizi Lapangan';
+  static const String verifiedPortionsTitle = 'Komposisi Porsi Terverifikasi';
+  static const String totalNetWeightLabel = 'Total Bobot Bersih';
+  static const String totalNetWeightValue = '520 gram';
+  static const String totalLiquidValue = '+ 115 ml';
+  static const String btnSaveInspectionLock =
+      'Simpan Hasil Pemeriksaan (Kunci Data)';
+  static const String btnBackToInspection = 'Kembali ke Pemeriksaan';
 }

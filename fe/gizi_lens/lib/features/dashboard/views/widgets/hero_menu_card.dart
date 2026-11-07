@@ -129,7 +129,6 @@ class HeroMenuCard extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 6),
-                                    // AI CAM Badge
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 7,

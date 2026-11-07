@@ -83,8 +83,6 @@ class HistoryHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-
-          // Monitoring Gizi MBG Pill Badge
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(

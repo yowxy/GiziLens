@@ -11,7 +11,7 @@ import 'widgets/history_filter_chips.dart';
 import 'widgets/history_header.dart';
 import 'widgets/history_tab_bar.dart';
 
-// Complete pixel perfect implementation of History Screen (history.png)
+/// Main screen displaying the nutrition audit history and filter controls.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -177,12 +177,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 context.go(RouteNames.dashboard);
               } catch (_) {}
             } else if (index == 1) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Membuka kamera pemindai porsi ompreng...'),
-                  duration: Duration(seconds: 2),
-                ),
-              );
+              try {
+                context.push(RouteNames.scanOmpreng);
+              } catch (_) {
+                context.go(RouteNames.scanOmpreng);
+              }
+            } else if (index == 3) {
+              try {
+                context.go(RouteNames.profile);
+              } catch (_) {}
             }
           },
         ),

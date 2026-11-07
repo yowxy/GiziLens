@@ -11,7 +11,7 @@ import 'widgets/auth_footer.dart';
 import 'widgets/otp_code_input.dart';
 import 'widgets/otp_verification_dialog.dart';
 
-/// Pixel-perfect slicing of OTP Verification Screen ('otp.png').
+/// OTP verification screen for confirming email or phone token.
 class OtpVerificationScreen extends StatefulWidget {
   final String? initialEmail;
   final String? initialPhone;

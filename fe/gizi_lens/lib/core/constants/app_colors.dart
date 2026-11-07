@@ -42,7 +42,7 @@ class AppColors {
 
   static const Color watermarkLine = Color(0xFFDDE4D8);
 
-  // Auth & Profile Screen Specific Colors
+  // Authentication and profile colors
   static const Color buttonAuth = Color(0xFF717975);
   static const Color buttonAuthPressed = Color(0xFF5F6662);
   static const Color infoCardBg = Color(0xFFF0EEE7);
@@ -55,7 +55,7 @@ class AppColors {
   static const Color iconFieldMuted = Color(0xFF6B7F73);
   static const Color avatarDark = Color(0xFF0C2E24);
 
-  // Dashboard Specific Colors (dashboard.png)
+  // Dashboard and metrics colors
   static const Color headerDarkGreen = Color(0xFF093129);
   static const Color heroCardGreen = Color(0xFF173F35);
   static const Color statSesuaiGreen = Color(0xFF1E6C45);
@@ -65,4 +65,17 @@ class AppColors {
   static const Color accentAiCam = Color(0xFFCA9D4B);
   static const Color notificationDot = Color(0xFFE53935);
   static const Color bottomNavInactive = Color(0xFF53675C);
+
+  // Dialog & Profile Colors
+  static const Color dialogLogoutRed = Color(0xFFB91C1C);
+  static const Color dialogLogoutRedPressed = Color(0xFF991B1B);
+  static const Color dialogPeachBg = Color(0xFFFEF3C7);
+  static const Color dialogAmberIcon = Color(0xFFB45309);
+  static const Color dialogLockBadgeBg = Color(0xFF064E3B);
+  static const Color dialogSageBg = Color(0xFFE2EFE5);
+  static const Color dialogAccentRing = Color(0xFFD97706);
+  static const Color dialogInfoBoxBg = Color(0xFFEBF4EE);
+  static const Color dialogInfoBoxBorder = Color(0xFFDFECE3);
+  static const Color profileDivider = Color(0xFFEDF2E8);
+  static const Color profileIconBoxBg = Color(0xFFF4F3ED);
 }

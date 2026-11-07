@@ -13,7 +13,7 @@ import 'widgets/locked_batch_field.dart';
 import 'widgets/step_progress_app_bar.dart';
 import 'widgets/target_group_selector.dart';
 
-/// Pixel-perfect slicing of Step 1: Input Data Batch & Periksa Menu ('05 - Input Data Batch & Periksa Menu.png').
+/// Step 1: Input Data Batch & Periksa Menu screen.
 class MenuInspectionScreen extends StatefulWidget {
   const MenuInspectionScreen({super.key});
 
@@ -134,6 +134,10 @@ class _MenuInspectionScreenState extends State<MenuInspectionScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
+
+      try {
+        context.push(RouteNames.scanOmpreng);
+      } catch (_) {}
     }
   }
 

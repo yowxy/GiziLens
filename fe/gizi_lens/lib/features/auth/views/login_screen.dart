@@ -14,7 +14,7 @@ import 'widgets/auth_footer.dart';
 import 'widgets/managed_access_notice.dart';
 import 'widgets/official_portal_badge.dart';
 
-/// Pixel-perfect implementation of Login Screen (1auth.png).
+/// Login screen allowing SPPG and BGN officers to authenticate.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 

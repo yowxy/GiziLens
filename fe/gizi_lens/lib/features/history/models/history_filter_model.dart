@@ -1,18 +1,18 @@
-// Filter categories for inspection history tabs
+/// Filter categories for inspection history tabs.
 enum HistoryTab {
   semua,
   sesuai,
   tidakSesuai,
 }
 
-// Date range filters for history list
+/// Date range filters for history list.
 enum HistoryDateFilter {
   hariIni,
   tujuhHari,
   tigaPuluhHari,
 }
 
-// Immutable filter state for history screen
+/// Immutable filter state for history screen.
 class HistoryFilterModel {
   final HistoryTab activeTab;
   final HistoryDateFilter dateFilter;

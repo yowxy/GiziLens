@@ -61,7 +61,6 @@ class AkgSummaryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Stat Counter Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,

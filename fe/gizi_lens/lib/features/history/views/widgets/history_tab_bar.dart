@@ -4,7 +4,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../models/history_filter_model.dart';
 
-// Three category tabs for switching history view (Semua, Sesuai, Tidak Sesuai)
+/// Tab bar for switching between inspection categories (Semua, Sesuai, Tidak Sesuai).
 class HistoryTabBar extends StatelessWidget {
   final HistoryTab activeTab;
   final ValueChanged<HistoryTab> onTabChanged;

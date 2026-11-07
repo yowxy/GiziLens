@@ -10,7 +10,7 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/status_dot.dart';
 
-/// Screen displaying registration success matching '02 registrasi berhasil.png'.
+/// Screen displaying successful registration confirmation.
 /// Automatically or manually redirects to Dashboard as requested.
 class RegisterSuccessScreen extends StatefulWidget {
   final String? email;

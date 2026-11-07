@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/history_filter_model.dart';
 
-// Controller managing history tabs, search queries, and date filters
+/// Controller managing history tabs, search queries, and date filters.
 class HistoryController extends ChangeNotifier {
   final TextEditingController searchController = TextEditingController();
 

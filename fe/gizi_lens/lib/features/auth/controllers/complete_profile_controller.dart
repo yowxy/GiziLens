@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/officer_profile_model.dart';
 import '../models/officer_role.dart';
 
-/// Controller handling state and interactions for the Complete Profile screen (2auth).
+/// Controller handling state and interactions for the Complete Profile screen.
 class CompleteProfileController extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   late final TextEditingController fullNameController;

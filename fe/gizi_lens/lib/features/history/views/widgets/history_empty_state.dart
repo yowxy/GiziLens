@@ -3,7 +3,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 
-// Empty state placeholder displaying mascot Lensy with magnifying glass
+/// Empty state placeholder displaying mascot Lensy.
 class HistoryEmptyState extends StatelessWidget {
   const HistoryEmptyState({super.key});
 
