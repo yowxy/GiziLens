@@ -183,7 +183,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         behavior: HitTestBehavior.translucent,
         child: Stack(
           children: [
-            // 1. Primary Smooth Scroll View with Elastic Bounce & Padded Clearance
             Positioned.fill(
               child: SingleChildScrollView(
                 controller: _scrollController,
@@ -194,7 +193,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   AppDimensions.screenHorizontalPadding,
                   topPadding + 10,
                   AppDimensions.screenHorizontalPadding,
-                  // Clearance ensures last items scroll fully above the docked action bar
                   145 + bottomSafeArea + bottomInset,
                 ),
                 child: Form(
@@ -202,7 +200,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Back Button
                       Align(
                         alignment: Alignment.centerLeft,
                         child: InkWell(
@@ -254,7 +251,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Subtitle
                       Text(
                         AppStrings.completeProfileSubtitle,
                         style: AppTypography.bodyMedium.copyWith(
@@ -265,14 +261,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Profile Card
                       OfficerProfileCard(
                         profile: _controller.profile,
                         onUploadPhoto: _showPhotoPickerSheet,
                       ),
                       const SizedBox(height: 20),
 
-                      // Field 1: Nama Lengkap & Gelar
                       CustomTextField(
                         label: AppStrings.fullNameLabel,
                         headerTrailing: Text(
@@ -296,13 +290,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      // Field 2: ID Petugas SPPG (Locked)
                       OfficerIdLockedField(
                         officerId: _controller.profile.officerId,
                       ),
                       const SizedBox(height: 22),
 
-                      // Section: Peran Operasional
                       Text(
                         AppStrings.operationalRoleTitle,
                         style: AppTypography.titleSmall.copyWith(
@@ -313,7 +305,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // List of Operational Role Cards
                       ..._controller.availableRoles.map((role) {
                         final isSelected = _controller.selectedRole == role;
                         return Padding(
@@ -331,7 +322,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               ),
             ),
 
-            // 2. Docked Action Bar (White Sheet matching 2auth.png)
             Positioned(
               left: 0,
               right: 0,

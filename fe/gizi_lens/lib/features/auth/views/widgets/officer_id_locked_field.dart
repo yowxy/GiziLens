@@ -18,7 +18,6 @@ class OfficerIdLockedField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Label Header with BGN Verification Badge
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -59,7 +58,6 @@ class OfficerIdLockedField extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        // Locked Box
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),

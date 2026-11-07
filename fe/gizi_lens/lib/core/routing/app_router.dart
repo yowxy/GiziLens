@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/views/complete_profile_screen.dart';
+import '../../features/auth/views/forgot_password_screen.dart';
 import '../../features/auth/views/login_screen.dart';
-import '../../features/home/views/home_screen.dart';
+import '../../features/auth/views/otp_verification_screen.dart';
+import '../../features/auth/views/register_screen.dart';
+import '../../features/auth/views/register_success_screen.dart';
+import '../../features/dashboard/views/dashboard_screen.dart';
+import '../../features/history/views/history_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
 import '../../features/splash/views/splash_screen.dart';
 import 'route_names.dart';
@@ -116,6 +121,152 @@ class AppRouter {
           child: LoginScreen(),
         ),
       ),
+      // Register Screen (02 registrasi.png)
+      GoRoute(
+        path: RouteNames.register,
+        name: 'register',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const RegisterScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      // Forgot Password Screen (Input email before OTP)
+      GoRoute(
+        path: RouteNames.forgotPassword,
+        name: 'forgotPassword',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const ForgotPasswordScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.06, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+        ),
+      ),
+      // OTP Verification Screen (otp.png)
+      GoRoute(
+        path: RouteNames.otpVerification,
+        name: 'otpVerification',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: OtpVerificationScreen(
+              initialEmail: extra?['email'] as String?,
+              initialPhone: extra?['phone'] as String?,
+              fullName: extra?['fullName'] as String?,
+              isForgotPassword: extra?['isForgotPassword'] as bool? ?? false,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.06, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 320),
+          );
+        },
+      ),
+      // Registration Success Screen (02 registrasi berhasil.png)
+      GoRoute(
+        path: RouteNames.registerSuccess,
+        name: 'registerSuccess',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: RegisterSuccessScreen(
+              email: extra?['email'] as String?,
+              fullName: extra?['fullName'] as String?,
+              role: extra?['role'] as String?,
+              unit: extra?['unit'] as String?,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.06, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 320),
+          );
+        },
+      ),
+      // Direct Reference Inspection Routes
+      GoRoute(
+        path: RouteNames.refRegister,
+        name: 'refRegister',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: RegisterScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refOtp,
+        name: 'refOtp',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: OtpVerificationScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.refRegisterSuccess,
+        name: 'refRegisterSuccess',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: RegisterSuccessScreen(autoRedirect: false),
+        ),
+      ),
       // Auth 2 (Complete Profile - 2auth.png)
       GoRoute(
         path: RouteNames.completeProfile,
@@ -156,7 +307,7 @@ class AppRouter {
         name: 'home',
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
-          child: const HomeScreen(),
+          child: const DashboardScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
@@ -164,6 +315,28 @@ class AppRouter {
             );
           },
           transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.dashboard,
+        name: 'dashboard',
+        pageBuilder: (context, state) => const MaterialPage(
+          child: DashboardScreen(),
+        ),
+      ),
+      GoRoute(
+        path: RouteNames.history,
+        name: 'history',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const HistoryScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 250),
         ),
       ),
     ],

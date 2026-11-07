@@ -70,6 +70,10 @@ void main() {
       expect(find.text(AppStrings.forgotPassword), findsOneWidget);
       expect(find.text(AppStrings.btnMasuk), findsOneWidget);
 
+      // Verify "Belum punya akun? Daftar Sekarang"
+      expect(find.textContaining(AppStrings.dontHaveAccount, findRichText: true), findsOneWidget);
+      expect(find.textContaining(AppStrings.registerNow, findRichText: true), findsOneWidget);
+
       // Verify Managed Access Card
       expect(find.textContaining('Akses Terkelola', findRichText: true), findsOneWidget);
 

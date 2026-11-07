@@ -44,7 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
-    // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     final success = await _controller.login();
@@ -53,40 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showForgotPasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(
-          children: [
-            const Icon(Icons.help_outline_rounded, color: AppColors.accentAmber),
-            const SizedBox(width: 8),
-            Text(
-              'Reset Kata Sandi',
-              style: AppTypography.titleLarge.copyWith(fontSize: 18),
-            ),
-          ],
-        ),
-        content: Text(
-          'Akun auditor SPPG terintegrasi dengan Pusat BGN. Silakan hubungi Administrator SPPG Wilayah Anda untuk mengatur ulang kredensial.',
-          style: AppTypography.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Mengerti',
-              style: AppTypography.titleSmall.copyWith(
-                color: AppColors.primaryDeep,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _navigateToForgotPassword() {
+    context.push(RouteNames.forgotPassword);
   }
 
   @override
@@ -110,17 +77,14 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 12),
-              // Logo GiziLens
               Image.asset(
                 AppAssets.logoGiziLens,
                 height: 44,
                 fit: BoxFit.contain,
               ),
               const SizedBox(height: 14),
-              // Portal Resmi Auditor Pill
               const OfficialPortalBadge(),
               const SizedBox(height: 18),
-              // Title
               Text(
                 AppStrings.loginTitle,
                 textAlign: TextAlign.center,
@@ -132,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Subtitle
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
@@ -146,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Main Form Card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -170,7 +132,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Field 1: Email atau ID Petugas
                       CustomTextField(
                         label: AppStrings.emailOrOfficerIdLabel,
                         headerTrailing: Text(
@@ -193,7 +154,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: _controller.validateEmailOrId,
                       ),
                       const SizedBox(height: 16),
-                      // Field 2: Kata Sandi
                       CustomTextField(
                         label: AppStrings.passwordLabel,
                         hintText: AppStrings.passwordHint,
@@ -219,7 +179,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: _controller.validatePassword,
                       ),
                       const SizedBox(height: 16),
-                      // Remember Me & Forgot Password Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -247,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ],
                           ),
                           GestureDetector(
-                            onTap: _showForgotPasswordDialog,
+                            onTap: _navigateToForgotPassword,
                             behavior: HitTestBehavior.opaque,
                             child: Text(
                               AppStrings.forgotPassword,
@@ -261,7 +220,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
-                      // Submit Button (Masuk ->)
                       AppButton(
                         text: AppStrings.btnMasuk,
                         backgroundColor: AppColors.buttonAuth,
@@ -275,15 +233,42 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: _handleLogin,
                       ),
+                      const SizedBox(height: 18),
+                      Center(
+                        child: GestureDetector(
+                          onTap: () => context.push(RouteNames.register),
+                          behavior: HitTestBehavior.opaque,
+                          child: RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: AppTypography.bodySmall.copyWith(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                              children: [
+                                const TextSpan(
+                                  text: AppStrings.dontHaveAccount,
+                                ),
+                                TextSpan(
+                                  text: AppStrings.registerNow,
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.statSesuaiGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              // Managed Access Card
               const ManagedAccessNotice(),
               const SizedBox(height: 28),
-              // Footer
               const AuthFooter(),
               const SizedBox(height: 16),
             ],

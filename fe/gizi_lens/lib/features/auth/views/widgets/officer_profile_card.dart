@@ -38,7 +38,6 @@ class OfficerProfileCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Avatar with Verification Badge
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -86,7 +85,6 @@ class OfficerProfileCard extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 14),
-          // Name and Status
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +134,6 @@ class OfficerProfileCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Outlined Pill Button "Unggah Foto"
           InkWell(
             onTap: onUploadPhoto,
             borderRadius: BorderRadius.circular(999),

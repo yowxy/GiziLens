@@ -64,8 +64,12 @@ void main() {
       expect(controller.status, SplashStatus.connecting);
       expect(controller.progress, greaterThanOrEqualTo(0.05));
 
-      // Wait for completion
-      await Future.delayed(const Duration(milliseconds: 2500));
+      // Wait for async initialization to complete reliably
+      int waitMs = 0;
+      while (!completedCalled && waitMs < 5000) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        waitMs += 100;
+      }
 
       expect(controller.status, SplashStatus.completed);
       expect(controller.progress, 1.0);

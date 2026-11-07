@@ -46,7 +46,6 @@ class RoleSelectionCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom Radio Indicator (Pixel-perfect matching 2auth.png)
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: AnimatedContainer(
@@ -80,7 +79,6 @@ class RoleSelectionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 14),
-            // Title and Description
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

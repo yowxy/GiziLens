@@ -18,6 +18,7 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final bool readOnly;
   final bool enabled;
+  final bool isRequired;
   final Color? fillColor;
   final Widget? helperWidget;
   final double borderRadius;
@@ -41,6 +42,7 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.readOnly = false,
     this.enabled = true,
+    this.isRequired = false,
     this.fillColor,
     this.helperWidget,
     this.borderRadius = 12.0,
@@ -61,14 +63,35 @@ class CustomTextField extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (label != null)
-                Text(
-                  label!,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
-                ),
+                isRequired
+                    ? RichText(
+                        text: TextSpan(
+                          text: label!,
+                          style: AppTypography.titleSmall.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            fontSize: 13,
+                          ),
+                          children: const [
+                            TextSpan(
+                              text: ' *',
+                              style: TextStyle(
+                                color: Color(0xFFD32F2F),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Text(
+                        label!,
+                        style: AppTypography.titleSmall.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          fontSize: 13,
+                        ),
+                      ),
               ?headerTrailing,
             ],
           ),

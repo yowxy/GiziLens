@@ -118,4 +118,120 @@ class AppStrings {
   static const String btnSaveProfile = 'Simpan Profil & Buka Dasbor';
   static const String btnSkipProfile =
       'Lewati untuk saat ini (Gunakan data default)';
+
+  // Dashboard Strings (dashboard.png)
+  static const String greetingMorning = 'Selamat pagi,';
+  static const String dashboardOfficerName = 'Nurul Anggraini, S.Gz';
+  static const String dashboardOfficerUnit = 'SPPG Cibinong Sentral 02';
+
+  static const String heroMenuTitle = 'Periksa Menu Hari Ini';
+  static const String heroActionTitle = 'Periksa Ompreng';
+  static const String heroActionBadge = 'AI CAM';
+  static const String heroActionSubtitle =
+      'Inspeksi fisik baki dengan foto & AI deteksi porsi';
+
+  static const String sectionMonitoringPeriod = 'Periode Monitoring Mutu';
+  static const String periodHariIni = 'Hari Ini';
+  static const String period7Hari = '7 Hari Terakhir';
+  static const String period30Hari = '30 Hari Terakhir';
+
+  static const String sectionAkgSummary = 'Rekapitulasi Kepatuhan AKG';
+  static const String cardTotalTitle = 'TOTAL DIPERIKSA';
+  static const String cardTotalDisclaimer =
+      'Berdasarkan sesi sampel tersimpan, bukan total baki fisik';
+  static const String cardSesuaiTitle = 'SESUAI';
+  static const String cardSesuaiPill = 'Memenuhi 5 pilar AKG nasional';
+  static const String cardTidakSesuaiTitle = 'TIDAK SESUAI';
+  static const String cardTidakSesuaiPill = 'Defisit porsi >15% terverifikasi';
+  static const String labelSesi = 'Sesi';
+
+  static const String navBeranda = 'Beranda';
+  static const String navPeriksa = 'Periksa';
+  static const String navRiwayat = 'Riwayat';
+  static const String navProfil = 'Profil';
+
+  // History Screen Strings
+  static const String historyTitle = 'Riwayat Pemeriksaan';
+  static const String historySubtitle =
+      'Pantau seluruh hasil pemeriksaan ompreng yang telah dilakukan.';
+  static const String monitoringGiziMbgBadge = 'Monitoring Gizi MBG';
+  static const String searchHistoryHint =
+      'Cari menu, tanggal, atau kode pemeriksaan...';
+  static const String tabSemua = 'Semua';
+  static const String tabSesuai = 'Sesuai';
+  static const String tabTidakSesuai = 'Tidak Sesuai';
+  static const String emptyHistoryTitle = 'Tidak Ada Riwayat';
+
+  // Auth Additional Strings (Register & Flow)
+  static const String dontHaveAccount = 'Belum punya akun? ';
+  static const String registerNow = 'Daftar Sekarang';
+  static const String alreadyHaveAccount = 'Sudah punya akun? ';
+  static const String loginNow = 'Masuk Sekarang';
+
+  // 02 registrasi.png Strings
+  static const String registerBadge = 'Registrasi Pengguna MBG';
+  static const String registerTitle = 'Buat Akun GiziLens';
+  static const String registerSubtitle =
+      'Daftarkan akun untuk mulai menggunakan layanan pemantauan dan analisis gizi MBG.';
+  static const String fullNameFieldLabel = 'Nama Lengkap';
+  static const String fullNameFieldHint = 'Masukkan nama lengkap';
+  static const String emailActiveLabel = 'Email Aktif';
+  static const String emailActiveHint = 'nama@email.com';
+  static const String phoneNumberLabel = 'Nomor HP';
+  static const String phoneNumberHint = '+628xxxxxxxxxx';
+  static const String registerPasswordLabel = 'Kata Sandi';
+  static const String registerPasswordHint = 'Buat kata sandi';
+  static const String registerPasswordHelper =
+      'Minimal 8 karakter, kombinasi huruf & angka';
+  static const String confirmPasswordLabel = 'Konfirmasi Kata Sandi';
+  static const String confirmPasswordHint = 'Masukkan ulang kata sandi';
+  static const String agreeTermsPrefix = 'Saya menyetujui ';
+  static const String agreeTermsLink = 'Syarat dan Ketentuan';
+  static const String agreeTermsAnd = ' serta ';
+  static const String agreePrivacyLink = 'Kebijakan Privasi.';
+  static const String btnDaftarAkun = 'Daftar Akun';
+
+  // Forgot Password Strings
+  static const String forgotPasswordBadge = 'Keamanan Akun MBG';
+  static const String forgotPasswordTitle = 'Lupa Kata Sandi';
+  static const String forgotPasswordSubtitle =
+      'Masukkan email aktif yang terdaftar untuk menerima 6-digit kode verifikasi (OTP) pemulihan akun.';
+  static const String registeredEmailLabel = 'Email Terdaftar';
+  static const String registeredEmailHint = 'nama@email.com';
+  static const String btnSendOtp = 'Kirim Kode OTP';
+
+  // otp.png Strings
+  static const String otpBadge = 'Keamanan Akun MBG';
+  static const String otpTitle = 'Verifikasi Akun';
+  static const String otpSubtitle =
+      'Kami mengirimkan kode verifikasi untuk memastikan email atau nomor HP kamu aktif.';
+  static const String otpSentToPrefix = 'Kode verifikasi 6 digit telah dikirim ke:';
+  static const String defaultOtpEmail = 'nurulag***@gmail.com';
+  static const String defaultOtpPhone = '+62 812-****-789';
+  static const String btnUbah = 'Ubah';
+  static const String enterOtpLabel = 'Masukkan 6-Digit Kode Sandi (OTP)';
+  static const String haventReceivedCode = 'Belum menerima kode verifikasi?';
+  static const String resendCodeTimerPrefix = 'Kirim Ulang Kode';
+  static const String resendCodeAction = 'Kirim Ulang Kode';
+  static const String smsHelp = 'Bantuan SMS';
+  static const String btnVerifikasi = 'Verifikasi';
+
+  // Background+Border verifikasi.png (Dialog) Strings
+  static const String verificationSuccessTitle = 'Verifikasi Berhasil';
+  static const String verificationSuccessSubtitle =
+      'Identitas kontak berhasil diverifikasi.\nSelanjutnya lengkapi profil pengguna.';
+  static const String btnSelanjutnya = 'Selanjutnya';
+
+  // 02 registrasi berhasil.png Strings
+  static const String registrationSuccessTitle = 'Pendaftaran Berhasil!';
+  static const String registrationSuccessSubtitle =
+      'Akun kamu berhasil dibuat. Silakan login menggunakan\nemail dan kata sandi yang telah kamu daftarkan.';
+  static const String registeredAccountLabel = 'Akun Terdaftar';
+  static const String proposedRoleLabel = 'Peran Diajukan';
+  static const String defaultProposedRole = 'Ahli Gizi Lapangan';
+  static const String assignmentUnitLabel = 'Unit Penugasan';
+  static const String defaultAssignmentUnit = 'SPPG Cibinong Sentral 02';
+  static const String btnKembaliKeLogin = 'Kembali ke Login';
+  static const String btnMasukDashboard = 'Masuk ke Dasbor';
+  static const String autoRedirectingDashboard = 'Mengalihkan ke dasbor dalam';
 }

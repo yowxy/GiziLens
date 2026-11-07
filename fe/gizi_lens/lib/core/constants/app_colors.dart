@@ -54,4 +54,15 @@ class AppColors {
   static const Color inputLockedBg = Color(0xFFF0EEE7);
   static const Color iconFieldMuted = Color(0xFF6B7F73);
   static const Color avatarDark = Color(0xFF0C2E24);
+
+  // Dashboard Specific Colors (dashboard.png)
+  static const Color headerDarkGreen = Color(0xFF093129);
+  static const Color heroCardGreen = Color(0xFF173F35);
+  static const Color statSesuaiGreen = Color(0xFF1E6C45);
+  static const Color statTidakSesuaiRed = Color(0xFFB3261E);
+  static const Color badgeTidakSesuaiBg = Color(0xFFFBE4E1);
+  static const Color badgeTidakSesuaiText = Color(0xFFB3261E);
+  static const Color accentAiCam = Color(0xFFCA9D4B);
+  static const Color notificationDot = Color(0xFFE53935);
+  static const Color bottomNavInactive = Color(0xFF53675C);
 }
