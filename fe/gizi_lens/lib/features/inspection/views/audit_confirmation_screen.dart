@@ -192,6 +192,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                         backgroundColor: AppColors.primaryDeep,
                         foregroundColor: Colors.white,
                         elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -215,12 +216,18 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                               color: Colors.white,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              AppStrings.btnSaveInspectionLock,
-                              style: AppTypography.titleMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14.5,
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  AppStrings.btnSaveInspectionLock,
+                                  maxLines: 1,
+                                  style: AppTypography.titleMedium.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -238,6 +245,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                         backgroundColor: Colors.white,
                         foregroundColor: AppColors.textPrimary,
                         elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         side: const BorderSide(
                           color: Color(0xFFCBD5E1),
                           width: 1.2,
@@ -255,12 +263,18 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                             color: AppColors.textPrimary,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            AppStrings.btnBackToInspection,
-                            style: AppTypography.titleMedium.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14.5,
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                AppStrings.btnBackToInspection,
+                                maxLines: 1,
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ),
                           ),
                         ],
