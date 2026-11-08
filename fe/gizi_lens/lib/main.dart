@@ -10,7 +10,7 @@ void main() async {
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    );
+    );  
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
   }

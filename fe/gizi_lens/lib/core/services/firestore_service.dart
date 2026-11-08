@@ -82,6 +82,25 @@ class FirestoreService {
     }
   }
 
+  /// Save an OTP verification record for real-time tracking in Firestore.
+  Future<void> saveOtpVerification({
+    required String email,
+    required String otp,
+  }) async {
+    final firestore = _firestore;
+    if (firestore == null) return;
+    try {
+      await firestore.collection('otp_verifications').doc(email.trim().toLowerCase()).set({
+        'email': email.trim().toLowerCase(),
+        'otp': otp,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedIso': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      debugPrint('Error saving OTP verification: $e');
+    }
+  }
+
   // ==========================================
   // AUDIT INSPECTIONS
   // ==========================================

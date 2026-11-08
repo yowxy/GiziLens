@@ -48,6 +48,15 @@ void main() {
       final pass = await controller.verifyOtp();
       expect(pass, isTrue);
     });
+
+    test('Random OTP is generated and autoFillOtp populates currentOtp', () {
+      expect(controller.generatedOtp.length, equals(6));
+      expect(int.tryParse(controller.generatedOtp), isNotNull);
+
+      controller.autoFillOtp();
+      expect(controller.currentOtp, equals(controller.generatedOtp));
+      expect(controller.isOtpComplete, isTrue);
+    });
   });
 
   group('OtpVerificationScreen & Dialog Widget Tests', () {

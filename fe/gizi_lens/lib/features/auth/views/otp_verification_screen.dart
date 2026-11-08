@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -39,6 +40,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _controller = OtpController(
       email: widget.initialEmail ?? AppStrings.defaultOtpEmail,
       phone: widget.initialPhone ?? AppStrings.defaultOtpPhone,
+      onAutoVerified: _handleAutoVerified,
     );
     _controller.addListener(_onControllerUpdate);
   }
@@ -54,26 +56,35 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     super.dispose();
   }
 
+  void _handleAutoVerified() {
+    if (!mounted) return;
+    _showVerificationSuccessDialog();
+  }
+
   Future<void> _handleVerifyOtp() async {
     FocusScope.of(context).unfocus();
 
     final success = await _controller.verifyOtp();
     if (success && mounted) {
-      await OtpVerificationDialog.show(
-        context,
-        onNext: () {
-          context.go(
-            RouteNames.registerSuccess,
-            extra: {
-              'email': _controller.email,
-              'fullName': widget.fullName ?? 'Nurul Gizi',
-              'role': 'Ahli Gizi Lapangan',
-              'unit': 'SPPG Cibinong Sentral 02',
-            },
-          );
-        },
-      );
+      _showVerificationSuccessDialog();
     }
+  }
+
+  Future<void> _showVerificationSuccessDialog() async {
+    await OtpVerificationDialog.show(
+      context,
+      onNext: () {
+        context.go(
+          RouteNames.registerSuccess,
+          extra: {
+            'email': _controller.email,
+            'fullName': widget.fullName ?? 'Nurul Gizi',
+            'role': 'Ahli Gizi Lapangan',
+            'unit': 'SPPG Cibinong Sentral 02',
+          },
+        );
+      },
+    );
   }
 
   Future<void> _handleResend() async {
@@ -82,7 +93,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Email verifikasi resmi dari Firebase telah dikirimkan ke ${_controller.email}. Silakan periksa inbox / spam email Anda.',
+            'Kode OTP acak baru (${_controller.generatedOtp}) telah dibuat & tautan verifikasi dikirimkan ke ${_controller.email}.',
             style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.primaryDeep,
@@ -197,21 +208,32 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: AppColors.textPrimary,
-                        size: 24,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go(RouteNames.login);
-                        }
-                      },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_rounded,
+                            color: AppColors.textPrimary,
+                            size: 24,
+                          ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                          onPressed: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go(RouteNames.login);
+                            }
+                          },
+                        ),
+                        Image.asset(
+                          AppAssets.logoGiziLens,
+                          height: 36,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(width: 40),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -394,7 +416,172 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    // Official Generated OTP Card
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(top: 18, bottom: 24),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFF0FDF4),
+                            Color(0xFFE8F7ED),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: const Color(0xFFB9E3C6),
+                          width: 1.3,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0C166534),
+                            blurRadius: 16,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Image.asset(
+                                AppAssets.logoGiziLens,
+                                height: 22,
+                                fit: BoxFit.contain,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'KODE OTP RESMI GIZILENS',
+                                  style: AppTypography.caption.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11.5,
+                                    color: const Color(0xFF144638),
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF86EFAC), width: 0.8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.accentCheckGreen,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Aktif',
+                                      style: AppTypography.badge.copyWith(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFF15803D),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Kode Keamanan 6 Digit (Acak):',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTypography.caption.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _controller.generatedOtp,
+                                      style: AppTypography.h1.copyWith(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 3.5,
+                                        color: const Color(0xFF144638),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  _controller.autoFillOtp();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primaryDeep,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                icon: const Icon(
+                                  Icons.bolt_rounded,
+                                  size: 16,
+                                  color: Color(0xFFFDE047),
+                                ),
+                                label: const Text(
+                                  'Isi Otomatis',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.info_outline_rounded,
+                                size: 13,
+                                color: Color(0xFF15803D),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Kode baru otomatis di-generate secara acak setiap Anda menekan Kirim Ulang. Atau klik tautan verifikasi pada email Anda.',
+                                  style: AppTypography.caption.copyWith(
+                                    fontSize: 11,
+                                    color: const Color(0xFF15803D),
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                     Center(
                       child: Text(
                         AppStrings.enterOtpLabel,
@@ -408,6 +595,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     const SizedBox(height: 18),
                     OtpCodeInput(
                       length: 6,
+                      code: _controller.currentOtp,
                       onChanged: _controller.updateOtp,
                       onCompleted: (_) => _handleVerifyOtp(),
                     ),
