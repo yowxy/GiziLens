@@ -13,7 +13,7 @@ class DashboardHeader extends StatelessWidget {
 
   const DashboardHeader({
     super.key,
-    this.greeting = AppStrings.greetingMorning,
+    this.greeting = AppStrings.greetingWelcome,
     this.officerName = AppStrings.dashboardOfficerName,
     this.unitName = AppStrings.dashboardOfficerUnit,
     this.hasNotification = true,

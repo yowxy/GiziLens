@@ -69,6 +69,7 @@ void main() {
           home: HistoryScreen(),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Verify Header Elements
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
@@ -112,6 +113,7 @@ void main() {
           home: HistoryScreen(),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Tap Sesuai tab
       await tester.tap(find.text(AppStrings.tabSesuai));
@@ -135,6 +137,7 @@ void main() {
           home: HistoryScreen(),
         ),
       );
+      await tester.pumpAndSettle();
 
       // Tap 7 Hari Terakhir
       await tester.tap(find.text(AppStrings.period7Hari));

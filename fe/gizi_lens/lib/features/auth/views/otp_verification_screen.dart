@@ -82,11 +82,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Kode OTP baru berhasil dikirimkan ke ${_controller.maskedEmail}.',
+            'Email verifikasi resmi dari Firebase telah dikirimkan ke ${_controller.email}. Silakan periksa inbox / spam email Anda.',
             style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.primaryDeep,
-          duration: const Duration(seconds: 3),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } else if (!success && _controller.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage!),
+          backgroundColor: AppColors.statTidakSesuaiRed,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
@@ -499,7 +508,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         color: Colors.white,
                         size: 18,
                       ),
-                      onPressed: _controller.isOtpComplete ? _handleVerifyOtp : () {},
+                      onPressed: _handleVerifyOtp,
                     ),
                     const SizedBox(height: 32),
                     const AuthFooter(),

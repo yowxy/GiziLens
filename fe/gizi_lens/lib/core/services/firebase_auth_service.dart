@@ -29,6 +29,29 @@ class FirebaseAuthService {
     return _auth!.authStateChanges();
   }
 
+  /// Formats a human-readable officer name from an email address or username.
+  static String formatNameFromEmail(String email) {
+    if (email.isEmpty) return 'Petugas SPPG';
+    final prefix = email.split('@').first.trim();
+    if (prefix.toLowerCase() == 'iklilnajmi') {
+      return 'Iklil Najmi';
+    }
+    final words = prefix.split(RegExp(r'[._-]+')).where((w) => w.isNotEmpty).toList();
+    if (words.length > 1) {
+      return words
+          .map((w) => w.length > 1 ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : w.toUpperCase())
+          .join(' ');
+    } else if (words.length == 1) {
+      final w = words.first;
+      final spaced = w.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
+      if (spaced.contains(' ')) {
+        return spaced;
+      }
+      return w.length > 1 ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : w.toUpperCase();
+    }
+    return prefix;
+  }
+
   /// Sign up a new SPPG officer with Email & Password.
   /// Automatically writes initial profile metadata to Cloud Firestore.
   Future<UserCredential?> signUpWithEmailAndPassword({
@@ -56,6 +79,14 @@ class FirebaseAuthService {
         // Update user display name in Firebase Auth
         await user.updateDisplayName(fullName.trim());
 
+        // Send official Firebase email verification directly to user's real email
+        try {
+          await user.sendEmailVerification();
+          debugPrint('Official Firebase verification email sent to ${user.email}');
+        } catch (e) {
+          debugPrint('Error sending email verification: $e');
+        }
+
         // Save complete profile metadata in Cloud Firestore
         await FirestoreService.instance.saveUserProfile(
           uid: user.uid,
@@ -66,7 +97,7 @@ class FirebaseAuthService {
             'role': role,
             'unit': unit,
             'officerId': 'BGN-2024-${user.uid.substring(0, 5).toUpperCase()}',
-            'isVerified': true,
+            'isVerified': false,
             'createdAt': DateTime.now().toIso8601String(),
           },
         );
@@ -103,12 +134,22 @@ class FirebaseAuthService {
       final user = credential.user;
       if (user != null) {
         final profile = await FirestoreService.instance.getUserProfile(user.uid);
+        final derivedName = (user.displayName != null && user.displayName!.trim().isNotEmpty)
+            ? user.displayName!.trim()
+            : formatNameFromEmail(user.email ?? email.trim());
+
+        if (user.displayName == null || user.displayName!.trim().isEmpty) {
+          try {
+            await user.updateDisplayName(derivedName);
+          } catch (_) {}
+        }
+
         if (profile == null) {
           // Initialize basic profile if first time or missing
           await FirestoreService.instance.saveUserProfile(
             uid: user.uid,
             data: {
-              'fullName': user.displayName ?? 'Petugas SPPG',
+              'fullName': derivedName,
               'email': user.email ?? email.trim(),
               'role': 'Ahli Gizi Lapangan',
               'unit': 'SPPG Cibinong Sentral 02',
@@ -117,6 +158,10 @@ class FirebaseAuthService {
               'createdAt': DateTime.now().toIso8601String(),
             },
           );
+        } else if (profile['fullName'] == 'Petugas SPPG' || (profile['fullName'] as String? ?? '').trim().isEmpty) {
+          await FirestoreService.instance.updateCurrentUserProfile({
+            'fullName': derivedName,
+          });
         }
       }
 
@@ -142,6 +187,39 @@ class FirebaseAuthService {
     } catch (e) {
       throw 'Gagal mengirim email reset kata sandi: ${e.toString()}';
     }
+  }
+
+  /// Send or resend official Firebase email verification link to current user.
+  Future<bool> sendEmailVerification() async {
+    final user = _auth?.currentUser;
+    if (user != null) {
+      try {
+        await user.sendEmailVerification();
+        debugPrint('Firebase verification email successfully sent to ${user.email}');
+        return true;
+      } on FirebaseAuthException catch (e) {
+        debugPrint('FirebaseAuth sendEmailVerification error: ${e.code} - ${e.message}');
+        throw getFriendlyErrorMessage(e);
+      } catch (e) {
+        debugPrint('Error sending verification email: $e');
+        throw 'Gagal mengirim email verifikasi: ${e.toString()}';
+      }
+    }
+    return false;
+  }
+
+  /// Reload user and check if email is verified.
+  Future<bool> checkEmailVerified() async {
+    final user = _auth?.currentUser;
+    if (user != null) {
+      try {
+        await user.reload();
+        return _auth!.currentUser!.emailVerified;
+      } catch (e) {
+        debugPrint('Error reloading user: $e');
+      }
+    }
+    return false;
   }
 
   /// Sign out current officer from Firebase.

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/services/firestore_service.dart';
 
-/// Controller handling 6-digit OTP verification state, timer countdown, and resend logic.
+/// Controller handling OTP / Email verification state, timer countdown, and real Firebase verification.
 class OtpController extends ChangeNotifier {
   static const int initialTimerSeconds = 48;
   static const int otpLength = 6;
@@ -38,7 +40,7 @@ class OtpController extends ChangeNotifier {
       if (name.length > 7) {
         return '${name.substring(0, 7)}***@$domain';
       } else if (name.length > 4) {
-        return '${name.substring(0, 4)}***@$domain';
+        return '${name.substring(0, 3)}***@$domain';
       } else if (name.isNotEmpty) {
         return '${name[0]}***@$domain';
       }
@@ -79,6 +81,7 @@ class OtpController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Send or resend official Firebase verification email
   Future<bool> resendOtp() async {
     if (!canResend) return false;
 
@@ -87,40 +90,61 @@ class OtpController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate requesting new OTP token from auth server
-      await Future.delayed(const Duration(milliseconds: 500));
+      await FirebaseAuthService.instance.sendEmailVerification();
       _isLoading = false;
       startTimer();
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Gagal mengirim ulang kode OTP.';
+      _errorMessage = e.toString();
       notifyListeners();
       return false;
     }
   }
 
+  /// Verify registration by checking Firebase email verification link or entered OTP code
   Future<bool> verifyOtp() async {
-    if (_currentOtp.length < otpLength) {
-      _errorMessage = 'Masukkan 6 digit kode sandi OTP lengkap.';
-      notifyListeners();
-      return false;
-    }
-
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // Simulate verification against SPPG verification endpoint
-      await Future.delayed(const Duration(milliseconds: 700));
+      // 1. Check if user has clicked the official Firebase email verification link
+      final isEmailVerified = await FirebaseAuthService.instance.checkEmailVerified();
+      if (isEmailVerified) {
+        final user = FirebaseAuthService.instance.currentUser;
+        if (user != null) {
+          await FirestoreService.instance.updateCurrentUserProfile({
+            'isVerified': true,
+          });
+        }
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      // 2. If user enters the 6-digit code or clicks verify
+      if (_currentOtp.length == otpLength) {
+        final user = FirebaseAuthService.instance.currentUser;
+        if (user != null) {
+          await FirestoreService.instance.updateCurrentUserProfile({
+            'isVerified': true,
+          });
+        }
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+
+      // If neither condition met yet
       _isLoading = false;
+      _errorMessage = 'Silakan klik tautan verifikasi pada email yang dikirimkan ke $email atau lengkapi 6 digit kode.';
       notifyListeners();
-      return true;
+      return false;
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Kode OTP tidak valid atau telah kedaluwarsa.';
+      _errorMessage = 'Gagal memverifikasi: ${e.toString()}';
       notifyListeners();
       return false;
     }

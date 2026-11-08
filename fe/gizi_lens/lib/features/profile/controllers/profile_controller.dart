@@ -22,9 +22,16 @@ class ProfileController extends ChangeNotifier {
       if (user == null) return;
 
       final profileData = await FirestoreService.instance.getUserProfile(user.uid);
-      final name = profileData?['fullName'] as String? ??
-          user.displayName ??
-          _account.fullName;
+      String? name = profileData?['fullName'] as String?;
+      if (name == null || name.trim().isEmpty || name == 'Petugas SPPG') {
+        if (user.displayName != null && user.displayName!.trim().isNotEmpty) {
+          name = user.displayName!.trim();
+        } else if (user.email != null && user.email!.isNotEmpty) {
+          name = FirebaseAuthService.formatNameFromEmail(user.email!);
+        } else {
+          name = _account.fullName;
+        }
+      }
       final role = profileData?['role'] as String? ?? _account.roleTitle;
       final unit = profileData?['unit'] as String? ?? _account.unitOperational;
       final officerId = profileData?['officerId'] as String? ??

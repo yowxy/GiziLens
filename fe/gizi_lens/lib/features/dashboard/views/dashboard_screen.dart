@@ -100,6 +100,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: Column(
           children: [
             DashboardHeader(
+              greeting: _controller.greeting,
+              officerName: _controller.officerName,
+              unitName: _controller.unitName,
               hasNotification: _controller.hasUnreadNotifications,
               onNotificationTap: () {
                 _controller.toggleNotifications();

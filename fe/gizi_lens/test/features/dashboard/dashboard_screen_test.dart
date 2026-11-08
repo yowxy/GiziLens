@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gizi_lens/core/constants/app_strings.dart';
+import 'package:gizi_lens/core/services/firebase_auth_service.dart';
 import 'package:gizi_lens/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:gizi_lens/features/dashboard/models/dashboard_stats_model.dart';
 import 'package:gizi_lens/features/dashboard/views/dashboard_screen.dart';
@@ -20,6 +21,8 @@ void main() {
       expect(controller.stats.totalDiperiksa, equals(0));
       expect(controller.stats.totalSesuai, equals(0));
       expect(controller.stats.totalTidakSesuai, equals(0));
+      expect(controller.greeting, equals(AppStrings.greetingWelcome));
+      expect(controller.officerName, equals(AppStrings.dashboardOfficerName));
     });
 
     test('setNavIndex updates active navigation tab index', () {
@@ -43,6 +46,17 @@ void main() {
     test('toggleNotifications clears unread dot indicator', () {
       controller.toggleNotifications();
       expect(controller.hasUnreadNotifications, isFalse);
+    });
+
+    test('formatNameFromEmail correctly extracts and capitalizes names', () {
+      expect(
+        FirebaseAuthService.formatNameFromEmail('iklilnajmi@gmail.com'),
+        equals('Iklil Najmi'),
+      );
+      expect(
+        FirebaseAuthService.formatNameFromEmail('budi.santoso@gmail.com'),
+        equals('Budi Santoso'),
+      );
     });
   });
 
