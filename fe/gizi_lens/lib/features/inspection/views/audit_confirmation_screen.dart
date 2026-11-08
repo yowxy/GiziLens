@@ -6,6 +6,8 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/inspection_session_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
 
 class AuditConfirmationScreen extends StatefulWidget {
@@ -21,32 +23,35 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
   void _handleSaveLock() async {
     setState(() => _isSaving = true);
 
+    final session = InspectionSessionService.instance;
+    final officer = UserSessionService.instance.account;
+
     try {
       await FirestoreService.instance.saveInspection({
-        'batchCode': AppStrings.defaultSamplingBatchCode,
-        'schoolName': AppStrings.defaultSamplingSchool,
-        'targetGroup': AppStrings.targetGroupInfo,
+        'batchCode': session.batchCode,
+        'schoolName': session.schoolDestination,
+        'targetGroup': session.targetAkg.groupName,
         'session': AppStrings.targetGroupSession,
-        'totalNetWeight': AppStrings.totalNetWeightValue,
+        'totalNetWeight': '${session.totalNetWeight} gram',
         'totalLiquid': AppStrings.totalLiquidValue,
         'complianceStatus': 'SESUAI',
         'isLocked': true,
         'trayFraction': AppStrings.trayFraction,
-        'verifierRole': AppStrings.verifierRolePill,
-        'components': [
-          {'name': 'Nasi Putih', 'gram': 180, 'category': 'Karbohidrat'},
-          {'name': 'Telur Balado', 'gram': 85, 'category': 'Protein Hewani'},
-          {'name': 'Sayur Bayam', 'gram': 90, 'category': 'Sayuran'},
-          {'name': 'Tempe Orek', 'gram': 65, 'category': 'Protein Nabati'},
-          {'name': 'Pisang Mas', 'gram': 100, 'category': 'Buah'},
-        ],
+        'verifierRole': officer.roleTitle,
+        'verifierName': officer.fullName,
+        'components': session.components
+            .map((c) => {
+                  'id': c.id,
+                  'name': c.name,
+                  'gram': c.estimatedGram,
+                  'category': c.category,
+                })
+            .toList(),
         'nutrition': {
-          'calories': 585,
-          'carbs': 78,
-          'protein': 24,
-          'fat': 18,
-          'fiber': 6.5,
+          'calories': session.targetAkg.calories,
+          'protein': session.targetAkg.proteinRange,
         },
+        'notes': session.notes,
       });
     } catch (e) {
       debugPrint('Firestore save error: $e');
@@ -75,7 +80,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         ),
         title: 'Hasil Audit Berhasil Dikunci!',
         subtitle:
-            'Data pemeriksaan ompreng #MBG-2024-CIB02 telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
+            'Data pemeriksaan ompreng ${session.batchCode} untuk ${session.schoolDestination} telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
         primaryButtonText: 'Kembali ke Dasbor',
         primaryButtonColor: AppColors.primaryDeep,
         primaryButtonIcon: Icons.home_rounded,
@@ -408,7 +413,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            AppStrings.defaultSamplingBatchCode,
+            InspectionSessionService.instance.batchCode,
             style: AppTypography.titleLarge.copyWith(
               fontWeight: FontWeight.w800,
               fontSize: 18,
@@ -417,7 +422,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
           ),
           const SizedBox(height: 2),
           Text(
-            AppStrings.defaultSamplingSchool,
+            InspectionSessionService.instance.schoolDestination,
             style: AppTypography.bodySmall.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
@@ -450,7 +455,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        AppStrings.targetGroupInfo,
+                        InspectionSessionService.instance.targetAkg.groupName,
                         style: AppTypography.captionBold.copyWith(
                           fontSize: 12.5,
                           color: AppColors.textPrimary,
@@ -532,10 +537,10 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     color: Color(0xFFDAECE0),
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'NA',
-                      style: TextStyle(
+                      UserSessionService.instance.account.initials,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1E6C45),
@@ -556,7 +561,9 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                         ),
                       ),
                       Text(
-                        AppStrings.officerFullName,
+                        UserSessionService.instance.account.fullName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTypography.captionBold.copyWith(
                           fontSize: 12,
                           color: AppColors.textPrimary,
@@ -565,6 +572,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
@@ -632,7 +640,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     ),
                   ),
                   Text(
-                    AppStrings.totalNetWeightValue,
+                    '${InspectionSessionService.instance.totalNetWeight} gram',
                     style: AppTypography.captionBold.copyWith(
                       fontSize: 15,
                       color: AppColors.textPrimary,
@@ -650,40 +658,16 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          _buildVerifiedPortionItem(
-            name: 'Nasi Kuning',
-            desc: 'Karbohidrat Utama • 200g',
-            icon: Icons.rice_bowl_rounded,
-            badgeLabel: 'Sesuai Standar',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Telur Rebus',
-            desc: 'Protein Hewani • 65g',
-            icon: Icons.egg_alt_outlined,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Tempe Kacang',
-            desc: 'Protein Hewani • 100g',
-            icon: Icons.restaurant_menu_rounded,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Lalapan Segar',
-            desc: 'Serat & Vitamin • 30g',
-            icon: Icons.eco_outlined,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Susu UHT & Pisang',
-            desc: 'Kalsium & Kalium • 125g + 115ml',
-            icon: Icons.local_drink_rounded,
-            badgeLabel: 'Memenuhi AKG',
-          ),
+          for (int i = 0; i < InspectionSessionService.instance.components.length; i++) ...[
+            _buildVerifiedPortionItem(
+              name: InspectionSessionService.instance.components[i].name,
+              desc: '${InspectionSessionService.instance.components[i].category} • ${InspectionSessionService.instance.components[i].estimatedGram}g',
+              icon: InspectionSessionService.instance.components[i].iconData,
+              badgeLabel: InspectionSessionService.instance.components[i].complianceStatus,
+            ),
+            if (i < InspectionSessionService.instance.components.length - 1)
+              const SizedBox(height: 8),
+          ],
         ],
       ),
     );

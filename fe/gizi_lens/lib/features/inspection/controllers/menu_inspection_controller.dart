@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/inspection_session_service.dart';
 import '../models/batch_info_model.dart';
 import '../models/target_akg_model.dart';
 
@@ -69,6 +70,13 @@ class MenuInspectionController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      InspectionSessionService.instance.updateBatchConfig(
+        batchCode: batchCode,
+        sppgUnit: sppgUnit,
+        targetAkg: _selectedTargetAkg,
+        schoolDestination: schoolController.text.trim(),
+        notes: notesController.text.trim(),
+      );
       await Future.delayed(const Duration(milliseconds: 500));
       _isLoading = false;
       notifyListeners();

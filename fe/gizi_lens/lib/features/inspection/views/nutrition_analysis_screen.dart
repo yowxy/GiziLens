@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/inspection_session_service.dart';
 import '../controllers/nutrition_analysis_controller.dart';
 import 'widgets/nutrition_progress_card.dart';
 import 'widgets/step_progress_app_bar.dart';

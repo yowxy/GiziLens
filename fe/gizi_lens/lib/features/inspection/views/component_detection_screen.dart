@@ -6,6 +6,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../controllers/component_detection_controller.dart';
+import '../models/food_component_model.dart';
 import 'widgets/detected_component_card.dart';
 import 'widgets/food_partition_view.dart';
 import 'widgets/segmentation_process_card.dart';
@@ -56,6 +57,202 @@ class _ComponentDetectionScreenState extends State<ComponentDetectionScreen> {
     } else {
       context.go(RouteNames.scanOmpreng);
     }
+  }
+
+  void _showEditComponentModal(FoodComponentModel item) {
+    final nameController = TextEditingController(text: item.name);
+    final gramController = TextEditingController(text: item.estimatedGram.toString());
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          int currentGram = int.tryParse(gramController.text) ?? item.estimatedGram;
+
+          void updateGram(int delta) {
+            final next = (currentGram + delta).clamp(10, 1000);
+            gramController.text = next.toString();
+            setModalState(() {
+              currentGram = next;
+            });
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 24,
+            ),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F6F1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          item.iconData,
+                          size: 20,
+                          color: AppColors.primaryDeep,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Koreksi Porsi Komponen',
+                          style: AppTypography.titleLarge.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            fontSize: 17,
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => Navigator.pop(sheetCtx),
+                        borderRadius: BorderRadius.circular(20),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Icon(Icons.close_rounded, size: 20, color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Perbarui nama makanan atau sesuaikan gramatur porsi hasil segmentasi AI baki ompreng.',
+                    style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Bahan / Komponen Makanan',
+                      labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.restaurant_menu_rounded, size: 20, color: AppColors.primaryDeep),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAF7),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: gramController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (val) {
+                      setModalState(() {
+                        currentGram = int.tryParse(val) ?? currentGram;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Gramatur Bersih Porsi (gram)',
+                      suffixText: 'gram',
+                      labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                      prefixIcon: const Icon(Icons.scale_outlined, size: 20, color: AppColors.primaryDeep),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAF7),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      ActionChip(
+                        label: const Text('-25g'),
+                        onPressed: () => updateGram(-25),
+                      ),
+                      ActionChip(
+                        label: const Text('-10g'),
+                        onPressed: () => updateGram(-10),
+                      ),
+                      ActionChip(
+                        label: const Text('+10g'),
+                        onPressed: () => updateGram(10),
+                      ),
+                      ActionChip(
+                        label: const Text('+25g'),
+                        onPressed: () => updateGram(25),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final newName = nameController.text.trim();
+                        final newGram = int.tryParse(gramController.text.trim()) ?? item.estimatedGram;
+                        if (newName.isEmpty) return;
+
+                        _controller.updateComponent(
+                          id: item.id,
+                          newName: newName,
+                          newGram: newGram,
+                        );
+
+                        Navigator.pop(sheetCtx);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Porsi "$newName" berhasil diperbarui menjadi $newGram gram.',
+                              style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                            ),
+                            backgroundColor: AppColors.primaryDeep,
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryDeep,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Simpan Koreksi', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _showHelp() {
@@ -193,7 +390,7 @@ class _ComponentDetectionScreenState extends State<ComponentDetectionScreen> {
                     for (final item in _controller.components)
                       DetectedComponentCard(
                         component: item,
-                        onTap: () {},
+                        onTap: () => _showEditComponentModal(item),
                       ),
                   ],
                 ),

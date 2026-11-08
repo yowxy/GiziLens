@@ -10,7 +10,6 @@ import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../controllers/profile_controller.dart';
 import 'dialogs/logout_confirmation_dialog.dart';
 import 'dialogs/profile_updated_success_dialog.dart';
-import 'dialogs/save_profile_confirmation_dialog.dart';
 import 'widgets/officer_info_hero_card.dart';
 import 'widgets/profile_header_app_bar.dart';
 import 'widgets/profile_menu_item.dart';
@@ -271,23 +270,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String? updatedRole,
     String? updatedUnit,
     String? updatedRegion,
-  }) {
-    SaveProfileConfirmationDialog.show(
-      context,
-      onConfirmSave: () async {
-        if (updatedName != null && updatedName.isNotEmpty) {
-          await _controller.updateProfile(
-            fullName: updatedName,
-            role: updatedRole,
-            unit: updatedUnit,
-            region: updatedRegion,
-          );
-        }
-        if (!mounted) return;
-        await ProfileUpdatedSuccessDialog.show(context);
-        if (mounted) setState(() {});
-      },
-    );
+  }) async {
+    if (updatedName != null && updatedName.isNotEmpty) {
+      await _controller.updateProfile(
+        fullName: updatedName,
+        role: updatedRole,
+        unit: updatedUnit,
+        region: updatedRegion,
+      );
+      if (mounted) setState(() {});
+    }
+
+    if (!mounted) return;
+    await ProfileUpdatedSuccessDialog.show(context);
+    if (mounted) setState(() {});
   }
 
   void _handleLogoutTap() {

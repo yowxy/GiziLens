@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/firebase_auth_service.dart';
-import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../models/officer_profile_model.dart';
 import '../models/officer_role.dart';
 
@@ -81,10 +81,10 @@ class CompleteProfileController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await FirestoreService.instance.updateCurrentUserProfile({
-        'fullName': _profile.fullName,
-        'role': _profile.selectedRole.title,
-      });
+      await UserSessionService.instance.updateProfile(
+        fullName: _profile.fullName,
+        role: _profile.selectedRole.title,
+      );
 
       _isLoading = false;
       notifyListeners();
