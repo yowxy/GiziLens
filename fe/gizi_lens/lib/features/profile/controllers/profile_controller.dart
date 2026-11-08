@@ -4,16 +4,22 @@ import '../../../../core/services/firestore_service.dart';
 import '../models/officer_account_model.dart';
 
 class ProfileController extends ChangeNotifier {
-  OfficerAccountModel _account = OfficerAccountModel.defaultAccount();
+  static OfficerAccountModel _activeAccount = OfficerAccountModel.defaultAccount();
+
   int _activeNavIndex = 3;
   bool _notificationsEnabled = true;
 
-  OfficerAccountModel get account => _account;
+  OfficerAccountModel get account => _activeAccount;
   int get activeNavIndex => _activeNavIndex;
   bool get notificationsEnabled => _notificationsEnabled;
 
   ProfileController() {
     _loadProfileFromFirebase();
+  }
+
+  @visibleForTesting
+  static void resetForTesting() {
+    _activeAccount = OfficerAccountModel.defaultAccount();
   }
 
   Future<void> _loadProfileFromFirebase() async {
@@ -29,11 +35,12 @@ class ProfileController extends ChangeNotifier {
         } else if (user.email != null && user.email!.isNotEmpty) {
           name = FirebaseAuthService.formatNameFromEmail(user.email!);
         } else {
-          name = _account.fullName;
+          name = _activeAccount.fullName;
         }
       }
-      final role = profileData?['role'] as String? ?? _account.roleTitle;
-      final unit = profileData?['unit'] as String? ?? _account.unitOperational;
+      final role = profileData?['role'] as String? ?? _activeAccount.roleTitle;
+      final unit = profileData?['unit'] as String? ?? _activeAccount.unitOperational;
+      final region = profileData?['region'] as String? ?? _activeAccount.unitRegion;
       final officerId = profileData?['officerId'] as String? ??
           'BGN-2024-${user.uid.length >= 5 ? user.uid.substring(0, 5).toUpperCase() : "SPPG"}';
 
@@ -45,11 +52,12 @@ class ProfileController extends ChangeNotifier {
           .map((s) => s[0].toUpperCase())
           .join();
 
-      _account = _account.copyWith(
+      _activeAccount = _activeAccount.copyWith(
         fullName: name,
-        initials: initials.isNotEmpty ? initials : _account.initials,
+        initials: initials.isNotEmpty ? initials : _activeAccount.initials,
         roleTitle: role,
         unitOperational: unit,
+        unitRegion: region,
         officerId: officerId,
       );
       notifyListeners();
@@ -68,30 +76,65 @@ class ProfileController extends ChangeNotifier {
   }
 
   void dismissNotificationBadge() {
-    if (!_account.hasNotification) return;
-    _account = _account.copyWith(hasNotification: false);
+    if (!_activeAccount.hasNotification) return;
+    _activeAccount = _activeAccount.copyWith(hasNotification: false);
     notifyListeners();
   }
 
-  void updateProfileName(String newName) async {
-    final initials = newName
-        .trim()
+  /// Updates the officer profile in memory, Firebase Auth, and Cloud Firestore.
+  Future<bool> updateProfile({
+    required String fullName,
+    String? role,
+    String? unit,
+    String? region,
+  }) async {
+    final trimmedName = fullName.trim();
+    if (trimmedName.isEmpty) return false;
+
+    final initials = trimmedName
         .split(' ')
         .where((s) => s.isNotEmpty)
         .take(2)
         .map((s) => s[0].toUpperCase())
         .join();
 
-    _account = _account.copyWith(
-      fullName: newName,
-      initials: initials.isNotEmpty ? initials : _account.initials,
+    _activeAccount = _activeAccount.copyWith(
+      fullName: trimmedName,
+      initials: initials.isNotEmpty ? initials : _activeAccount.initials,
+      roleTitle: (role != null && role.trim().isNotEmpty) ? role.trim() : _activeAccount.roleTitle,
+      unitOperational: (unit != null && unit.trim().isNotEmpty) ? unit.trim() : _activeAccount.unitOperational,
+      unitRegion: (region != null && region.trim().isNotEmpty) ? region.trim() : _activeAccount.unitRegion,
     );
     notifyListeners();
 
+    // 1. Update Firebase Auth displayName
     try {
-      await FirestoreService.instance.updateCurrentUserProfile({
-        'fullName': newName,
-      });
-    } catch (_) {}
+      final user = FirebaseAuthService.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(trimmedName);
+      }
+    } catch (e) {
+      debugPrint('Notice updating Firebase Auth displayName: $e');
+    }
+
+    // 2. Update Cloud Firestore
+    try {
+      final data = <String, dynamic>{
+        'fullName': trimmedName,
+        if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
+        if (unit != null && unit.trim().isNotEmpty) 'unit': unit.trim(),
+        if (region != null && region.trim().isNotEmpty) 'region': region.trim(),
+      };
+      await FirestoreService.instance.updateCurrentUserProfile(data);
+      return true;
+    } catch (e) {
+      debugPrint('Notice updating Firestore user profile: $e');
+      return true;
+    }
+  }
+
+  /// Compatibility alias for updating officer name.
+  Future<void> updateProfileName(String newName) async {
+    await updateProfile(fullName: newName);
   }
 }

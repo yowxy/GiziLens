@@ -75,10 +75,18 @@ class FirestoreService {
   }
 
   /// Update the currently logged-in officer profile metadata.
-  Future<void> updateCurrentUserProfile(Map<String, dynamic> data) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await saveUserProfile(uid: user.uid, data: data);
+  Future<bool> updateCurrentUserProfile(Map<String, dynamic> data) async {
+    try {
+      if (!isFirebaseInitialized) return false;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await saveUserProfile(uid: user.uid, data: data);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error updating current user profile: $e');
+      return false;
     }
   }
 

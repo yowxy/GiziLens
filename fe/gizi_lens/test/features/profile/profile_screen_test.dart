@@ -11,6 +11,7 @@ void main() {
     late ProfileController controller;
 
     setUp(() {
+      ProfileController.resetForTesting();
       controller = ProfileController();
     });
 
@@ -32,6 +33,21 @@ void main() {
       controller.updateProfileName('Siti Rahma, S.Gz');
       expect(controller.account.fullName, equals('Siti Rahma, S.Gz'));
       expect(controller.account.initials, equals('SR'));
+    });
+
+    test('updateProfile updates fullName, role, unit, and region', () async {
+      final success = await controller.updateProfile(
+        fullName: 'Budi Santoso, S.Tr.Gz',
+        role: 'Supervisor SPPG',
+        unit: 'SPPG Cibinong Sentral 01',
+        region: 'Kab. Bogor',
+      );
+      expect(success, isTrue);
+      expect(controller.account.fullName, equals('Budi Santoso, S.Tr.Gz'));
+      expect(controller.account.roleTitle, equals('Supervisor SPPG'));
+      expect(controller.account.unitOperational, equals('SPPG Cibinong Sentral 01'));
+      expect(controller.account.unitRegion, equals('Kab. Bogor'));
+      expect(controller.account.initials, equals('BS'));
     });
 
     test('toggleNotifications toggles flag and notifies listeners', () {

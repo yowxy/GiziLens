@@ -61,7 +61,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _handleEditProfileTap() {
-    final textController = TextEditingController(text: _controller.account.fullName);
+    final nameController = TextEditingController(text: _controller.account.fullName);
+    final roleController = TextEditingController(text: _controller.account.roleTitle);
+    final unitController = TextEditingController(text: _controller.account.unitOperational);
+    final regionController = TextEditingController(text: _controller.account.unitRegion);
 
     showModalBottomSheet(
       context: context,
@@ -78,103 +81,211 @@ class _ProfileScreenState extends State<ProfileScreen> {
             top: 24,
             bottom: MediaQuery.of(bottomSheetContext).viewInsets.bottom + 24,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Edit Data Petugas SPPG',
-                style: AppTypography.titleLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Perbarui nama lengkap dan gelar resmi auditor baki MBG.',
-                style: AppTypography.bodySmall.copyWith(
-                  color: const Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: textController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: AppStrings.fullNameFieldLabel,
-                  labelStyle: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  filled: true,
-                  fillColor: const Color(0xFFF8FAF7),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primaryDeep,
-                      width: 1.5,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(bottomSheetContext).pop();
-                    _triggerSaveProfileWorkflow(textController.text.trim());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryDeep,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
+                const SizedBox(height: 18),
+                Text(
+                  'Edit Data Petugas SPPG',
+                  style: AppTypography.titleLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Perbarui nama lengkap, peran auditor, dan unit kerja operasional SPPG.',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: const Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    labelText: AppStrings.fullNameFieldLabel,
+                    hintText: 'Contoh: Nurul Anggraini, S.Gz',
+                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 20, color: AppColors.primaryDeep),
+                    labelStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAF7),
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
                     ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Simpan Profil',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryDeep,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextField(
+                  controller: roleController,
+                  decoration: InputDecoration(
+                    labelText: 'Peran / Jabatan Petugas',
+                    hintText: 'Contoh: Ahli Gizi Lapangan',
+                    prefixIcon: const Icon(Icons.badge_outlined, size: 20, color: AppColors.primaryDeep),
+                    labelStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAF7),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryDeep,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: unitController,
+                  decoration: InputDecoration(
+                    labelText: 'Unit Operasional SPPG',
+                    hintText: 'Contoh: SPPG Cibinong Sentral 02',
+                    prefixIcon: const Icon(Icons.business_outlined, size: 20, color: AppColors.primaryDeep),
+                    labelStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAF7),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryDeep,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: regionController,
+                  decoration: InputDecoration(
+                    labelText: 'Wilayah Operasional',
+                    hintText: 'Contoh: Kab. Bogor, Jawa Barat',
+                    prefixIcon: const Icon(Icons.location_on_outlined, size: 20, color: AppColors.primaryDeep),
+                    labelStyle: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAF7),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2ECE0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: AppColors.primaryDeep,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final name = nameController.text.trim();
+                      if (name.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Nama lengkap tidak boleh kosong.',
+                              style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                            ),
+                            backgroundColor: AppColors.statTidakSesuaiRed,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.of(bottomSheetContext).pop();
+                      _triggerSaveProfileWorkflow(
+                        updatedName: name,
+                        updatedRole: roleController.text.trim(),
+                        updatedUnit: unitController.text.trim(),
+                        updatedRegion: regionController.text.trim(),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryDeep,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Simpan Profil',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  void _triggerSaveProfileWorkflow([String? updatedName]) {
+  void _triggerSaveProfileWorkflow({
+    String? updatedName,
+    String? updatedRole,
+    String? updatedUnit,
+    String? updatedRegion,
+  }) {
     SaveProfileConfirmationDialog.show(
       context,
-      onConfirmSave: () {
+      onConfirmSave: () async {
         if (updatedName != null && updatedName.isNotEmpty) {
-          _controller.updateProfileName(updatedName);
+          await _controller.updateProfile(
+            fullName: updatedName,
+            role: updatedRole,
+            unit: updatedUnit,
+            region: updatedRegion,
+          );
         }
-        Future.delayed(const Duration(milliseconds: 150), () {
-          if (!mounted) return;
-          ProfileUpdatedSuccessDialog.show(context);
-        });
+        if (!mounted) return;
+        await ProfileUpdatedSuccessDialog.show(context);
+        if (mounted) setState(() {});
       },
     );
   }
@@ -688,7 +799,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: _buildSmallActionButton(
                   label: '2. Simpan Profil',
-                  onTap: () => SaveProfileConfirmationDialog.show(context),
+                  onTap: _handleEditProfileTap,
                 ),
               ),
               const SizedBox(width: 6),
