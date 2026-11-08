@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../models/registration_model.dart';
 
 /// Controller handling registration flow, state, and client-side validation.
@@ -120,8 +121,15 @@ class RegisterController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate account registration dispatch to SPPG BGN cloud API
-      await Future.delayed(const Duration(milliseconds: 650));
+      await FirebaseAuthService.instance.signUpWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+        fullName: fullNameController.text.trim(),
+        phone: phoneController.text.trim(),
+        role: 'Ahli Gizi Lapangan',
+        unit: 'SPPG Cibinong Sentral 02',
+      );
+
       _isLoading = false;
       notifyListeners();
 
@@ -136,7 +144,7 @@ class RegisterController extends ChangeNotifier {
       );
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Gagal mendaftar akun: ${e.toString()}';
+      _errorMessage = e.toString();
       notifyListeners();
       return null;
     }

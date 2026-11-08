@@ -157,13 +157,34 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 onAdvancedFilterTap: _showFilterModal,
               ),
 
-              const Expanded(
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  child: HistoryEmptyState(),
-                ),
+              Expanded(
+                child: _controller.isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(color: AppColors.primaryDeep),
+                      )
+                    : _controller.filteredInspections.isEmpty
+                        ? const SingleChildScrollView(
+                            physics: BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            child: HistoryEmptyState(),
+                          )
+                        : RefreshIndicator(
+                            color: AppColors.primaryDeep,
+                            onRefresh: _controller.loadInspections,
+                            child: ListView.separated(
+                              padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+                              physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics(),
+                              ),
+                              itemCount: _controller.filteredInspections.length,
+                              separatorBuilder: (context, index) => const SizedBox(height: 12),
+                              itemBuilder: (ctx, idx) {
+                                final item = _controller.filteredInspections[idx];
+                                return _buildInspectionCard(item);
+                              },
+                            ),
+                          ),
               ),
             ],
           ),
@@ -189,6 +210,86 @@ class _HistoryScreenState extends State<HistoryScreen> {
             }
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildInspectionCard(Map<String, dynamic> item) {
+    final batchCode = item['batchCode'] as String? ?? '#MBG-2024-CIB02';
+    final schoolName = item['schoolName'] as String? ?? 'SMAN 1 JAKARTA';
+    final session = item['session'] as String? ?? 'Sesi Makan Siang';
+    final isSesuai = (item['complianceStatus'] as String? ?? 'SESUAI').toUpperCase() == 'SESUAI';
+    final weight = item['totalNetWeight'] as String? ?? '520 gram';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x06000000),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                batchCode,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isSesuai ? const Color(0xFFDCFCE7) : const Color(0xFFFFE4E6),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isSesuai ? 'SESUAI AKG' : 'TIDAK SESUAI',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isSesuai ? const Color(0xFF15803D) : const Color(0xFFE11D48),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            schoolName,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(
+                session,
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+              const Text(' • ', style: TextStyle(color: AppColors.textMuted)),
+              Text(
+                'Bobot: $weight',
+                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

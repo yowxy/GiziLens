@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../controllers/profile_controller.dart';
 import 'dialogs/logout_confirmation_dialog.dart';
@@ -181,10 +182,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _handleLogoutTap() {
     LogoutConfirmationDialog.show(
       context,
-      onConfirmLogout: () {
+      onConfirmLogout: () async {
         try {
-          context.go(RouteNames.login);
-        } catch (_) {}
+          await FirebaseAuthService.instance.signOut();
+          if (mounted) {
+            context.go(RouteNames.login);
+          }
+        } catch (_) {
+          if (mounted) {
+            context.go(RouteNames.login);
+          }
+        }
       },
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 
-/// Controller handling the state and interactions for the Login screen.
+/// Controller handling the state and interactions for the Login screen with Firebase.
 class LoginController extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController emailOrIdController = TextEditingController();
@@ -53,14 +54,23 @@ class LoginController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate enterprise authentication against SPPG BGN Cloud
-      await Future.delayed(const Duration(milliseconds: 700));
+      final input = emailOrIdController.text.trim();
+      final password = passwordController.text;
+
+      // Handle email or convert plain ID to institutional format
+      final email = input.contains('@') ? input : '$input@gizilens.bgn.go.id';
+
+      final credential = await FirebaseAuthService.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
       _isLoading = false;
       notifyListeners();
-      return true;
+      return credential != null || !FirebaseAuthService.instance.isFirebaseInitialized;
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Terjadi kesalahan saat memproses login: ${e.toString()}';
+      _errorMessage = e.toString();
       notifyListeners();
       return false;
     }

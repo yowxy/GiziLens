@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "810250927802",
+    "firebase_url": "https://gizilens-32aa6-default-rtdb.firebaseio.com",
+    "project_id": "gizilens-32aa6",
+    "storage_bucket": "gizilens-32aa6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810250927802:android:b81044bf0d630e628e8c83",
+        "android_client_info": {
+          "package_name": "com.example.gizi_lens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmNUQgkGYwL1T6vUuODOMgAnp5zTK-mwk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 
-/// Controller handling forgot password (email input before OTP).
+/// Controller handling forgot password (email input and password reset link dispatch via Firebase).
 class ForgotPasswordController extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
@@ -32,14 +33,15 @@ class ForgotPasswordController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate sending OTP via email service
-      await Future.delayed(const Duration(milliseconds: 600));
+      await FirebaseAuthService.instance.sendPasswordResetEmail(
+        emailController.text.trim(),
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Gagal mengirim kode OTP: ${e.toString()}';
+      _errorMessage = e.toString();
       notifyListeners();
       return false;
     }

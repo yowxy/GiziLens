@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../models/dashboard_stats_model.dart';
 
-/// Controller managing state, active tab navigation, and period filtering for Dashboard.
+/// Controller managing state, active tab navigation, period filtering, and live Firestore sync for Dashboard.
 class DashboardController extends ChangeNotifier {
   int _activeNavIndex = 0;
   MonitoringPeriod _selectedPeriod = MonitoringPeriod.hariIni;
@@ -13,6 +14,26 @@ class DashboardController extends ChangeNotifier {
   bool get hasUnreadNotifications => _hasUnreadNotifications;
   DashboardStatsModel get stats => _stats;
 
+  DashboardController() {
+    loadStatsFromFirestore();
+  }
+
+  Future<void> loadStatsFromFirestore() async {
+    try {
+      final statsMap = await FirestoreService.instance.getDashboardStats();
+      final total = statsMap['total'] ?? 0;
+      final sesuai = statsMap['sesuai'] ?? 0;
+      final tidakSesuai = statsMap['tidakSesuai'] ?? 0;
+
+      _stats = _stats.copyWith(
+        totalDiperiksa: total,
+        totalSesuai: sesuai,
+        totalTidakSesuai: tidakSesuai,
+      );
+      notifyListeners();
+    } catch (_) {}
+  }
+
   void setNavIndex(int index) {
     if (_activeNavIndex != index) {
       _activeNavIndex = index;
@@ -23,7 +44,6 @@ class DashboardController extends ChangeNotifier {
   void setPeriod(MonitoringPeriod period) {
     if (_selectedPeriod != period) {
       _selectedPeriod = period;
-      // In real scenario, filter stats according to period
       _stats = _stats.copyWith(period: period);
       notifyListeners();
     }

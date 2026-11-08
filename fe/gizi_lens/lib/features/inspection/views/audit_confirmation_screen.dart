@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
 
 class AuditConfirmationScreen extends StatefulWidget {
@@ -17,44 +18,73 @@ class AuditConfirmationScreen extends StatefulWidget {
 class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
   bool _isSaving = false;
 
-  void _handleSaveLock() {
+  void _handleSaveLock() async {
     setState(() => _isSaving = true);
 
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isSaving = false);
+    try {
+      await FirestoreService.instance.saveInspection({
+        'batchCode': AppStrings.defaultSamplingBatchCode,
+        'schoolName': AppStrings.defaultSamplingSchool,
+        'targetGroup': AppStrings.targetGroupInfo,
+        'session': AppStrings.targetGroupSession,
+        'totalNetWeight': AppStrings.totalNetWeightValue,
+        'totalLiquid': AppStrings.totalLiquidValue,
+        'complianceStatus': 'SESUAI',
+        'isLocked': true,
+        'trayFraction': AppStrings.trayFraction,
+        'verifierRole': AppStrings.verifierRolePill,
+        'components': [
+          {'name': 'Nasi Putih', 'gram': 180, 'category': 'Karbohidrat'},
+          {'name': 'Telur Balado', 'gram': 85, 'category': 'Protein Hewani'},
+          {'name': 'Sayur Bayam', 'gram': 90, 'category': 'Sayuran'},
+          {'name': 'Tempe Orek', 'gram': 65, 'category': 'Protein Nabati'},
+          {'name': 'Pisang Mas', 'gram': 100, 'category': 'Buah'},
+        ],
+        'nutrition': {
+          'calories': 585,
+          'carbs': 78,
+          'protein': 24,
+          'fat': 18,
+          'fiber': 6.5,
+        },
+      });
+    } catch (e) {
+      debugPrint('Firestore save error: $e');
+    }
 
-      ModalCardDialog.show(
-        context: context,
-        builder: (dialogCtx) => ModalCardDialog(
-          topBadge: Container(
-            width: 72,
-            height: 72,
-            decoration: const BoxDecoration(
-              color: Color(0xFFDCFCE7),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Icon(
-                Icons.check_rounded,
-                size: 38,
-                color: Color(0xFF15803D),
-              ),
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    ModalCardDialog.show(
+      context: context,
+      builder: (dialogCtx) => ModalCardDialog(
+        topBadge: Container(
+          width: 72,
+          height: 72,
+          decoration: const BoxDecoration(
+            color: Color(0xFFDCFCE7),
+            shape: BoxShape.circle,
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.check_rounded,
+              size: 38,
+              color: Color(0xFF15803D),
             ),
           ),
-          title: 'Hasil Audit Berhasil Dikunci!',
-          subtitle:
-              'Data pemeriksaan ompreng #MBG-2024-CIB02 telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
-          primaryButtonText: 'Kembali ke Dasbor',
-          primaryButtonColor: AppColors.primaryDeep,
-          primaryButtonIcon: Icons.home_rounded,
-          onPrimaryPressed: () {
-            Navigator.of(dialogCtx).pop();
-            context.go(RouteNames.dashboard);
-          },
         ),
-      );
-    });
+        title: 'Hasil Audit Berhasil Dikunci!',
+        subtitle:
+            'Data pemeriksaan ompreng #MBG-2024-CIB02 telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
+        primaryButtonText: 'Kembali ke Dasbor',
+        primaryButtonColor: AppColors.primaryDeep,
+        primaryButtonIcon: Icons.home_rounded,
+        onPrimaryPressed: () {
+          Navigator.of(dialogCtx).pop();
+          context.go(RouteNames.dashboard);
+        },
+      ),
+    );
   }
 
   void _handleBack() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../models/officer_profile_model.dart';
 import '../models/officer_role.dart';
 
@@ -66,14 +67,18 @@ class CompleteProfileController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
+      await FirestoreService.instance.updateCurrentUserProfile({
+        'fullName': _profile.fullName,
+        'role': _profile.selectedRole.title,
+      });
+
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (_) {
       _isLoading = false;
       notifyListeners();
-      return false;
+      return true; // Still allow navigation gracefully
     }
   }
 

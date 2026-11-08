@@ -53,6 +53,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           'fullName': result.fullName,
         },
       );
+    } else if (result == null && _controller.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage!),
+          backgroundColor: AppColors.statTidakSesuaiRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
   }
 

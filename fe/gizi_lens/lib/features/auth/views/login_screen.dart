@@ -49,6 +49,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _controller.login();
     if (success && mounted) {
       context.go(RouteNames.completeProfile);
+    } else if (!success && _controller.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage!),
+          backgroundColor: AppColors.statTidakSesuaiRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
   }
 
