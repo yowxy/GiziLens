@@ -1,0 +1,2394 @@
+{
+ "_catatan": "Dibuat oleh build_classes.py - jangan edit manual.",
+ "classes": [
+  {
+   "id": 0,
+   "name": "ompreng",
+   "kelompok": "wadah",
+   "prioritas": 1,
+   "aliases": [
+    "tray",
+    "food tray",
+    "meal tray",
+    "lunch tray"
+   ]
+  },
+  {
+   "id": 1,
+   "name": "nasi_putih",
+   "kelompok": "karbohidrat",
+   "prioritas": 1,
+   "aliases": [
+    "rice",
+    "nasi",
+    "steamed rice",
+    "cooked rice",
+    "white rice"
+   ]
+  },
+  {
+   "id": 2,
+   "name": "nasi_merah",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "brown rice",
+    "red rice"
+   ]
+  },
+  {
+   "id": 3,
+   "name": "nasi_kuning",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "yellow rice",
+    "tumpeng"
+   ]
+  },
+  {
+   "id": 4,
+   "name": "nasi_uduk",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "coconut rice"
+   ]
+  },
+  {
+   "id": 5,
+   "name": "nasi_goreng",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "fried rice"
+   ]
+  },
+  {
+   "id": 6,
+   "name": "bubur_nasi",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "rice porridge",
+    "bubur",
+    "porridge",
+    "congee"
+   ]
+  },
+  {
+   "id": 7,
+   "name": "lontong",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "compressed rice",
+    "rice cake"
+   ]
+  },
+  {
+   "id": 8,
+   "name": "ketupat",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 9,
+   "name": "mie_goreng",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "fried noodle",
+    "fried noodles",
+    "mi goreng"
+   ]
+  },
+  {
+   "id": 10,
+   "name": "mie_kuah",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "noodle soup",
+    "mie rebus",
+    "mie ayam",
+    "noodles",
+    "noodle"
+   ]
+  },
+  {
+   "id": 11,
+   "name": "bihun",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "vermicelli",
+    "rice vermicelli",
+    "bihun goreng"
+   ]
+  },
+  {
+   "id": 12,
+   "name": "kwetiau",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "flat noodle",
+    "kway teow"
+   ]
+  },
+  {
+   "id": 13,
+   "name": "makaroni",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "macaroni",
+    "pasta",
+    "spaghetti"
+   ]
+  },
+  {
+   "id": 14,
+   "name": "kentang_rebus",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "boiled potato",
+    "potato",
+    "potatoes"
+   ]
+  },
+  {
+   "id": 15,
+   "name": "kentang_goreng",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "french fries",
+    "fries"
+   ]
+  },
+  {
+   "id": 16,
+   "name": "kentang_tumbuk",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "mashed potato"
+   ]
+  },
+  {
+   "id": 17,
+   "name": "ubi_jalar",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "sweet potato",
+    "ubi",
+    "ubi rebus"
+   ]
+  },
+  {
+   "id": 18,
+   "name": "singkong_rebus",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "cassava",
+    "boiled cassava",
+    "singkong"
+   ]
+  },
+  {
+   "id": 19,
+   "name": "singkong_goreng",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "fried cassava"
+   ]
+  },
+  {
+   "id": 20,
+   "name": "jagung_rebus",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "corn",
+    "boiled corn",
+    "jagung",
+    "corn on the cob"
+   ]
+  },
+  {
+   "id": 21,
+   "name": "talas",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "taro"
+   ]
+  },
+  {
+   "id": 22,
+   "name": "roti_tawar",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "bread",
+    "white bread",
+    "roti",
+    "toast"
+   ]
+  },
+  {
+   "id": 23,
+   "name": "roti_isi",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "filled bun",
+    "roti manis",
+    "sweet bun"
+   ]
+  },
+  {
+   "id": 24,
+   "name": "oatmeal",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": [
+    "oat",
+    "oats"
+   ]
+  },
+  {
+   "id": 25,
+   "name": "papeda",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 26,
+   "name": "lemper",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 27,
+   "name": "arem_arem",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 28,
+   "name": "getuk",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 29,
+   "name": "tiwul",
+   "kelompok": "karbohidrat",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 30,
+   "name": "ayam_goreng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "fried chicken",
+    "chicken",
+    "ayam"
+   ]
+  },
+  {
+   "id": 31,
+   "name": "ayam_bakar",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "grilled chicken",
+    "roast chicken",
+    "ayam panggang"
+   ]
+  },
+  {
+   "id": 32,
+   "name": "ayam_kecap",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "soy sauce chicken",
+    "ayam semur",
+    "semur ayam"
+   ]
+  },
+  {
+   "id": 33,
+   "name": "ayam_kuah",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "chicken curry",
+    "opor ayam",
+    "opor",
+    "gulai ayam",
+    "chicken stew"
+   ]
+  },
+  {
+   "id": 34,
+   "name": "ayam_suwir",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "shredded chicken"
+   ]
+  },
+  {
+   "id": 35,
+   "name": "ayam_geprek",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "smashed chicken"
+   ]
+  },
+  {
+   "id": 36,
+   "name": "ayam_tepung",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "crispy chicken",
+    "chicken katsu",
+    "ayam crispy",
+    "ayam katsu",
+    "chicken tenders"
+   ]
+  },
+  {
+   "id": 37,
+   "name": "ayam_rebus",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "boiled chicken",
+    "ayam rebus"
+   ]
+  },
+  {
+   "id": 38,
+   "name": "ayam_balado",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "ayam rica rica",
+    "ayam woku"
+   ]
+  },
+  {
+   "id": 39,
+   "name": "nugget_ayam",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "chicken nugget",
+    "nugget",
+    "chicken nuggets"
+   ]
+  },
+  {
+   "id": 40,
+   "name": "sate_ayam",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "chicken satay",
+    "satay",
+    "sate"
+   ]
+  },
+  {
+   "id": 41,
+   "name": "sosis",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "sausage",
+    "sausages"
+   ]
+  },
+  {
+   "id": 42,
+   "name": "bakso",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "meatball",
+    "meatballs"
+   ]
+  },
+  {
+   "id": 43,
+   "name": "daging_sapi",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "beef",
+    "beef steak",
+    "daging"
+   ]
+  },
+  {
+   "id": 44,
+   "name": "rendang",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "beef rendang"
+   ]
+  },
+  {
+   "id": 45,
+   "name": "semur_daging",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "beef stew"
+   ]
+  },
+  {
+   "id": 46,
+   "name": "empal",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "empal gepuk"
+   ]
+  },
+  {
+   "id": 47,
+   "name": "dendeng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "beef jerky",
+    "jerky"
+   ]
+  },
+  {
+   "id": 48,
+   "name": "abon",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "meat floss",
+    "shredded meat floss"
+   ]
+  },
+  {
+   "id": 49,
+   "name": "kornet",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "corned beef"
+   ]
+  },
+  {
+   "id": 50,
+   "name": "daging_kambing",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "mutton",
+    "goat meat",
+    "lamb"
+   ]
+  },
+  {
+   "id": 51,
+   "name": "hati_ayam",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "chicken liver",
+    "ati ampela",
+    "ampela"
+   ]
+  },
+  {
+   "id": 52,
+   "name": "telur_rebus",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "boiled egg",
+    "hard boiled egg",
+    "telur",
+    "egg",
+    "eggs",
+    "telor",
+    "telor rebus"
+   ]
+  },
+  {
+   "id": 53,
+   "name": "telur_dadar",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "omelette",
+    "omelet",
+    "telur dadar",
+    "telor dadar"
+   ]
+  },
+  {
+   "id": 54,
+   "name": "telur_ceplok",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "fried egg",
+    "sunny side up",
+    "telur mata sapi",
+    "telor mata sapi",
+    "telor ceplok"
+   ]
+  },
+  {
+   "id": 55,
+   "name": "telur_balado",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "egg balado",
+    "telur bumbu",
+    "telor balado"
+   ]
+  },
+  {
+   "id": 56,
+   "name": "telur_semur",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "egg stew",
+    "telur kecap"
+   ]
+  },
+  {
+   "id": 57,
+   "name": "telur_orak_arik",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "scrambled egg",
+    "scrambled eggs"
+   ]
+  },
+  {
+   "id": 58,
+   "name": "telur_asin",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "salted egg"
+   ]
+  },
+  {
+   "id": 59,
+   "name": "telur_puyuh",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "quail egg"
+   ]
+  },
+  {
+   "id": 60,
+   "name": "ikan_goreng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "fried fish",
+    "fish",
+    "ikan"
+   ]
+  },
+  {
+   "id": 61,
+   "name": "ikan_bakar",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "grilled fish"
+   ]
+  },
+  {
+   "id": 62,
+   "name": "ikan_kuah",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "fish curry",
+    "pindang",
+    "ikan pindang",
+    "gulai ikan",
+    "fish soup"
+   ]
+  },
+  {
+   "id": 63,
+   "name": "ikan_saus",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "sweet sour fish",
+    "ikan asam manis",
+    "fish with sauce"
+   ]
+  },
+  {
+   "id": 64,
+   "name": "ikan_pepes",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "pepes ikan",
+    "steamed fish"
+   ]
+  },
+  {
+   "id": 65,
+   "name": "lele_goreng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "catfish",
+    "fried catfish",
+    "pecel lele",
+    "lele"
+   ]
+  },
+  {
+   "id": 66,
+   "name": "nila_goreng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "tilapia",
+    "fried tilapia",
+    "nila"
+   ]
+  },
+  {
+   "id": 67,
+   "name": "bandeng",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "milkfish"
+   ]
+  },
+  {
+   "id": 68,
+   "name": "kembung",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "mackerel",
+    "ikan kembung"
+   ]
+  },
+  {
+   "id": 69,
+   "name": "tongkol",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "tuna",
+    "skipjack",
+    "ikan tongkol"
+   ]
+  },
+  {
+   "id": 70,
+   "name": "patin",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "pangasius"
+   ]
+  },
+  {
+   "id": 71,
+   "name": "salmon",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 72,
+   "name": "teri",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "anchovy",
+    "ikan teri",
+    "teri goreng",
+    "ikan asin",
+    "salted fish"
+   ]
+  },
+  {
+   "id": 73,
+   "name": "udang",
+   "kelompok": "lauk_hewani",
+   "prioritas": 2,
+   "aliases": [
+    "shrimp",
+    "prawn",
+    "udang goreng"
+   ]
+  },
+  {
+   "id": 74,
+   "name": "cumi",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "squid",
+    "calamari",
+    "cumi goreng"
+   ]
+  },
+  {
+   "id": 75,
+   "name": "siomay",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "dumpling",
+    "shumai",
+    "dimsum",
+    "dim sum"
+   ]
+  },
+  {
+   "id": 76,
+   "name": "otak_otak",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 77,
+   "name": "pempek",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "empek empek"
+   ]
+  },
+  {
+   "id": 78,
+   "name": "martabak_telur",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "martabak telor",
+    "martabak",
+    "egg martabak"
+   ]
+  },
+  {
+   "id": 79,
+   "name": "soto",
+   "kelompok": "lauk_hewani",
+   "prioritas": 3,
+   "aliases": [
+    "soto ayam",
+    "soto betawi",
+    "chicken soup"
+   ]
+  },
+  {
+   "id": 80,
+   "name": "tempe_goreng",
+   "kelompok": "lauk_nabati",
+   "prioritas": 1,
+   "aliases": [
+    "fried tempeh",
+    "tempeh",
+    "tempe"
+   ]
+  },
+  {
+   "id": 81,
+   "name": "tempe_bacem",
+   "kelompok": "lauk_nabati",
+   "prioritas": 2,
+   "aliases": [
+    "sweet tempeh",
+    "tempe kecap"
+   ]
+  },
+  {
+   "id": 82,
+   "name": "tempe_orek",
+   "kelompok": "lauk_nabati",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried tempeh",
+    "tempe sambal"
+   ]
+  },
+  {
+   "id": 83,
+   "name": "tempe_mendoan",
+   "kelompok": "lauk_nabati",
+   "prioritas": 2,
+   "aliases": [
+    "tempe tepung",
+    "battered tempeh"
+   ]
+  },
+  {
+   "id": 84,
+   "name": "tahu_goreng",
+   "kelompok": "lauk_nabati",
+   "prioritas": 1,
+   "aliases": [
+    "fried tofu",
+    "tofu",
+    "tahu"
+   ]
+  },
+  {
+   "id": 85,
+   "name": "tahu_bacem",
+   "kelompok": "lauk_nabati",
+   "prioritas": 2,
+   "aliases": [
+    "braised tofu",
+    "tahu kecap"
+   ]
+  },
+  {
+   "id": 86,
+   "name": "tahu_isi",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "stuffed tofu"
+   ]
+  },
+  {
+   "id": 87,
+   "name": "tahu_rebus",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "boiled tofu",
+    "tahu putih",
+    "silken tofu",
+    "white tofu"
+   ]
+  },
+  {
+   "id": 88,
+   "name": "tahu_krispi",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "crispy tofu",
+    "tahu crispy"
+   ]
+  },
+  {
+   "id": 89,
+   "name": "tahu_balado",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "tahu bumbu",
+    "tahu sambal"
+   ]
+  },
+  {
+   "id": 90,
+   "name": "perkedel_kentang",
+   "kelompok": "lauk_nabati",
+   "prioritas": 2,
+   "aliases": [
+    "potato patty",
+    "perkedel",
+    "potato croquette"
+   ]
+  },
+  {
+   "id": 91,
+   "name": "perkedel_jagung",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "corn fritter"
+   ]
+  },
+  {
+   "id": 92,
+   "name": "bakwan",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "vegetable fritter",
+    "bala bala",
+    "fritters"
+   ]
+  },
+  {
+   "id": 93,
+   "name": "oncom",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 94,
+   "name": "kacang_tanah",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "peanut",
+    "peanuts"
+   ]
+  },
+  {
+   "id": 95,
+   "name": "kacang_merah",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": [
+    "kidney beans",
+    "red beans"
+   ]
+  },
+  {
+   "id": 96,
+   "name": "edamame",
+   "kelompok": "lauk_nabati",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 97,
+   "name": "sayur_lain",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "sayur",
+    "vegetable",
+    "vegetables",
+    "veggies",
+    "sayuran",
+    "sayur campur"
+   ]
+  },
+  {
+   "id": 98,
+   "name": "sayur_sop",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "vegetable soup",
+    "sop",
+    "sup sayur",
+    "sup",
+    "soup"
+   ]
+  },
+  {
+   "id": 99,
+   "name": "sayur_bening",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "clear soup",
+    "sayur bayam",
+    "bayam bening",
+    "clear vegetable soup"
+   ]
+  },
+  {
+   "id": 100,
+   "name": "sayur_asem",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "sour vegetable soup",
+    "sayur asam"
+   ]
+  },
+  {
+   "id": 101,
+   "name": "sayur_lodeh",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "coconut vegetable curry"
+   ]
+  },
+  {
+   "id": 102,
+   "name": "capcay",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "cap cay",
+    "chop suey",
+    "stir fried mixed vegetables",
+    "mixed vegetables"
+   ]
+  },
+  {
+   "id": 103,
+   "name": "tumis_kangkung",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "stir fried water spinach",
+    "kangkung tumis"
+   ]
+  },
+  {
+   "id": 104,
+   "name": "tumis_buncis",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried green beans"
+   ]
+  },
+  {
+   "id": 105,
+   "name": "tumis_sawi",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried mustard greens",
+    "tumis pakcoy"
+   ]
+  },
+  {
+   "id": 106,
+   "name": "tumis_tauge",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried bean sprouts",
+    "orek tauge"
+   ]
+  },
+  {
+   "id": 107,
+   "name": "tumis_wortel",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried carrot"
+   ]
+  },
+  {
+   "id": 108,
+   "name": "tumis_kol",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried cabbage",
+    "tumis kubis"
+   ]
+  },
+  {
+   "id": 109,
+   "name": "tumis_brokoli",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried broccoli",
+    "cah brokoli"
+   ]
+  },
+  {
+   "id": 110,
+   "name": "tumis_kacang_panjang",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "stir fried long beans"
+   ]
+  },
+  {
+   "id": 111,
+   "name": "tumis_jamur",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "stir fried mushroom"
+   ]
+  },
+  {
+   "id": 112,
+   "name": "tumis_labu_siam",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "stir fried chayote"
+   ]
+  },
+  {
+   "id": 113,
+   "name": "urap",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "urap sayur",
+    "vegetables with grated coconut"
+   ]
+  },
+  {
+   "id": 114,
+   "name": "pecel",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "pecel sayur"
+   ]
+  },
+  {
+   "id": 115,
+   "name": "gado_gado",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "gado gado",
+    "indonesian salad"
+   ]
+  },
+  {
+   "id": 116,
+   "name": "karedok",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 117,
+   "name": "salad_sayur",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "salad",
+    "green salad",
+    "mixed salad",
+    "coleslaw"
+   ]
+  },
+  {
+   "id": 118,
+   "name": "lalapan",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "fresh vegetables",
+    "raw vegetables",
+    "lalap"
+   ]
+  },
+  {
+   "id": 119,
+   "name": "sayur_nangka",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "gudeg",
+    "young jackfruit curry",
+    "gulai nangka"
+   ]
+  },
+  {
+   "id": 120,
+   "name": "sayur_labu",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "pumpkin soup",
+    "sayur labu siam"
+   ]
+  },
+  {
+   "id": 121,
+   "name": "wortel",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "carrot",
+    "carrots"
+   ]
+  },
+  {
+   "id": 122,
+   "name": "tomat",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "tomato",
+    "tomatoes"
+   ]
+  },
+  {
+   "id": 123,
+   "name": "timun",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "cucumber",
+    "mentimun",
+    "cucumbers"
+   ]
+  },
+  {
+   "id": 124,
+   "name": "selada",
+   "kelompok": "sayur",
+   "prioritas": 1,
+   "aliases": [
+    "lettuce",
+    "salad leaf",
+    "romaine"
+   ]
+  },
+  {
+   "id": 125,
+   "name": "kol",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "cabbage",
+    "kubis"
+   ]
+  },
+  {
+   "id": 126,
+   "name": "kembang_kol",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "cauliflower"
+   ]
+  },
+  {
+   "id": 127,
+   "name": "brokoli",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "broccoli"
+   ]
+  },
+  {
+   "id": 128,
+   "name": "bayam",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "spinach"
+   ]
+  },
+  {
+   "id": 129,
+   "name": "kangkung",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "water spinach",
+    "kangkong",
+    "morning glory",
+    "swamp cabbage"
+   ]
+  },
+  {
+   "id": 130,
+   "name": "sawi_hijau",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "mustard greens",
+    "choy sum",
+    "caisim",
+    "sawi",
+    "mustard green"
+   ]
+  },
+  {
+   "id": 131,
+   "name": "pakcoy",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "bok choy",
+    "pak choi",
+    "pakchoi"
+   ]
+  },
+  {
+   "id": 132,
+   "name": "buncis",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "green beans",
+    "string beans",
+    "french beans"
+   ]
+  },
+  {
+   "id": 133,
+   "name": "kacang_panjang",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "long beans",
+    "yardlong bean",
+    "snake beans"
+   ]
+  },
+  {
+   "id": 134,
+   "name": "tauge",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "bean sprouts",
+    "beansprouts",
+    "kecambah",
+    "mung bean sprouts"
+   ]
+  },
+  {
+   "id": 135,
+   "name": "labu_siam",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "chayote"
+   ]
+  },
+  {
+   "id": 136,
+   "name": "labu_kuning",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "pumpkin",
+    "squash",
+    "butternut"
+   ]
+  },
+  {
+   "id": 137,
+   "name": "terong",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "eggplant",
+    "aubergine",
+    "brinjal"
+   ]
+  },
+  {
+   "id": 138,
+   "name": "jamur",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "mushroom",
+    "mushrooms"
+   ]
+  },
+  {
+   "id": 139,
+   "name": "paprika",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "bell pepper",
+    "capsicum"
+   ]
+  },
+  {
+   "id": 140,
+   "name": "pare",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "bitter gourd",
+    "bitter melon"
+   ]
+  },
+  {
+   "id": 141,
+   "name": "gambas",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "luffa",
+    "oyong",
+    "sponge gourd"
+   ]
+  },
+  {
+   "id": 142,
+   "name": "okra",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 143,
+   "name": "rebung",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "bamboo shoots"
+   ]
+  },
+  {
+   "id": 144,
+   "name": "daun_singkong",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "cassava leaves"
+   ]
+  },
+  {
+   "id": 145,
+   "name": "daun_pepaya",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "papaya leaves"
+   ]
+  },
+  {
+   "id": 146,
+   "name": "kemangi",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "basil",
+    "thai basil"
+   ]
+  },
+  {
+   "id": 147,
+   "name": "daun_bawang",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "spring onion",
+    "scallion",
+    "green onion",
+    "leek"
+   ]
+  },
+  {
+   "id": 148,
+   "name": "seledri",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "celery"
+   ]
+  },
+  {
+   "id": 149,
+   "name": "lobak",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "radish",
+    "daikon"
+   ]
+  },
+  {
+   "id": 150,
+   "name": "bit",
+   "kelompok": "sayur",
+   "prioritas": 3,
+   "aliases": [
+    "beetroot",
+    "beet"
+   ]
+  },
+  {
+   "id": 151,
+   "name": "pisang",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "banana",
+    "bananas",
+    "pisang ambon",
+    "pisang kepok"
+   ]
+  },
+  {
+   "id": 152,
+   "name": "jeruk",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "orange",
+    "oranges",
+    "mandarin",
+    "tangerine",
+    "jeruk keprok",
+    "jeruk manis"
+   ]
+  },
+  {
+   "id": 153,
+   "name": "apel",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "apple",
+    "apples"
+   ]
+  },
+  {
+   "id": 154,
+   "name": "pepaya",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "papaya",
+    "pawpaw"
+   ]
+  },
+  {
+   "id": 155,
+   "name": "semangka",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "watermelon"
+   ]
+  },
+  {
+   "id": 156,
+   "name": "melon",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "honeydew",
+    "rockmelon"
+   ]
+  },
+  {
+   "id": 157,
+   "name": "salak",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "snake fruit",
+    "snakefruit"
+   ]
+  },
+  {
+   "id": 158,
+   "name": "mangga",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "mango",
+    "mangoes"
+   ]
+  },
+  {
+   "id": 159,
+   "name": "nanas",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "pineapple"
+   ]
+  },
+  {
+   "id": 160,
+   "name": "jambu_biji",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "guava"
+   ]
+  },
+  {
+   "id": 161,
+   "name": "anggur",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "grape",
+    "grapes"
+   ]
+  },
+  {
+   "id": 162,
+   "name": "pir",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "pear"
+   ]
+  },
+  {
+   "id": 163,
+   "name": "alpukat",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "avocado"
+   ]
+  },
+  {
+   "id": 164,
+   "name": "buah_naga",
+   "kelompok": "buah",
+   "prioritas": 2,
+   "aliases": [
+    "dragon fruit",
+    "pitaya",
+    "dragonfruit"
+   ]
+  },
+  {
+   "id": 165,
+   "name": "jambu_air",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "water apple",
+    "wax apple",
+    "rose apple"
+   ]
+  },
+  {
+   "id": 166,
+   "name": "kiwi",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 167,
+   "name": "stroberi",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "strawberry"
+   ]
+  },
+  {
+   "id": 168,
+   "name": "belimbing",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "starfruit",
+    "star fruit",
+    "carambola"
+   ]
+  },
+  {
+   "id": 169,
+   "name": "manggis",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "mangosteen"
+   ]
+  },
+  {
+   "id": 170,
+   "name": "rambutan",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 171,
+   "name": "lengkeng",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "longan"
+   ]
+  },
+  {
+   "id": 172,
+   "name": "durian",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 173,
+   "name": "nangka",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "jackfruit"
+   ]
+  },
+  {
+   "id": 174,
+   "name": "cempedak",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 175,
+   "name": "sirsak",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "soursop",
+    "graviola"
+   ]
+  },
+  {
+   "id": 176,
+   "name": "markisa",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "passion fruit"
+   ]
+  },
+  {
+   "id": 177,
+   "name": "duku",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "langsat",
+    "lansium"
+   ]
+  },
+  {
+   "id": 178,
+   "name": "sawo",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "sapodilla"
+   ]
+  },
+  {
+   "id": 179,
+   "name": "kedondong",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "ambarella",
+    "hog plum"
+   ]
+  },
+  {
+   "id": 180,
+   "name": "delima",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "pomegranate"
+   ]
+  },
+  {
+   "id": 181,
+   "name": "blewah",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "cantaloupe",
+    "muskmelon"
+   ]
+  },
+  {
+   "id": 182,
+   "name": "jeruk_bali",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "pomelo"
+   ]
+  },
+  {
+   "id": 183,
+   "name": "lemon",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "lime",
+    "jeruk nipis"
+   ]
+  },
+  {
+   "id": 184,
+   "name": "kurma",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "dates",
+    "date fruit"
+   ]
+  },
+  {
+   "id": 185,
+   "name": "blueberry",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 186,
+   "name": "kelapa_muda",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "young coconut",
+    "coconut"
+   ]
+  },
+  {
+   "id": 187,
+   "name": "leci",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "lychee",
+    "litchi"
+   ]
+  },
+  {
+   "id": 188,
+   "name": "ceri",
+   "kelompok": "buah",
+   "prioritas": 3,
+   "aliases": [
+    "cherry",
+    "cherries"
+   ]
+  },
+  {
+   "id": 189,
+   "name": "susu_kotak",
+   "kelompok": "susu",
+   "prioritas": 1,
+   "aliases": [
+    "uht milk",
+    "milk carton",
+    "milk box",
+    "susu uht",
+    "milk",
+    "carton milk"
+   ]
+  },
+  {
+   "id": 190,
+   "name": "susu_botol",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "milk bottle",
+    "bottled milk"
+   ]
+  },
+  {
+   "id": 191,
+   "name": "susu_gelas",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "milk cup",
+    "milk glass",
+    "glass of milk",
+    "susu cair"
+   ]
+  },
+  {
+   "id": 192,
+   "name": "susu_coklat",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "chocolate milk"
+   ]
+  },
+  {
+   "id": 193,
+   "name": "susu_kedelai",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "soy milk",
+    "soymilk"
+   ]
+  },
+  {
+   "id": 194,
+   "name": "yogurt",
+   "kelompok": "susu",
+   "prioritas": 1,
+   "aliases": [
+    "yoghurt",
+    "yogurt cup"
+   ]
+  },
+  {
+   "id": 195,
+   "name": "yogurt_drink",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "drinking yogurt",
+    "yakult",
+    "probiotic drink",
+    "minuman yogurt"
+   ]
+  },
+  {
+   "id": 196,
+   "name": "keju",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "cheese",
+    "cheese slice"
+   ]
+  },
+  {
+   "id": 197,
+   "name": "susu_kental_manis",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": [
+    "condensed milk",
+    "sweet condensed milk"
+   ]
+  },
+  {
+   "id": 198,
+   "name": "kefir",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 199,
+   "name": "puding_susu",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": [
+    "milk pudding"
+   ]
+  },
+  {
+   "id": 200,
+   "name": "es_krim",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": [
+    "ice cream"
+   ]
+  },
+  {
+   "id": 201,
+   "name": "dadih",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 202,
+   "name": "dangke",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 203,
+   "name": "susu_kambing",
+   "kelompok": "susu",
+   "prioritas": 3,
+   "aliases": [
+    "goat milk"
+   ]
+  },
+  {
+   "id": 204,
+   "name": "kerupuk",
+   "kelompok": "pelengkap",
+   "prioritas": 1,
+   "aliases": [
+    "cracker",
+    "crackers",
+    "prawn cracker",
+    "krupuk"
+   ]
+  },
+  {
+   "id": 205,
+   "name": "sambal",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "sambel",
+    "chili sauce",
+    "sambal terasi",
+    "sambal sauce",
+    "chilli sauce",
+    "chili paste"
+   ]
+  },
+  {
+   "id": 206,
+   "name": "acar",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "pickles",
+    "pickled vegetables",
+    "pickle"
+   ]
+  },
+  {
+   "id": 207,
+   "name": "saus",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "sauce",
+    "ketchup",
+    "tomato sauce",
+    "mayonnaise"
+   ]
+  },
+  {
+   "id": 208,
+   "name": "kecap",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "soy sauce"
+   ]
+  },
+  {
+   "id": 209,
+   "name": "emping",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 210,
+   "name": "keripik_tempe",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "tempeh chips"
+   ]
+  },
+  {
+   "id": 211,
+   "name": "rempeyek",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 212,
+   "name": "bawang_goreng",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "fried shallot",
+    "fried onion"
+   ]
+  },
+  {
+   "id": 213,
+   "name": "cabai",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "chili",
+    "chilli",
+    "red chili",
+    "cabe",
+    "chili pepper"
+   ]
+  },
+  {
+   "id": 214,
+   "name": "puding",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "pudding",
+    "custard",
+    "jelly",
+    "agar agar",
+    "agar-agar",
+    "jelly dessert"
+   ]
+  },
+  {
+   "id": 215,
+   "name": "bubur_kacang_hijau",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "mung bean porridge",
+    "green bean porridge"
+   ]
+  },
+  {
+   "id": 216,
+   "name": "kue_basah",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "traditional cake",
+    "kue",
+    "cake",
+    "wet cake"
+   ]
+  },
+  {
+   "id": 217,
+   "name": "bolu",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "sponge cake",
+    "bolu kukus",
+    "steamed cake",
+    "muffin",
+    "cupcake"
+   ]
+  },
+  {
+   "id": 218,
+   "name": "biskuit",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "biscuit",
+    "cookie",
+    "cookies",
+    "biscuits"
+   ]
+  },
+  {
+   "id": 219,
+   "name": "pisang_goreng",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "fried banana"
+   ]
+  },
+  {
+   "id": 220,
+   "name": "lumpia",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "spring roll",
+    "spring rolls",
+    "egg roll"
+   ]
+  },
+  {
+   "id": 221,
+   "name": "risoles",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "rissole"
+   ]
+  },
+  {
+   "id": 222,
+   "name": "pastel",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "fried pastry"
+   ]
+  },
+  {
+   "id": 223,
+   "name": "dadar_gulung",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "rolled pancake"
+   ]
+  },
+  {
+   "id": 224,
+   "name": "klepon",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 225,
+   "name": "onde_onde",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": []
+  },
+  {
+   "id": 226,
+   "name": "kue_lapis",
+   "kelompok": "pelengkap",
+   "prioritas": 3,
+   "aliases": [
+    "layer cake"
+   ]
+  },
+  {
+   "id": 227,
+   "name": "buah_lain",
+   "kelompok": "buah",
+   "prioritas": 1,
+   "aliases": [
+    "buah",
+    "buah buahan",
+    "fruit",
+    "fruits"
+   ]
+  },
+  {
+   "id": 228,
+   "name": "lauk_hewani_lain",
+   "kelompok": "lauk_hewani",
+   "prioritas": 1,
+   "aliases": [
+    "lauk hewani",
+    "protein hewani",
+    "hewani",
+    "meat",
+    "animal protein"
+   ]
+  },
+  {
+   "id": 229,
+   "name": "lauk_nabati_lain",
+   "kelompok": "lauk_nabati",
+   "prioritas": 1,
+   "aliases": [
+    "lauk nabati",
+    "protein nabati",
+    "nabati",
+    "plant protein"
+   ]
+  },
+  {
+   "id": 230,
+   "name": "karbohidrat_lain",
+   "kelompok": "karbohidrat",
+   "prioritas": 1,
+   "aliases": [
+    "karbohidrat",
+    "karbo",
+    "carb",
+    "carbs",
+    "staple",
+    "makanan pokok"
+   ]
+  },
+  {
+   "id": 231,
+   "name": "susu_lain",
+   "kelompok": "susu",
+   "prioritas": 2,
+   "aliases": [
+    "susu",
+    "dairy",
+    "minuman susu"
+   ]
+  },
+  {
+   "id": 232,
+   "name": "pelengkap_lain",
+   "kelompok": "pelengkap",
+   "prioritas": 2,
+   "aliases": [
+    "pelengkap",
+    "side",
+    "sides",
+    "snack",
+    "jajanan"
+   ]
+  },
+  {
+   "id": 233,
+   "name": "sekat_ompreng",
+   "kelompok": "wadah",
+   "prioritas": 1,
+   "aliases": [
+    "sekat",
+    "kompartemen",
+    "compartment",
+    "tray compartment",
+    "divider"
+   ]
+  },
+  {
+   "id": 234,
+   "name": "burger",
+   "kelompok": "karbohidrat",
+   "prioritas": 2,
+   "aliases": [
+    "beef burger"
+   ]
+  },
+  {
+   "id": 235,
+   "name": "garlic",
+   "kelompok": "sayur",
+   "prioritas": 2,
+   "aliases": [
+    "bawang putih"
+   ]
+  }
+ ]
+}

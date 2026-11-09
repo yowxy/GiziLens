@@ -1,52 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../../../core/services/firebase_auth_service.dart';
-import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../models/officer_account_model.dart';
 
 class ProfileController extends ChangeNotifier {
-  OfficerAccountModel _account = OfficerAccountModel.defaultAccount();
   int _activeNavIndex = 3;
   bool _notificationsEnabled = true;
 
-  OfficerAccountModel get account => _account;
+  OfficerAccountModel get account => UserSessionService.instance.account;
   int get activeNavIndex => _activeNavIndex;
   bool get notificationsEnabled => _notificationsEnabled;
 
   ProfileController() {
-    _loadProfileFromFirebase();
+    UserSessionService.instance.addListener(_onUserSessionUpdated);
   }
 
-  Future<void> _loadProfileFromFirebase() async {
-    try {
-      final user = FirebaseAuthService.instance.currentUser;
-      if (user == null) return;
+  void _onUserSessionUpdated() {
+    notifyListeners();
+  }
 
-      final profileData = await FirestoreService.instance.getUserProfile(user.uid);
-      final name = profileData?['fullName'] as String? ??
-          user.displayName ??
-          _account.fullName;
-      final role = profileData?['role'] as String? ?? _account.roleTitle;
-      final unit = profileData?['unit'] as String? ?? _account.unitOperational;
-      final officerId = profileData?['officerId'] as String? ??
-          'BGN-2024-${user.uid.length >= 5 ? user.uid.substring(0, 5).toUpperCase() : "SPPG"}';
-
-      final initials = name
-          .trim()
-          .split(' ')
-          .where((s) => s.isNotEmpty)
-          .take(2)
-          .map((s) => s[0].toUpperCase())
-          .join();
-
-      _account = _account.copyWith(
-        fullName: name,
-        initials: initials.isNotEmpty ? initials : _account.initials,
-        roleTitle: role,
-        unitOperational: unit,
-        officerId: officerId,
-      );
-      notifyListeners();
-    } catch (_) {}
+  @visibleForTesting
+  static void resetForTesting() {
+    UserSessionService.instance.resetForTesting();
   }
 
   void setNavIndex(int index) {
@@ -61,30 +35,34 @@ class ProfileController extends ChangeNotifier {
   }
 
   void dismissNotificationBadge() {
-    if (!_account.hasNotification) return;
-    _account = _account.copyWith(hasNotification: false);
-    notifyListeners();
+    UserSessionService.instance.dismissNotification();
   }
 
-  void updateProfileName(String newName) async {
-    final initials = newName
-        .trim()
-        .split(' ')
-        .where((s) => s.isNotEmpty)
-        .take(2)
-        .map((s) => s[0].toUpperCase())
-        .join();
-
-    _account = _account.copyWith(
-      fullName: newName,
-      initials: initials.isNotEmpty ? initials : _account.initials,
+  /// Updates the officer profile in memory, Firebase Auth, and Cloud Firestore.
+  Future<bool> updateProfile({
+    required String fullName,
+    String? role,
+    String? unit,
+    String? region,
+    String? officerId,
+  }) async {
+    return await UserSessionService.instance.updateProfile(
+      fullName: fullName,
+      role: role,
+      unit: unit,
+      region: region,
+      officerId: officerId,
     );
-    notifyListeners();
+  }
 
-    try {
-      await FirestoreService.instance.updateCurrentUserProfile({
-        'fullName': newName,
-      });
-    } catch (_) {}
+  /// Compatibility alias for updating officer name.
+  Future<void> updateProfileName(String newName) async {
+    await updateProfile(fullName: newName);
+  }
+
+  @override
+  void dispose() {
+    UserSessionService.instance.removeListener(_onUserSessionUpdated);
+    super.dispose();
   }
 }

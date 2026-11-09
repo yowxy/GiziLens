@@ -45,6 +45,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final success = await _controller.sendOtp();
     if (success && mounted) {
       final inputEmail = _controller.emailController.text.trim();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tautan reset kata sandi resmi telah dikirim ke $inputEmail. Silakan periksa inbox / spam email Anda.'),
+          backgroundColor: AppColors.primaryDeep,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
       context.push(
         RouteNames.otpVerification,
         extra: {
@@ -52,6 +60,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           'phone': '+62 812-****-789',
           'isForgotPassword': true,
         },
+      );
+    } else if (!success && _controller.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage!),
+          backgroundColor: AppColors.statTidakSesuaiRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
     }
   }

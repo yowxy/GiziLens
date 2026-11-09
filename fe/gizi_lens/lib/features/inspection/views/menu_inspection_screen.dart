@@ -45,12 +45,13 @@ class _MenuInspectionScreenState extends State<MenuInspectionScreen> {
   void _showHelpModal() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(22, 16, 22, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,

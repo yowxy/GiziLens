@@ -7,12 +7,14 @@ import '../../../../core/constants/app_typography.dart';
 /// and paste support.
 class OtpCodeInput extends StatefulWidget {
   final int length;
+  final String? code;
   final ValueChanged<String> onChanged;
   final ValueChanged<String>? onCompleted;
 
   const OtpCodeInput({
     super.key,
     this.length = 6,
+    this.code,
     required this.onChanged,
     this.onCompleted,
   });
@@ -30,12 +32,32 @@ class _OtpCodeInputState extends State<OtpCodeInput> {
     super.initState();
     _controllers = List.generate(
       widget.length,
-      (_) => TextEditingController(),
+      (index) {
+        final initialChar = (widget.code != null && index < widget.code!.length)
+            ? widget.code![index]
+            : '';
+        return TextEditingController(text: initialChar);
+      },
     );
     _focusNodes = List.generate(
       widget.length,
       (_) => FocusNode(),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant OtpCodeInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.code != null && widget.code != oldWidget.code) {
+      final code = widget.code!;
+      for (int i = 0; i < widget.length; i++) {
+        if (i < code.length) {
+          _controllers[i].text = code[i];
+        } else {
+          _controllers[i].clear();
+        }
+      }
+    }
   }
 
   @override

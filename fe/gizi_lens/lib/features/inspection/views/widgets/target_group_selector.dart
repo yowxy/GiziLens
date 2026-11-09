@@ -19,103 +19,157 @@ class TargetGroupSelector extends StatelessWidget {
   void _showAkgSelectorModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.borderMedium,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Pilih Kelompok Penerima Sasaran',
-                style: AppTypography.titleLarge.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Standar Angka Kecukupan Gizi (AKG) disesuaikan secara otomatis sesuai kelompok usia penerima manfaat.',
-                style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ...TargetAkgModel.standardPresets.map((preset) {
-                final isSelected = preset.groupName == selectedTargetAkg.groupName;
-                return InkWell(
-                  onTap: () {
-                    onTargetAkgChanged(preset);
-                    Navigator.pop(ctx);
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFEAF3E9) : AppColors.surfaceMuted,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected ? AppColors.primaryDeep : AppColors.borderLight,
-                        width: isSelected ? 1.5 : 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                preset.groupName,
-                                style: AppTypography.titleSmall.copyWith(
-                                  fontSize: 13.5,
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                preset.formattedSummary,
-                                style: AppTypography.caption.copyWith(
-                                  fontSize: 11.5,
-                                  color: isSelected ? AppColors.primaryDeep : AppColors.textSecondary,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                ),
-                              ),
-                            ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final screenHeight = MediaQuery.sizeOf(ctx).height;
+        return Container(
+          constraints: BoxConstraints(
+            maxHeight: screenHeight * 0.85,
+          ),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.borderMedium,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        if (isSelected)
-                          const Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.primaryDeep,
-                            size: 20,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Pilih Kelompok Penerima Sasaran',
+                              style: AppTypography.titleLarge.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                fontSize: 17,
+                              ),
+                            ),
                           ),
-                      ],
+                          InkWell(
+                            onTap: () => Navigator.pop(ctx),
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: AppColors.textSecondary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Standar Angka Kecukupan Gizi (AKG) disesuaikan secara otomatis sesuai kelompok usia penerima manfaat.',
+                        style: AppTypography.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, thickness: 1, color: AppColors.borderLight),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: TargetAkgModel.standardPresets.map((preset) {
+                        final isSelected = preset.groupName == selectedTargetAkg.groupName;
+                        return InkWell(
+                          onTap: () {
+                            onTargetAkgChanged(preset);
+                            Navigator.pop(ctx);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFEAF3E9) : AppColors.surfaceMuted,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? AppColors.primaryDeep : AppColors.borderLight,
+                                width: isSelected ? 1.5 : 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        preset.groupName,
+                                        style: AppTypography.titleSmall.copyWith(
+                                          fontSize: 13.5,
+                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        preset.formattedSummary,
+                                        style: AppTypography.caption.copyWith(
+                                          fontSize: 11.5,
+                                          color: isSelected ? AppColors.primaryDeep : AppColors.textSecondary,
+                                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (isSelected) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.primaryDeep,
+                                    size: 20,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ),
-                );
-              }),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -136,6 +190,8 @@ class TargetGroupSelector extends StatelessWidget {
                   color: AppColors.textPrimary,
                   fontSize: 13,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(width: 8),
@@ -180,8 +236,10 @@ class TargetGroupSelector extends StatelessWidget {
                       color: AppColors.textPrimary,
                     ),
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
+                const SizedBox(width: 8),
                 const Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: AppColors.textPrimary,

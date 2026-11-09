@@ -1,7 +1,9 @@
+import 'dart:async';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
@@ -20,12 +22,46 @@ class ScanOmprengScreen extends StatefulWidget {
 
 class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   late final ScanOmprengController _controller;
+  CameraController? _cameraController;
+  late Future<void> _initialization;
+  bool _isCapturing = false;
 
   @override
   void initState() {
     super.initState();
     _controller = ScanOmprengController();
     _controller.addListener(_onControllerUpdate);
+    _initialization = _initializeCamera();
+    unawaited(_initializeModel());
+  }
+
+  Future<void> _initializeCamera() async {
+    final cameras = await availableCameras();
+    if (cameras.isEmpty) {
+      throw StateError('Kamera tidak ditemukan pada perangkat ini.');
+    }
+    final backCameras = cameras
+        .where((camera) => camera.lensDirection == CameraLensDirection.back)
+        .toList();
+    final cameraDescription = (backCameras.isNotEmpty ? backCameras : cameras)
+        .firstWhere(
+          (camera) => camera.lensType == CameraLensType.wide,
+          orElse: () => (backCameras.isNotEmpty ? backCameras : cameras).first,
+        );
+    final camera = CameraController(
+      cameraDescription,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
+    await camera.initialize();
+    _cameraController = camera;
+  }
+
+  Future<void> _initializeModel() async {
+    try {
+      await _initialization;
+      await _controller.initializeModel();
+    } catch (_) {}
   }
 
   void _onControllerUpdate() {
@@ -34,18 +70,36 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
 
   @override
   void dispose() {
+    _cameraController?.dispose();
     _controller.removeListener(_onControllerUpdate);
     _controller.dispose();
     super.dispose();
   }
 
   Future<void> _handleShutterTap() async {
-    final success = await _controller.capturePhoto();
-    if (success && mounted) {
+    if (_isCapturing || _controller.isAnalyzing) return;
+    setState(() => _isCapturing = true);
+    try {
       try {
-        context.push(RouteNames.componentDetection);
+        await _initialization;
       } catch (_) {
-        context.go(RouteNames.componentDetection);
+        return;
+      }
+
+      final camera = _cameraController;
+      if (camera == null || !camera.value.isInitialized) return;
+      final photo = await camera.takePicture();
+      final success = await _controller.capturePhoto(photo);
+      if (success && mounted) {
+        try {
+          context.push(RouteNames.componentDetection);
+        } catch (_) {
+          context.go(RouteNames.componentDetection);
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCapturing = false);
       }
     }
   }
@@ -102,7 +156,10 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Mengerti',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -140,7 +197,10 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
             children: [
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF142B23),
                   borderRadius: BorderRadius.circular(999),
@@ -185,18 +245,71 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: GoogleLensHologramScanner(
-                          isScanning: true,
+                          isScanning: _controller.isModelReady && !_isCapturing,
                           showBoundingBoxes: _controller.showAiBoundingBoxes,
                           child: Stack(
-                            fit: StackFit.expand,
                             children: [
-                              Image.asset(
-                                AppAssets.omprengBakiSample,
-                                fit: BoxFit.cover,
+                              FutureBuilder<void>(
+                                future: _initialization,
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasError) {
+                                    return _buildCameraStatus(
+                                      snapshot.error.toString(),
+                                      isError: true,
+                                    );
+                                  }
+                                  final camera = _cameraController;
+                                  if (snapshot.connectionState !=
+                                          ConnectionState.done ||
+                                      camera == null ||
+                                      !camera.value.isInitialized) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                  }
+                                  return LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final boxAspectRatio =
+                                          constraints.maxWidth /
+                                          constraints.maxHeight;
+                                      final previewAspectRatio =
+                                          1 / camera.value.aspectRatio;
+                                      final previewWidth =
+                                          previewAspectRatio > boxAspectRatio
+                                          ? constraints.maxHeight *
+                                                previewAspectRatio
+                                          : constraints.maxWidth;
+                                      final previewHeight =
+                                          previewWidth / previewAspectRatio;
+
+                                      return ClipRect(
+                                        child: Center(
+                                          child: SizedBox(
+                                            width: previewWidth,
+                                            height: previewHeight,
+                                            child: CameraPreview(camera),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
                               ),
-                              Container(
-                                color: Colors.black.withValues(alpha: 0.15),
-                              ),
+                              if (_isCapturing || _controller.isAnalyzing)
+                                _buildCameraStatus(
+                                  _controller.isAnalyzing
+                                      ? 'Menganalisis gambar...'
+                                      : 'Mengambil foto...',
+                                ),
+                              if (_controller.errorMessage != null &&
+                                  !_isCapturing &&
+                                  !_controller.isAnalyzing)
+                                _buildCameraStatus(
+                                  _controller.errorMessage!,
+                                  isError: true,
+                                ),
                             ],
                           ),
                         ),
@@ -221,7 +334,9 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Pilih citra ompreng baki dari galeri...'),
+                            content: Text(
+                              'Pilih citra ompreng baki dari galeri...',
+                            ),
                             duration: Duration(seconds: 2),
                           ),
                         );
@@ -276,16 +391,13 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
 
   Widget _buildShutterButton() {
     return GestureDetector(
-      onTap: _controller.isAnalyzing ? null : _handleShutterTap,
+      onTap: _isCapturing || _controller.isAnalyzing ? null : _handleShutterTap,
       child: Container(
         width: 74,
         height: 74,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: const Color(0xFFD6A64B),
-            width: 3.5,
-          ),
+          border: Border.all(color: const Color(0xFFD6A64B), width: 3.5),
         ),
         padding: const EdgeInsets.all(4),
         child: Container(
@@ -294,7 +406,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
             shape: BoxShape.circle,
           ),
           child: Center(
-            child: _controller.isAnalyzing
+            child: _isCapturing || _controller.isAnalyzing
                 ? const SizedBox(
                     width: 24,
                     height: 24,
@@ -309,6 +421,46 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                     size: 30,
                   ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraStatus(String message, {bool isError = false}) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.78),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isError ? const Color(0xFFE57373) : const Color(0xFFD6A64B),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isError)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: Color(0xFFD6A64B),
+                  strokeWidth: 2,
+                ),
+              )
+            else
+              const Icon(Icons.error_outline, color: Color(0xFFE57373)),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -330,11 +482,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
             color: Color(0xFF22262B),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
+          child: Icon(icon, color: Colors.white, size: 24),
         ),
       ),
     );

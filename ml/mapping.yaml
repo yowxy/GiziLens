@@ -1,0 +1,71 @@
+# Isi dengan nama kelas GiziLens (lihat classes.json). Kosong = dibuang.
+# Yang sudah terisi = dicocokkan otomatis lewat nama/alias. PERIKSA, jangan percaya buta.
+ompreng:
+  ompreng: ompreng
+indo_food:
+  ayam bakar: ayam_bakar
+  ayam goreng: ayam_goreng
+  ayam rebus: ayam_rebus
+  bakso: bakso
+  bakwan: bakwan
+  bihun: bihun
+  burger: burger
+  gado gado: gado_gado
+  ikan goreng: ikan_goreng
+  kangkung: kangkung
+  kentang goreng: kentang_goreng
+  martabak telor: martabak_telur
+  mie: mie
+  nasi goreng: nasi_goreng
+  nasi kuning: nasi_kuning
+  nasi merah: nasi_merah
+  nasi putih: nasi_putih
+  nugget: nugget_ayam
+  opor: ayam_kuah
+  pempek: pempek
+  rendang: rendang
+  roti: roti_tawar
+  sambel: sambal
+  sate: sate_ayam
+  sosis: sosis
+  soto: soto
+  tahu: tahu_goreng
+  telor dadar: telur_dadar
+  telor mata sapi: telur_ceplok
+  telor rebus: telur_rebus
+  tempe: tempe_goreng
+  udang: udang
+veg_fruit:
+  bell pepper: paprika
+  carrot: wortel
+  garlic: garlic
+  mangosteen: manggis
+  pineapple: nanas
+  pitaya: buah_naga
+  strawberry: stroberi
+  tomato: tomat
+veg_fruit2:
+  Soybean: kedelai
+  apple: apel
+  banana: pisang
+  cabbage: kol
+  capsicum: paprika
+  cauliflower: kembang_kol
+  corn: jagung_rebus
+  cucumber: timun
+  eggplant: terong
+  garlic: garlic
+  ginger: jahe
+  grapes: anggur
+  lemon: lemon
+  mango: mangga
+  onion: bawang_bombay
+  orange: jeruk
+  pear: pir
+  peas: kacang_polong
+  pineapple: nanas
+  potato: kentang_rebus
+  radish: lobak
+  sweetpotato: ubi_jalar
+  tomato: tomat
+  watermelon: semangka

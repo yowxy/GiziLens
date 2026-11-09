@@ -5,14 +5,20 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/ai_mode.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/inspection_session_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
+import '../models/inspection_session.dart';
+import '../models/nutrition_analysis_model.dart';
 
 class AuditConfirmationScreen extends StatefulWidget {
   const AuditConfirmationScreen({super.key});
 
   @override
-  State<AuditConfirmationScreen> createState() => _AuditConfirmationScreenState();
+  State<AuditConfirmationScreen> createState() =>
+      _AuditConfirmationScreenState();
 }
 
 class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
@@ -21,32 +27,68 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
   void _handleSaveLock() async {
     setState(() => _isSaving = true);
 
+    final session = InspectionSessionService.instance;
+    final officer = UserSessionService.instance.account;
+
     try {
+      final session = InspectionSession.instance;
+      final components = session.components;
+      final metrics = NutrientMetricModel.fromComponents(
+        components,
+        session.targetAkg,
+      );
       await FirestoreService.instance.saveInspection({
-        'batchCode': AppStrings.defaultSamplingBatchCode,
-        'schoolName': AppStrings.defaultSamplingSchool,
-        'targetGroup': AppStrings.targetGroupInfo,
+        'batchCode': session.batchCode,
+        'schoolName': session.schoolDestination,
+        'targetGroup': session.targetAkg.groupName,
         'session': AppStrings.targetGroupSession,
-        'totalNetWeight': AppStrings.totalNetWeightValue,
+        'totalNetWeight': '${session.totalNetWeight} gram',
         'totalLiquid': AppStrings.totalLiquidValue,
         'complianceStatus': 'SESUAI',
         'isLocked': true,
         'trayFraction': AppStrings.trayFraction,
         'verifierRole': AppStrings.verifierRolePill,
-        'components': [
-          {'name': 'Nasi Putih', 'gram': 180, 'category': 'Karbohidrat'},
-          {'name': 'Telur Balado', 'gram': 85, 'category': 'Protein Hewani'},
-          {'name': 'Sayur Bayam', 'gram': 90, 'category': 'Sayuran'},
-          {'name': 'Tempe Orek', 'gram': 65, 'category': 'Protein Nabati'},
-          {'name': 'Pisang Mas', 'gram': 100, 'category': 'Buah'},
-        ],
-        'nutrition': {
-          'calories': 585,
-          'carbs': 78,
-          'protein': 24,
-          'fat': 18,
-          'fiber': 6.5,
+        'detectionProvider': aiProviderName,
+        'detectionModel': aiModelName,
+        'targetAkg2019': {
+          'groupName': session.targetAkg.groupName,
+          'calories': session.targetAkg.lunchCalories,
+          'protein': session.targetAkg.lunchProtein,
+          'fat': session.targetAkg.lunchFat,
+          'carbohydrate': session.targetAkg.lunchCarbohydrate,
+          'fiber': session.targetAkg.lunchFiber,
         },
+        'components': components
+            .map(
+              (item) => {
+                'id': item.id,
+                'name': item.name,
+                'gram': item.estimatedGram,
+                'compartmentNumber': item.compartmentNumber,
+                'category': item.category,
+                'confidencePercentage': item.confidencePercentage,
+                'isVerified': item.isVerified,
+                'nutrition': {
+                  'calories': item.calories,
+                  'protein': item.protein,
+                  'fat': item.fat,
+                  'carbohydrate': item.carbohydrate,
+                  'fiber': item.fiber,
+                },
+              },
+            )
+            .toList(),
+        'nutrition': {
+          for (final metric in metrics)
+            metric.name: {
+              'currentValue': metric.currentValue,
+              'targetValue': metric.targetValue,
+              'unit': metric.unit,
+              'percentageOfTarget': metric.percentageOfTarget,
+              'statusLabel': metric.statusLabel,
+            },
+        },
+        'notes': session.notes,
       });
     } catch (e) {
       debugPrint('Firestore save error: $e');
@@ -75,7 +117,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         ),
         title: 'Hasil Audit Berhasil Dikunci!',
         subtitle:
-            'Data pemeriksaan ompreng #MBG-2024-CIB02 telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
+            'Data pemeriksaan ompreng ${session.batchCode} untuk ${session.schoolDestination} telah tersinkronisasi aman dengan SPPG Cloud dan tersertifikasi BGN.',
         primaryButtonText: 'Kembali ke Dasbor',
         primaryButtonColor: AppColors.primaryDeep,
         primaryButtonIcon: Icons.home_rounded,
@@ -145,19 +187,12 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFFF0F4EC),
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: const Color(0xFFDCE6DA),
-                  width: 1.0,
-                ),
+                border: Border.all(color: const Color(0xFFDCE6DA), width: 1.0),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.circle,
-                    size: 7,
-                    color: Color(0xFF1E6C45),
-                  ),
+                  Icon(Icons.circle, size: 7, color: Color(0xFF1E6C45)),
                   SizedBox(width: 5),
                   Text(
                     AppStrings.sppgBadgeCode,
@@ -197,10 +232,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(
-                    color: Color(0xFFE4E9E0),
-                    width: 1.0,
-                  ),
+                  top: BorderSide(color: Color(0xFFE4E9E0), width: 1.0),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -327,10 +359,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFD6E4D4),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFD6E4D4), width: 1.2),
       ),
       child: Row(
         children: [
@@ -342,11 +371,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
               shape: BoxShape.circle,
             ),
             child: const Center(
-              child: Icon(
-                Icons.check_rounded,
-                size: 16,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.check_rounded, size: 16, color: Colors.white),
             ),
           ),
           const SizedBox(width: 12),
@@ -378,10 +403,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE2ECE0),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -389,11 +411,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         children: [
           const Row(
             children: [
-              Icon(
-                Icons.qr_code_2_rounded,
-                size: 18,
-                color: Color(0xFF64748B),
-              ),
+              Icon(Icons.qr_code_2_rounded, size: 18, color: Color(0xFF64748B)),
               SizedBox(width: 6),
               Text(
                 AppStrings.samplingProtocolTitle,
@@ -408,7 +426,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            AppStrings.defaultSamplingBatchCode,
+            InspectionSessionService.instance.batchCode,
             style: AppTypography.titleLarge.copyWith(
               fontWeight: FontWeight.w800,
               fontSize: 18,
@@ -417,7 +435,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
           ),
           const SizedBox(height: 2),
           Text(
-            AppStrings.defaultSamplingSchool,
+            InspectionSessionService.instance.schoolDestination,
             style: AppTypography.bodySmall.copyWith(
               fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
@@ -450,7 +468,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        AppStrings.targetGroupInfo,
+                        InspectionSessionService.instance.targetAkg.groupName,
                         style: AppTypography.captionBold.copyWith(
                           fontSize: 12.5,
                           color: AppColors.textPrimary,
@@ -518,10 +536,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFF9FAF7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFE8ECE5),
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFFE8ECE5), width: 1.0),
             ),
             child: Row(
               children: [
@@ -532,10 +547,10 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     color: Color(0xFFDAECE0),
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'NA',
-                      style: TextStyle(
+                      UserSessionService.instance.account.initials,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1E6C45),
@@ -556,7 +571,9 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                         ),
                       ),
                       Text(
-                        AppStrings.officerFullName,
+                        UserSessionService.instance.account.fullName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: AppTypography.captionBold.copyWith(
                           fontSize: 12,
                           color: AppColors.textPrimary,
@@ -565,8 +582,12 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFDCFCE7),
                     borderRadius: BorderRadius.circular(999),
@@ -594,10 +615,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE2ECE0),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -632,7 +650,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                     ),
                   ),
                   Text(
-                    AppStrings.totalNetWeightValue,
+                    '${InspectionSessionService.instance.totalNetWeight} gram',
                     style: AppTypography.captionBold.copyWith(
                       fontSize: 15,
                       color: AppColors.textPrimary,
@@ -650,40 +668,16 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          _buildVerifiedPortionItem(
-            name: 'Nasi Kuning',
-            desc: 'Karbohidrat Utama • 200g',
-            icon: Icons.rice_bowl_rounded,
-            badgeLabel: 'Sesuai Standar',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Telur Rebus',
-            desc: 'Protein Hewani • 65g',
-            icon: Icons.egg_alt_outlined,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Tempe Kacang',
-            desc: 'Protein Hewani • 100g',
-            icon: Icons.restaurant_menu_rounded,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Lalapan Segar',
-            desc: 'Serat & Vitamin • 30g',
-            icon: Icons.eco_outlined,
-            badgeLabel: 'Memenuhi AKG',
-          ),
-          const SizedBox(height: 8),
-          _buildVerifiedPortionItem(
-            name: 'Susu UHT & Pisang',
-            desc: 'Kalsium & Kalium • 125g + 115ml',
-            icon: Icons.local_drink_rounded,
-            badgeLabel: 'Memenuhi AKG',
-          ),
+          for (int i = 0; i < InspectionSessionService.instance.components.length; i++) ...[
+            _buildVerifiedPortionItem(
+              name: InspectionSessionService.instance.components[i].name,
+              desc: '${InspectionSessionService.instance.components[i].category} • ${InspectionSessionService.instance.components[i].estimatedGram}g',
+              icon: InspectionSessionService.instance.components[i].iconData,
+              badgeLabel: InspectionSessionService.instance.components[i].complianceStatus,
+            ),
+            if (i < InspectionSessionService.instance.components.length - 1)
+              const SizedBox(height: 8),
+          ],
         ],
       ),
     );
@@ -700,10 +694,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAF7),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFE8ECE5),
-          width: 1.0,
-        ),
+        border: Border.all(color: const Color(0xFFE8ECE5), width: 1.0),
       ),
       child: Row(
         children: [
@@ -713,16 +704,9 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: const Color(0xFFE2ECE0),
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFFE2ECE0), width: 1.0),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: AppColors.primaryDeep,
-            ),
+            child: Icon(icon, size: 20, color: AppColors.primaryDeep),
           ),
           const SizedBox(width: 10),
           Expanded(

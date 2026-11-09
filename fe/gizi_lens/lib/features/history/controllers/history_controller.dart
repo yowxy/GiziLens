@@ -24,7 +24,15 @@ class HistoryController extends ChangeNotifier {
       if (_filter.activeTab == HistoryTab.sesuai && status != 'SESUAI') {
         return false;
       }
-      if (_filter.activeTab == HistoryTab.tidakSesuai && status != 'TIDAK SESUAI') {
+      if (_filter.activeTab == HistoryTab.tidakSesuai &&
+          status != 'TIDAK SESUAI') {
+        return false;
+      }
+
+      final createdDate = DateTime.tryParse(
+        item['createdDateIso']?.toString() ?? '',
+      );
+      if (createdDate != null && !_matchesDateFilter(createdDate)) {
         return false;
       }
 
@@ -40,6 +48,19 @@ class HistoryController extends ChangeNotifier {
 
       return true;
     }).toList();
+  }
+
+  bool _matchesDateFilter(DateTime createdDate) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = switch (_filter.dateFilter) {
+      HistoryDateFilter.hariIni => today,
+      HistoryDateFilter.tujuhHari => today.subtract(const Duration(days: 6)),
+      HistoryDateFilter.tigaPuluhHari => today.subtract(
+        const Duration(days: 29),
+      ),
+    };
+    return !createdDate.isBefore(start);
   }
 
   HistoryController() {

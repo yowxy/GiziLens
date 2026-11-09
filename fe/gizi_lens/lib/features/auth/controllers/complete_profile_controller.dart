@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../models/officer_profile_model.dart';
 import '../models/officer_role.dart';
 
@@ -17,8 +18,21 @@ class CompleteProfileController extends ChangeNotifier {
   List<OfficerRole> get availableRoles => OfficerRole.defaultRoles;
 
   CompleteProfileController() {
-    fullNameController = TextEditingController(text: '');
+    final user = FirebaseAuthService.instance.currentUser;
+    String initialName = '';
+    if (user != null) {
+      if (user.displayName != null && user.displayName!.trim().isNotEmpty) {
+        initialName = user.displayName!.trim();
+      } else if (user.email != null && user.email!.isNotEmpty) {
+        initialName = FirebaseAuthService.formatNameFromEmail(user.email!);
+      }
+    }
+
+    fullNameController = TextEditingController(text: initialName);
     fullNameController.addListener(_onNameChanged);
+    if (initialName.isNotEmpty) {
+      _onNameChanged();
+    }
   }
 
   void _onNameChanged() {
@@ -67,10 +81,10 @@ class CompleteProfileController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await FirestoreService.instance.updateCurrentUserProfile({
-        'fullName': _profile.fullName,
-        'role': _profile.selectedRole.title,
-      });
+      await UserSessionService.instance.updateProfile(
+        fullName: _profile.fullName,
+        role: _profile.selectedRole.title,
+      );
 
       _isLoading = false;
       notifyListeners();

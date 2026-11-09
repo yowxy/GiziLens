@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/inspection_session_service.dart';
 import '../models/batch_info_model.dart';
 import '../models/target_akg_model.dart';
+import '../models/inspection_session.dart';
 
 /// Controller handling operational batch input and state validation.
 class MenuInspectionController extends ChangeNotifier {
@@ -23,7 +25,8 @@ class MenuInspectionController extends ChangeNotifier {
     String? initialNotes,
   }) {
     _selectedTargetAkg = initialTargetAkg ?? TargetAkgModel.standardPresets[1];
-    schoolController.text = initialSchool ?? AppStrings.defaultSchoolDestination;
+    schoolController.text =
+        initialSchool ?? AppStrings.defaultSchoolDestination;
     notesController.text = initialNotes ?? AppStrings.defaultInspectionNotes;
   }
 
@@ -69,7 +72,15 @@ class MenuInspectionController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      InspectionSessionService.instance.updateBatchConfig(
+        batchCode: batchCode,
+        sppgUnit: sppgUnit,
+        targetAkg: _selectedTargetAkg,
+        schoolDestination: schoolController.text.trim(),
+        notes: notesController.text.trim(),
+      );
       await Future.delayed(const Duration(milliseconds: 500));
+      InspectionSession.instance.targetAkg = _selectedTargetAkg;
       _isLoading = false;
       notifyListeners();
       return true;

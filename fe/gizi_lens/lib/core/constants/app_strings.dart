@@ -120,7 +120,8 @@ class AppStrings {
       'Lewati untuk saat ini (Gunakan data default)';
 
   // Dashboard and Metrics
-  static const String greetingMorning = 'Selamat pagi,';
+  static const String greetingWelcome = 'Selamat datang,';
+  static const String greetingMorning = greetingWelcome;
   static const String dashboardOfficerName = 'Nurul Anggraini, S.Gz';
   static const String dashboardOfficerUnit = 'SPPG Cibinong Sentral 02';
 

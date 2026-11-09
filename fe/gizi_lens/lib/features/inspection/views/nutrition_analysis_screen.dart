@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/inspection_session_service.dart';
 import '../controllers/nutrition_analysis_controller.dart';
 import 'widgets/nutrition_progress_card.dart';
 import 'widgets/step_progress_app_bar.dart';
@@ -13,7 +14,8 @@ class NutritionAnalysisScreen extends StatefulWidget {
   const NutritionAnalysisScreen({super.key});
 
   @override
-  State<NutritionAnalysisScreen> createState() => _NutritionAnalysisScreenState();
+  State<NutritionAnalysisScreen> createState() =>
+      _NutritionAnalysisScreenState();
 }
 
 class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
@@ -108,7 +110,10 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Mengerti',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -205,7 +210,11 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                       ),
                       child: Column(
                         children: [
-                          for (int i = 0; i < _controller.metrics.length; i++) ...[
+                          for (
+                            int i = 0;
+                            i < _controller.metrics.length;
+                            i++
+                          ) ...[
                             NutritionProgressCard(
                               metric: _controller.metrics[i],
                             ),
@@ -228,10 +237,7 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
               decoration: const BoxDecoration(
                 color: Colors.white,
                 border: Border(
-                  top: BorderSide(
-                    color: Color(0xFFE4E9E0),
-                    width: 1.0,
-                  ),
+                  top: BorderSide(color: Color(0xFFE4E9E0), width: 1.0),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -343,10 +349,7 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE2ECE0),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A0F261E),
@@ -388,13 +391,16 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5EE),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  AppStrings.targetAgePill,
+                  _controller.targetGroupName,
                   style: AppTypography.captionBold.copyWith(
                     fontSize: 11.5,
                     color: const Color(0xFF53675C),
@@ -405,7 +411,7 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            AppStrings.targetAkgDescription,
+            'Basis makan siang 30–35% AKG 2019: ${_controller.targetSummary}.',
             style: AppTypography.bodySmall.copyWith(
               color: const Color(0xFF334155),
               height: 1.5,
@@ -418,10 +424,7 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAF7),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFE2E8F0),
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFFE2E8F0), width: 1.0),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
