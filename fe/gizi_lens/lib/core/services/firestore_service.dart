@@ -38,6 +38,8 @@ class FirestoreService {
   // ==========================================
 
   /// Save or update an officer profile in Cloud Firestore (`users/{uid}`).
+  /// Throws if the Firestore write fails so callers can surface the error
+  /// instead of silently losing data when the app is killed.
   Future<void> saveUserProfile({
     required String uid,
     required Map<String, dynamic> data,
@@ -51,22 +53,22 @@ class FirestoreService {
 
     final col = usersCollection;
     if (col == null) {
-      debugPrint('Firestore not initialized. Saved user profile to local memory cache.');
+      debugPrint('Firestore not initialized. Saved user profile to local memory cache only.');
       return;
     }
 
-    try {
-      await col.doc(uid).set({
-        ...data,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-      debugPrint('Firestore user profile saved successfully for uid: $uid');
-    } catch (e) {
-      debugPrint('Error saving user profile to Firestore: $e');
-    }
+    // 2. Persist to Firestore — re-throw on failure so caller knows the
+    //    cloud copy did not land.
+    await col.doc(uid).set({
+      ...data,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    debugPrint('Firestore user profile saved successfully for uid: $uid');
   }
 
   /// Retrieve an officer profile by UID.
+  /// Returns the Firestore document if it exists. Falls back to in-memory
+  /// cache only when Firestore is unreachable (offline / error).
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     final col = usersCollection;
     if (col != null) {
@@ -75,28 +77,31 @@ class FirestoreService {
         if (doc.exists && doc.data() != null) {
           final data = doc.data()!;
           _localUserProfiles[uid] = {..._localUserProfiles[uid] ?? {}, ...data};
+          debugPrint('getUserProfile: fetched from Firestore for uid=$uid, data=$data');
           return data;
+        } else {
+          debugPrint('getUserProfile: Firestore doc does not exist for uid=$uid');
+          // Doc doesn't exist in Firestore — do NOT return stale cache,
+          // because it may contain data that was never persisted.
+          return null;
         }
       } catch (e) {
-        debugPrint('Error fetching user profile from Firestore: $e');
+        debugPrint('getUserProfile: Firestore error, falling back to cache: $e');
       }
     }
     return _localUserProfiles[uid];
   }
 
   /// Update the currently logged-in officer profile metadata.
+  /// Returns true only if the Firestore write succeeded.
   Future<bool> updateCurrentUserProfile(Map<String, dynamic> data) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await saveUserProfile(uid: user.uid, data: data);
-        return true;
-      }
-      return false;
-    } catch (e) {
-      debugPrint('Error updating current user profile: $e');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      debugPrint('updateCurrentUserProfile: no current user');
       return false;
     }
+    await saveUserProfile(uid: user.uid, data: data);
+    return true;
   }
 
   /// Save an OTP verification record for real-time tracking in Firestore.

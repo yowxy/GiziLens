@@ -31,7 +31,7 @@ void main() {
     });
 
     test('Initial states match reference design specifications', () {
-      expect(controller.batchCode, equals(AppStrings.defaultBatchCode));
+      expect(controller.batchCode, equals('MBG-2026-001'));
       expect(controller.sppgUnit, equals(AppStrings.defaultSppgUnit));
       expect(controller.selectedTargetAkg.groupName, equals('SD Kelas 4 – 6 (10 – 12 Tahun)'));
       expect(controller.schoolController.text, equals(AppStrings.defaultSchoolDestination));
@@ -70,7 +70,7 @@ void main() {
     test('getBatchData packages current operational batch parameters into model', () {
       final batchData = controller.getBatchData();
 
-      expect(batchData.batchCode, equals(AppStrings.defaultBatchCode));
+      expect(batchData.batchCode, equals('MBG-2026-001'));
       expect(batchData.targetAkg.groupName, equals('SD Kelas 4 – 6 (10 – 12 Tahun)'));
       expect(batchData.sppgUnit, equals(AppStrings.defaultSppgUnit));
       expect(batchData.schoolDestination, equals(AppStrings.defaultSchoolDestination));
@@ -130,7 +130,7 @@ void main() {
       // Locked batch fields
       expect(find.byType(LockedBatchField), findsNWidgets(2));
       expect(find.text(AppStrings.batchCodeLabel), findsOneWidget);
-      expect(find.text(AppStrings.defaultBatchCode), findsOneWidget);
+      expect(find.text('MBG-2026-001'), findsOneWidget);
       expect(find.text(AppStrings.rfidSyncedBadge), findsOneWidget);
 
       // Target demographic selector & AKG indicator
@@ -250,7 +250,7 @@ void main() {
 
       // Verify feedback snackbar is displayed
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.textContaining('Batch #${AppStrings.defaultBatchCode} tersimpan'), findsOneWidget);
+      expect(find.textContaining('Batch #MBG-2026-001 tersimpan'), findsOneWidget);
     });
   });
 }

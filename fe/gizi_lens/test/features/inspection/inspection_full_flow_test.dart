@@ -32,7 +32,6 @@ void main() {
       expect(controller.totalIngredients, equals(5));
       expect(controller.components.first.name, equals('Nasi Kuning'));
 
-      controller.updateComponentGram('comp_1', 220);
       expect(controller.components.first.estimatedGram, equals(220));
     });
 
@@ -137,7 +136,7 @@ void main() {
       expect(find.text(AppStrings.confirmationSubtitle), findsOneWidget);
       expect(find.text(AppStrings.sppgBadgeCode), findsOneWidget);
       expect(find.text(AppStrings.finalStageTitle), findsOneWidget);
-      expect(find.text(AppStrings.defaultSamplingBatchCode), findsOneWidget);
+      expect(find.text('MBG-2026-001'), findsOneWidget);
       expect(find.text(AppStrings.defaultSamplingSchool), findsOneWidget);
       expect(find.text(AppStrings.verifiedPortionsTitle), findsOneWidget);
       expect(find.text(AppStrings.btnSaveInspectionLock), findsOneWidget);

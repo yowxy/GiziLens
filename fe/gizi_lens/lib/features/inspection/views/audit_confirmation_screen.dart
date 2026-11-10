@@ -41,12 +41,11 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         'targetGroup': session.targetAkg.groupName,
         'session': AppStrings.targetGroupSession,
         'totalNetWeight': '${session.totalNetWeight} gram',
-        'totalLiquid': AppStrings.totalLiquidValue,
+        'scannedAt': session.scannedAt?.toIso8601String(),
         'complianceStatus': metrics.every((metric) => metric.percentageOfTarget >= 85)
             ? 'SESUAI'
             : 'TIDAK SESUAI',
         'isLocked': true,
-        'trayFraction': AppStrings.trayFraction,
         'verifierRole': AppStrings.verifierRolePill,
         'detectionProvider': aiProviderName,
         'detectionModel': aiModelName,
@@ -127,6 +126,20 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         },
       ),
     );
+  }
+
+  String _formatAuditDate(DateTime? date) {
+    if (date == null) return '-';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    final now = DateTime.now();
+    final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
+    return '${isToday ? 'Hari ini, ' : ''}${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  String _formatAuditClock(DateTime? date) {
+    if (date == null) return '-';
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(date.hour)}:${two(date.minute)} WIB';
   }
 
   void _handleBack() {
@@ -385,13 +398,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
               ),
             ),
           ),
-          Text(
-            AppStrings.trayFraction,
-            style: AppTypography.captionBold.copyWith(
-              fontSize: 12,
-              color: const Color(0xFF64748B),
-            ),
-          ),
+
         ],
       ),
     );
@@ -510,7 +517,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        AppStrings.auditTimeDate,
+                        _formatAuditDate(InspectionSessionService.instance.scannedAt),
                         style: AppTypography.captionBold.copyWith(
                           fontSize: 12.5,
                           color: AppColors.textPrimary,
@@ -518,7 +525,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        AppStrings.auditTimeClock,
+                        _formatAuditClock(InspectionSessionService.instance.scannedAt),
                         style: AppTypography.caption.copyWith(
                           fontSize: 11,
                           color: const Color(0xFF64748B),
@@ -656,13 +663,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                       color: AppColors.textPrimary,
                     ),
                   ),
-                  Text(
-                    AppStrings.totalLiquidValue,
-                    style: AppTypography.caption.copyWith(
-                      fontSize: 10.5,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
+
                 ],
               ),
             ],

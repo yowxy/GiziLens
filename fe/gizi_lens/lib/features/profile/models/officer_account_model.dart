@@ -1,5 +1,3 @@
-import '../../../../core/constants/app_strings.dart';
-
 class OfficerAccountModel {
   final String fullName;
   final String initials;
@@ -23,13 +21,13 @@ class OfficerAccountModel {
 
   factory OfficerAccountModel.defaultAccount() {
     return const OfficerAccountModel(
-      fullName: AppStrings.officerFullName,
-      initials: AppStrings.officerInitials,
-      roleTitle: AppStrings.officerVerifiedBgn,
-      officerId: AppStrings.profileOfficerIdValue,
-      unitOperational: AppStrings.unitOperationalValue,
-      unitRegion: AppStrings.unitOperationalRegion,
-      isVerified: true,
+      fullName: '-',
+      initials: '-',
+      roleTitle: '-',
+      officerId: '-',
+      unitOperational: '-',
+      unitRegion: '-',
+      isVerified: false,
 
     );
   }

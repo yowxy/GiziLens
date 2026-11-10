@@ -55,11 +55,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Icon(
               Icons.info_outline_rounded,
               color: AppColors.headerDarkGreen,
+              size: 14,
             ),
             const SizedBox(width: 8),
             Text(
               'Standar Kepatuhan AKG',
-              style: AppTypography.titleLarge.copyWith(fontSize: 17),
+              style: AppTypography.titleLarge.copyWith(fontSize: 15),
             ),
           ],
         ),

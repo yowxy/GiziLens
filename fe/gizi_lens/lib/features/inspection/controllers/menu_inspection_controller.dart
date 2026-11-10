@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/firestore_service.dart';
 import '../../../core/services/inspection_session_service.dart';
+import '../../../core/services/user_session_service.dart';
 import '../models/batch_info_model.dart';
 import '../models/target_akg_model.dart';
 
 /// Controller handling operational batch input and state validation.
 class MenuInspectionController extends ChangeNotifier {
-  final String batchCode;
+  String _batchCode = '';
   final String sppgUnit;
 
   late TargetAkgModel _selectedTargetAkg;
@@ -17,12 +19,10 @@ class MenuInspectionController extends ChangeNotifier {
   String? _errorMessage;
 
   MenuInspectionController({
-    this.batchCode = AppStrings.defaultBatchCode,
-    this.sppgUnit = AppStrings.defaultSppgUnit,
     TargetAkgModel? initialTargetAkg,
     String? initialSchool,
     String? initialNotes,
-  }) {
+  }) : sppgUnit = UserSessionService.instance.account.unitOperational {
     _selectedTargetAkg = initialTargetAkg ?? TargetAkgModel.standardPresets[1];
     schoolController.text =
         initialSchool ?? AppStrings.defaultSchoolDestination;
@@ -30,6 +30,7 @@ class MenuInspectionController extends ChangeNotifier {
   }
 
   TargetAkgModel get selectedTargetAkg => _selectedTargetAkg;
+  String get batchCode => _batchCode;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -45,13 +46,31 @@ class MenuInspectionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> prepareBatchCode() async {
+    final inspections = await FirestoreService.instance.getInspections(limit: 500);
+    _batchCode = nextBatchCode(inspections, DateTime.now().year);
+    notifyListeners();
+  }
+
+  static String nextBatchCode(List<Map<String, dynamic>> inspections, int year) {
+    final prefix = 'MBG-$year-';
+    var lastSequence = 0;
+    for (final inspection in inspections) {
+      final code = inspection['batchCode'] as String? ?? '';
+      if (!code.startsWith(prefix)) continue;
+      final sequence = int.tryParse(code.substring(prefix.length));
+      if (sequence != null && sequence > lastSequence) lastSequence = sequence;
+    }
+    return '$prefix${(lastSequence + 1).toString().padLeft(3, '0')}';
+  }
+
   bool get isValid {
     return schoolController.text.trim().isNotEmpty;
   }
 
   BatchInfoModel getBatchData() {
     return BatchInfoModel(
-      batchCode: batchCode,
+      batchCode: _batchCode,
       targetAkg: _selectedTargetAkg,
       sppgUnit: sppgUnit,
       schoolDestination: schoolController.text.trim(),
@@ -66,13 +85,19 @@ class MenuInspectionController extends ChangeNotifier {
       return false;
     }
 
+    if (_batchCode.isEmpty) {
+      _errorMessage = 'Kode batch sedang disiapkan, coba lagi sebentar.';
+      notifyListeners();
+      return false;
+    }
+
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       InspectionSessionService.instance.updateBatchConfig(
-        batchCode: batchCode,
+        batchCode: _batchCode,
         sppgUnit: sppgUnit,
         targetAkg: _selectedTargetAkg,
         schoolDestination: schoolController.text.trim(),

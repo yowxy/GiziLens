@@ -19,7 +19,7 @@ void main() {
 
     test('Initial profile state contains default officer data', () {
       expect(controller.profile.fullName, equals('Nurul Gizi'));
-      expect(controller.profile.officerId, equals(AppStrings.defaultOfficerIdValue));
+      expect(controller.profile.officerId, equals('GZ-2026-001'));
       expect(controller.profile.selectedRole, equals(OfficerRole.ahliGizi));
       expect(controller.profile.initials, equals('NG'));
       expect(controller.profile.isVerified, isTrue);
@@ -74,7 +74,7 @@ void main() {
       // Verify Officer ID Locked Field
       expect(find.text(AppStrings.officerIdLabel), findsOneWidget);
       expect(find.text(AppStrings.verifiedBgnTag), findsOneWidget);
-      expect(find.text(AppStrings.defaultOfficerIdValue), findsOneWidget);
+      expect(find.text('GZ-2026-001'), findsOneWidget);
       expect(find.text(AppStrings.officerIdHelperText), findsOneWidget);
 
       // Verify Roles

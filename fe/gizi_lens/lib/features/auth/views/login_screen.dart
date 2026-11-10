@@ -48,7 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final success = await _controller.login();
     if (success && mounted) {
-      context.go(RouteNames.completeProfile);
+      if (_controller.isProfileIncomplete) {
+        context.go(RouteNames.completeProfile);
+      } else {
+        context.go(RouteNames.dashboard);
+      }
     } else if (!success && _controller.errorMessage != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

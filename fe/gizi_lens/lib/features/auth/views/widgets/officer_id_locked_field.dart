@@ -9,7 +9,7 @@ class OfficerIdLockedField extends StatelessWidget {
 
   const OfficerIdLockedField({
     super.key,
-    this.officerId = AppStrings.defaultOfficerIdValue,
+    required this.officerId,
   });
 
   @override

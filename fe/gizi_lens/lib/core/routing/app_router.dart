@@ -192,7 +192,6 @@ class AppRouter {
             child: OtpVerificationScreen(
               initialEmail: extra?['email'] as String?,
               initialPhone: extra?['phone'] as String?,
-              fullName: extra?['fullName'] as String?,
               isForgotPassword: extra?['isForgotPassword'] as bool? ?? false,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {

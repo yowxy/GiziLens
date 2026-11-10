@@ -213,11 +213,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildInspectionCard(Map<String, dynamic> item) {
-    final batchCode = item['batchCode'] as String? ?? '#MBG-2024-CIB02';
-    final schoolName = item['schoolName'] as String? ?? 'SMAN 1 JAKARTA';
-    final session = item['session'] as String? ?? 'Sesi Makan Siang';
-    final isSesuai = (item['complianceStatus'] as String? ?? 'SESUAI').toUpperCase() == 'SESUAI';
-    final weight = item['totalNetWeight'] as String? ?? '520 gram';
+    final batchCode = item['batchCode'] as String? ?? '-';
+    final schoolName = item['schoolName'] as String? ?? '-';
+    final session = item['session'] as String? ?? '-';
+    final isSesuai = (item['complianceStatus'] as String? ?? '').toUpperCase() == 'SESUAI';
+    final weight = item['totalNetWeight'] as String? ?? '-';
 
     return InkWell(
       borderRadius: BorderRadius.circular(16),

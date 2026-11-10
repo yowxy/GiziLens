@@ -97,10 +97,15 @@ class AppStrings {
   static const String fullNameHint = 'Cth. Fita Andini, S.Gz';
   static const String officerIdLabel = 'ID Petugas SPPG';
   static const String verifiedBgnTag = 'Terverifikasi BGN';
-  static const String defaultOfficerIdValue = 'SPPG-2024-CIB02-GZ';
   static const String officerIdHelperText =
       'Nomor registrasi unik diterbitkan otomatis oleh Sistem Pusat MBG.';
   static const String operationalRoleTitle = 'Peran Operasional';
+  static const String operationalUnitLabel = 'Unit Operasional SPPG';
+  static const String operationalUnitHint = 'Pilih unit operasional';
+  static const String operationalUnitRequired = 'Unit operasional wajib dipilih';
+  static const String regionLabel = 'Wilayah';
+  static const String regionHint = 'Pilih wilayah tugas';
+  static const String regionRequired = 'Wilayah wajib dipilih';
 
   static const String roleAhliGiziTitle = 'Ahli Gizi Lapangan';
   static const String roleAhliGiziDesc =
@@ -207,8 +212,7 @@ class AppStrings {
   static const String otpSubtitle =
       'Kami mengirimkan kode verifikasi untuk memastikan email atau nomor HP kamu aktif.';
   static const String otpSentToPrefix = 'Kode verifikasi 6 digit telah dikirim ke:';
-  static const String defaultOtpEmail = 'nurulag***@gmail.com';
-  static const String defaultOtpPhone = '+62 812-****-789';
+
   static const String btnUbah = 'Ubah';
   static const String enterOtpLabel = 'Masukkan 6-Digit Kode Sandi (OTP)';
   static const String haventReceivedCode = 'Belum menerima kode verifikasi?';
@@ -244,8 +248,8 @@ class AppStrings {
   static const String batchDefinitionDesc =
       'Kelompok porsi dengan kelompok sasaran yang sama, resep/komposisi yang sama, dan sesi distribusi yang sama.';
   static const String batchCodeLabel = 'Nama / Kode Batch';
-  static const String rfidSyncedBadge = 'Tersinkronisasi RFID';
-  static const String defaultBatchCode = 'MBG-2024-CIB02';
+  static const String rfidSyncedBadge = 'Otomatis';
+
   static const String targetGroupLabel = 'Kelompok Penerima Sasaran';
   static const String btnUbahAkg = 'Ubah AKG';
   static const String defaultTargetGroup = 'SD Kelas 4 – 6 (10 – 12 Tahun)';
@@ -253,9 +257,9 @@ class AppStrings {
   static const String defaultTargetAkgValue = '620 kkal • Protein 18–22g';
   static const String sppgUnitLabel = 'Unit SPPG';
   static const String lockedAutoBadge = 'Terkunci / Otomatis';
-  static const String defaultSppgUnit = 'SPPG Cibinong Sentral 02';
+  static const String defaultSppgUnit = '-';
   static const String schoolDestinationLabel = 'Tujuan Distribusi / Sekolah';
-  static const String defaultSchoolDestination = 'SMAN 1 Jakarta';
+  static const String defaultSchoolDestination = 'SMAN 1 Surabaya';
   static const String schoolDestinationHint =
       'Pilih atau masukkan nama sekolah tujuan';
   static const String inspectionNotesLabel = 'Catatan Pemeriksaan';
@@ -277,15 +281,8 @@ class AppStrings {
   // Profile and Settings Screen
   static const String profileScreenTitle = 'Akun & Profil Petugas';
   static const String profileScreenSubtitle = 'Sistem Pengawasan SPPG';
-  static const String officerFullName = 'Nurul Anggraini, S.Gz';
-  static const String officerInitials = 'NA';
-  static const String officerVerifiedBgn = 'Ahli Gizi Lapangan (Terverifikasi BGN)';
   static const String officerIdPrefix = 'ID Petugas: ';
-  static const String profileOfficerIdValue = 'SPPG-2024-CIB02-GZ';
   static const String unitOperationalLabel = 'Unit Operasional: ';
-  static const String unitOperationalValue = 'SPPG Cibinong Sentral 02';
-  static const String unitOperationalRegion =
-      'Kabupaten Bogor, Jawa Barat • Zona Logistik Wilayah II';
   static const String btnEditProfile = 'Edit Profil Petugas';
 
   static const String sectionPreferenceTitle = 'Preferensi & Standar Gizi';
@@ -356,7 +353,7 @@ class AppStrings {
   static const String segNutrientReady = 'Penyiapan kalkulasi gizi';
   static const String compartmentViewTitle = 'TAMPILAN PARTISI KOMPARTEMEN';
   static const String detectedComponentsTitle = 'Daftar Komponen Terdeteksi';
-  static const String count5Ingredients = '5 Bahan';
+
   static const String btnCheckAndCorrect = 'Periksa & Koreksi Komponen';
   static const String btnRetakePhoto = 'Ulangi Foto';
 
@@ -370,8 +367,7 @@ class AppStrings {
       'Nilai nutrisi merupakan estimasi berbasis database bahan pangan & berat porsi terverifikasi. Bukan hasil uji laboratorium.';
   static const String summary5PillarsTitle = 'Ringkasan 5 Pilar Nutrisi';
   static const String tolerancePill = 'Toleransi ±10%';
-  static const String btnViewRecommendations =
-      'Lihat Rekomendasi Menu (1 Catatan)';
+  static const String btnViewRecommendations = 'Lihat Rekomendasi Menu';
   static const String btnBackToComponents = 'Kembali ke Koreksi Komponen';
 
   // Confirmation Step
@@ -379,20 +375,19 @@ class AppStrings {
   static const String confirmationSubtitle = 'Verifikasi Berita Acara Audit';
   static const String sppgBadgeCode = 'SPPG #02';
   static const String finalStageTitle = 'Tahap Akhir: Validasi Fisik & Digital';
-  static const String trayFraction = 'Baki 1/3';
+
   static const String samplingProtocolTitle = 'PROTOKOL SAMPLING';
-  static const String defaultSamplingBatchCode = '#MBG-2024-CIB02';
+
   static const String defaultSamplingSchool = 'SMAN 1 JAKARTA';
   static const String targetGroupInfo = 'SMA (15–18 Thn)';
   static const String targetGroupSession = 'Sesi Makan Siang';
-  static const String auditTimeDate = 'Hari ini, 24 Okt 2024';
-  static const String auditTimeClock = '10:28 WIB (Waktu Nyata)';
+
   static const String verifierLabel = 'Petugas Verifikator:';
   static const String verifierRolePill = 'Ahli Gizi Lapangan';
   static const String verifiedPortionsTitle = 'Komposisi Porsi Terverifikasi';
   static const String totalNetWeightLabel = 'Total Bobot Bersih';
   static const String totalNetWeightValue = '520 gram';
-  static const String totalLiquidValue = '+ 115 ml';
+
   static const String btnSaveInspectionLock =
       'Simpan Hasil Pemeriksaan (Kunci Data)';
   static const String btnBackToInspection = 'Kembali ke Pemeriksaan';

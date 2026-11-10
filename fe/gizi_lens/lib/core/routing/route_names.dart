@@ -29,7 +29,7 @@ class RouteNames {
   static const String auth2 = '/auth-2';
   static const String refRegister = '/ref-register';
   static const String refOtp = '/ref-otp';
-  static const String refRegisterSuccess = '/ref-register-success';
+static const String refRegisterSuccess = '/ref-register-success';
   static const String refMenuInspection = '/ref-menu-inspection';
   static const String refProfile = '/ref-profile';
   static const String refScan = '/ref-scan';

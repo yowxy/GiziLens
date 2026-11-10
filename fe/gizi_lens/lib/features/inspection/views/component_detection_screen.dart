@@ -382,7 +382,7 @@ class _ComponentDetectionScreenState extends State<ComponentDetectionScreen> {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            AppStrings.count5Ingredients,
+                            '${_controller.components.length} Bahan',
                             style: AppTypography.captionBold.copyWith(
                               fontSize: 11.5,
                               color: AppColors.primaryDeep,

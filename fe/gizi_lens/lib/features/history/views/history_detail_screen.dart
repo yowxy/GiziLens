@@ -57,7 +57,7 @@ class HistoryDetailScreen extends StatelessWidget {
                 _infoRow('Sesi', session),
                 _infoRow('Kelompok Sasaran', targetGroup),
                 _infoRow('Total Bobot Bersih', weight),
-                _infoRow('Waktu Pemeriksaan', _formatDate(item['createdDateIso'] as String?)),
+                _infoRow('Waktu Pemeriksaan', _formatDate((item['scannedAt'] ?? item['createdDateIso']) as String?)),
                 _infoRow('Petugas', item['userEmail'] as String? ?? '-'),
               ],
             ),

@@ -6,7 +6,6 @@ import '../models/officer_account_model.dart';
 class ProfileController extends ChangeNotifier {
   int _activeNavIndex = 3;
 
-
   OfficerAccountModel get account => UserSessionService.instance.account;
   int get activeNavIndex => _activeNavIndex;
   bool get notificationsEnabled => NotificationService.instance.enabled;
@@ -15,6 +14,15 @@ class ProfileController extends ChangeNotifier {
   ProfileController() {
     UserSessionService.instance.addListener(_onUserSessionUpdated);
     NotificationService.instance.addListener(_onUserSessionUpdated);
+    // Ensure profile data is loaded from Firestore even if the user
+    // navigates directly to Profile without going through Dashboard first
+    // (e.g. after app kill → relaunch → auto-login → tap Profile tab).
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    await UserSessionService.instance.initializeFromFirebase();
+    notifyListeners();
   }
 
   void _onUserSessionUpdated() {

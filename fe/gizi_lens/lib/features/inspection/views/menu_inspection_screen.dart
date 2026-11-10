@@ -32,6 +32,7 @@ class _MenuInspectionScreenState extends State<MenuInspectionScreen> {
       initialTargetAkg: InspectionSessionService.instance.targetAkg,
     );
     _controller.addListener(_onControllerUpdate);
+    _controller.prepareBatchCode();
   }
 
   void _onControllerUpdate() {

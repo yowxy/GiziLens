@@ -6,6 +6,7 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../../notifications/views/notification_sheet.dart';
 import '../controllers/profile_controller.dart';
@@ -278,13 +279,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onConfirmLogout: () async {
         try {
           await FirebaseAuthService.instance.signOut();
-          if (mounted) {
-            context.go(RouteNames.login);
-          }
         } catch (_) {
-          if (mounted) {
-            context.go(RouteNames.login);
-          }
+          // Continue to reset and redirect even if signOut fails
+        }
+        UserSessionService.instance.reset();
+        if (mounted) {
+          context.go(RouteNames.login);
         }
       },
     );

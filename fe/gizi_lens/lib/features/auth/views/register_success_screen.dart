@@ -81,7 +81,7 @@ class _RegisterSuccessScreenState extends State<RegisterSuccessScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final registeredEmail = widget.email ?? 'nurul.gizi@gmail.com';
+    final registeredEmail = widget.email ?? '-';
     final proposedRole = widget.role ?? AppStrings.defaultProposedRole;
     final assignedUnit = widget.unit ?? AppStrings.defaultAssignmentUnit;
 

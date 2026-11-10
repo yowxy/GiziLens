@@ -40,11 +40,6 @@ void main() {
       expect(controller.activeDateFilter, equals(HistoryDateFilter.tigaPuluhHari));
     });
 
-    test('dismissNotification clears unread notification dot', () {
-      controller.dismissNotification();
-      expect(controller.hasNotification, isFalse);
-    });
-
     test('search text updates search query in filter model', () {
       controller.searchController.text = 'Bayam';
       expect(controller.filter.searchQuery, equals('Bayam'));

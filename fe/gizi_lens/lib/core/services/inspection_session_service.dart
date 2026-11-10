@@ -15,7 +15,7 @@ class InspectionSessionService extends ChangeNotifier {
 
   static final InspectionSessionService instance = InspectionSessionService._();
 
-  String _batchCode = AppStrings.defaultSamplingBatchCode;
+  String _batchCode = '';
   String _sppgUnit = AppStrings.defaultSppgUnit;
   TargetAkgModel _targetAkg = TargetAkgModel.standardPresets[1];
   String _schoolDestination = AppStrings.defaultSamplingSchool;
@@ -23,6 +23,7 @@ class InspectionSessionService extends ChangeNotifier {
   List<FoodComponentModel> _components = [];
   Uint8List? _capturedPhoto;
   double _capturedPhotoAspectRatio = 1;
+  DateTime? _scannedAt;
 
   String get batchCode => _batchCode;
   String get sppgUnit => _sppgUnit;
@@ -32,6 +33,7 @@ class InspectionSessionService extends ChangeNotifier {
   List<FoodComponentModel> get components => List.unmodifiable(_components);
   Uint8List? get capturedPhoto => _capturedPhoto;
   double get capturedPhotoAspectRatio => _capturedPhotoAspectRatio;
+  DateTime? get scannedAt => _scannedAt;
 
   set components(List<FoodComponentModel> value) {
     _components = List<FoodComponentModel>.from(value);
@@ -41,6 +43,7 @@ class InspectionSessionService extends ChangeNotifier {
   void setCapturedPhoto(Uint8List bytes, double aspectRatio) {
     _capturedPhoto = bytes;
     _capturedPhotoAspectRatio = aspectRatio;
+    _scannedAt = DateTime.now();
     notifyListeners();
   }
 
@@ -48,7 +51,7 @@ class InspectionSessionService extends ChangeNotifier {
       _components.fold<int>(0, (sum, item) => sum + item.estimatedGram);
 
   void reset() {
-    _batchCode = AppStrings.defaultSamplingBatchCode;
+    _batchCode = '';
     _sppgUnit = AppStrings.defaultSppgUnit;
     _targetAkg = TargetAkgModel.standardPresets[1];
     _schoolDestination = AppStrings.defaultSamplingSchool;
@@ -56,6 +59,7 @@ class InspectionSessionService extends ChangeNotifier {
     _components = [];
     _capturedPhoto = null;
     _capturedPhotoAspectRatio = 1;
+    _scannedAt = null;
     notifyListeners();
   }
 

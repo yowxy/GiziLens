@@ -16,14 +16,12 @@ import 'widgets/otp_verification_dialog.dart';
 class OtpVerificationScreen extends StatefulWidget {
   final String? initialEmail;
   final String? initialPhone;
-  final String? fullName;
   final bool isForgotPassword;
 
   const OtpVerificationScreen({
     super.key,
     this.initialEmail,
     this.initialPhone,
-    this.fullName,
     this.isForgotPassword = false,
   });
 
@@ -38,8 +36,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void initState() {
     super.initState();
     _controller = OtpController(
-      email: widget.initialEmail ?? AppStrings.defaultOtpEmail,
-      phone: widget.initialPhone ?? AppStrings.defaultOtpPhone,
+      email: widget.initialEmail ?? '-',
+      phone: widget.initialPhone ?? '-',
       onAutoVerified: _handleAutoVerified,
     );
     _controller.addListener(_onControllerUpdate);
@@ -74,15 +72,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     await OtpVerificationDialog.show(
       context,
       onNext: () {
-        context.go(
-          RouteNames.registerSuccess,
-          extra: {
-            'email': _controller.email,
-            'fullName': widget.fullName ?? 'Nurul Gizi',
-            'role': 'Ahli Gizi Lapangan',
-            'unit': 'SPPG Cibinong Sentral 02',
-          },
-        );
+        if (widget.isForgotPassword) {
+          context.go(RouteNames.login);
+          return;
+        }
+        context.go(RouteNames.completeProfile);
       },
     );
   }

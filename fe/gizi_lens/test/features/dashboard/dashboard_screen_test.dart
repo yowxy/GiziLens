@@ -43,8 +43,8 @@ void main() {
       expect(controller.selectedPeriod, equals(MonitoringPeriod.tigaPuluhHari));
     });
 
-    test('toggleNotifications clears unread dot indicator', () {
-      controller.toggleNotifications();
+    test('loadNotifications sets the correct unread notification status', () {
+      controller.loadNotifications();
       expect(controller.hasUnreadNotifications, isFalse);
     });
 

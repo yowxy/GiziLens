@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/firebase_auth_service.dart';
+import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/user_session_service.dart';
 
 /// Controller handling the state and interactions for the Login screen with Firebase.
 class LoginController extends ChangeNotifier {
@@ -44,6 +46,31 @@ class LoginController extends ChangeNotifier {
     return null;
   }
 
+  bool get isProfileIncomplete => _profileIncomplete;
+  bool _profileIncomplete = false;
+
+  /// Check whether the logged-in user has a complete profile in Firestore
+  /// (role, unit, region all filled). Sets [_profileIncomplete] accordingly.
+  Future<void> _checkProfileComplete() async {
+    final user = FirebaseAuthService.instance.currentUser;
+    if (user == null) {
+      _profileIncomplete = false;
+      return;
+    }
+
+    final profileData = await FirestoreService.instance.getUserProfile(user.uid);
+    if (profileData == null) {
+      _profileIncomplete = true;
+      return;
+    }
+
+    final role = (profileData['role'] as String?)?.trim() ?? '';
+    final unit = (profileData['unit'] as String?)?.trim() ?? '';
+    final region = (profileData['region'] as String?)?.trim() ?? '';
+
+    _profileIncomplete = role.isEmpty || unit.isEmpty || region.isEmpty;
+  }
+
   Future<bool> login() async {
     if (!formKey.currentState!.validate()) {
       return false;
@@ -64,6 +91,13 @@ class LoginController extends ChangeNotifier {
         email: email,
         password: password,
       );
+
+      // After successful login, load the full profile from Firestore into
+      // the session service and determine if profile completion is needed.
+      if (credential != null) {
+        await UserSessionService.instance.initializeFromFirebase();
+        await _checkProfileComplete();
+      }
 
       _isLoading = false;
       notifyListeners();

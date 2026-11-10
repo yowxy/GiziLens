@@ -52,6 +52,11 @@ class FirebaseAuthService {
     return prefix;
   }
 
+  static String buildOfficerId(String uid) {
+    final suffix = uid.length >= 5 ? uid.substring(0, 5) : uid;
+    return 'BGN-${DateTime.now().year}-${suffix.toUpperCase()}';
+  }
+
   /// Sign up a new SPPG officer with Email & Password.
   /// Automatically writes initial profile metadata to Cloud Firestore.
   Future<UserCredential?> signUpWithEmailAndPassword({
@@ -96,7 +101,7 @@ class FirebaseAuthService {
             'phone': phone.trim(),
             'role': role,
             'unit': unit,
-            'officerId': 'BGN-2024-${user.uid.substring(0, 5).toUpperCase()}',
+            'officerId': buildOfficerId(user.uid),
             'isVerified': false,
             'createdAt': DateTime.now().toIso8601String(),
           },
@@ -152,8 +157,8 @@ class FirebaseAuthService {
               'fullName': derivedName,
               'email': user.email ?? email.trim(),
               'role': 'Ahli Gizi Lapangan',
-              'unit': 'SPPG Cibinong Sentral 02',
-              'officerId': 'BGN-2024-${user.uid.substring(0, 5).toUpperCase()}',
+              'unit': 'SPPG Ketintang',
+              'officerId': buildOfficerId(user.uid),
               'isVerified': true,
               'createdAt': DateTime.now().toIso8601String(),
             },

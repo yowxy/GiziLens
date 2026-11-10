@@ -22,6 +22,13 @@ class UserSessionService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Reset session state to defaults. Called on logout so the next login
+  /// starts clean instead of showing stale profile data.
+  void reset() {
+    _account = OfficerAccountModel.defaultAccount();
+    notifyListeners();
+  }
+
   /// Initialize user details from current FirebaseAuth session and Firestore.
   Future<void> initializeFromFirebase() async {
     try {
@@ -37,7 +44,7 @@ class UserSessionService extends ChangeNotifier {
       }
 
       final initials = _computeInitials(resolvedName);
-      final officerId = 'BGN-2024-${user.uid.length >= 5 ? user.uid.substring(0, 5).toUpperCase() : "SPPG"}';
+      final officerId = FirebaseAuthService.buildOfficerId(user.uid);
 
       _account = _account.copyWith(
         fullName: resolvedName,
@@ -78,6 +85,7 @@ class UserSessionService extends ChangeNotifier {
   }
 
   /// Update active officer profile and immediately persist to Firebase Auth and Cloud Firestore.
+  /// Returns true only if the Firestore write succeeded.
   Future<bool> updateProfile({
     required String fullName,
     String? role,
@@ -100,7 +108,7 @@ class UserSessionService extends ChangeNotifier {
     );
     notifyListeners();
 
-    // 1. Sync Firebase Auth Display Name
+    // 1. Sync Firebase Auth Display Name (non-critical if this fails)
     try {
       final user = FirebaseAuthService.instance.currentUser;
       if (user != null) {
@@ -110,21 +118,19 @@ class UserSessionService extends ChangeNotifier {
       debugPrint('Notice updating Auth displayName: $e');
     }
 
-    // 2. Sync Cloud Firestore
-    try {
-      final data = <String, dynamic>{
-        'fullName': trimmedName,
-        if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
-        if (unit != null && unit.trim().isNotEmpty) 'unit': unit.trim(),
-        if (region != null && region.trim().isNotEmpty) 'region': region.trim(),
-        if (officerId != null && officerId.trim().isNotEmpty) 'officerId': officerId.trim(),
-      };
-      await FirestoreService.instance.updateCurrentUserProfile(data);
-      return true;
-    } catch (e) {
-      debugPrint('Notice updating Firestore user profile: $e');
-      return true;
+    // 2. Sync Cloud Firestore — this must succeed or data is lost on app kill
+    final data = <String, dynamic>{
+      'fullName': trimmedName,
+      if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
+      if (unit != null && unit.trim().isNotEmpty) 'unit': unit.trim(),
+      if (region != null && region.trim().isNotEmpty) 'region': region.trim(),
+      if (officerId != null && officerId.trim().isNotEmpty) 'officerId': officerId.trim(),
+    };
+    final ok = await FirestoreService.instance.updateCurrentUserProfile(data);
+    if (!ok) {
+      debugPrint('updateProfile: Firestore write FAILED — data may not persist');
     }
+    return ok;
   }
 
   static String _computeInitials(String name) {

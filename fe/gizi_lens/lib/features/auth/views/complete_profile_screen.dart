@@ -47,7 +47,24 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     FocusScope.of(context).unfocus();
     final success = await _controller.saveProfile();
     if (success && mounted) {
-      context.go(RouteNames.home);
+      context.go(
+        RouteNames.registerSuccess,
+        extra: {
+          'email': _controller.accountEmail,
+          'fullName': _controller.profile.fullName,
+          'role': _controller.selectedRole.title,
+          'unit': _controller.selectedUnit,
+        },
+      );
+    } else if (!success && _controller.errorMessage != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_controller.errorMessage!),
+          backgroundColor: AppColors.statTidakSesuaiRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
     }
   }
 
@@ -166,6 +183,73 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSelectField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required FormFieldValidator<String> validator,
+  }) {
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.borderMedium, width: 1.0),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTypography.titleSmall.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          initialValue: value,
+          isExpanded: true,
+          hint: Text(
+            hint,
+            style: AppTypography.bodyMedium.copyWith(
+              fontSize: 13,
+              color: AppColors.textLight,
+            ),
+          ),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, size: 20, color: AppColors.iconFieldMuted),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            border: border,
+            enabledBorder: border,
+            focusedBorder: border.copyWith(
+              borderSide: const BorderSide(color: AppColors.primaryDeep, width: 1.5),
+            ),
+          ),
+          items: items
+              .map(
+                (item) => DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(
+                    item,
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: onChanged,
+          validator: validator,
+        ),
+      ],
     );
   }
 
@@ -290,6 +374,30 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
                       OfficerIdLockedField(
                         officerId: _controller.profile.officerId,
+                      ),
+                      const SizedBox(height: 18),
+
+                      _buildSelectField(
+                        label: AppStrings.operationalUnitLabel,
+                        hint: AppStrings.operationalUnitHint,
+                        icon: Icons.apartment_outlined,
+                        value: _controller.selectedUnit,
+                        items: _controller.availableUnits,
+                        onChanged: _controller.selectUnit,
+                        validator: (value) =>
+                            value == null ? AppStrings.operationalUnitRequired : null,
+                      ),
+                      const SizedBox(height: 18),
+
+                      _buildSelectField(
+                        label: AppStrings.regionLabel,
+                        hint: AppStrings.regionHint,
+                        icon: Icons.map_outlined,
+                        value: _controller.selectedRegion,
+                        items: _controller.availableRegions,
+                        onChanged: _controller.selectRegion,
+                        validator: (value) =>
+                            value == null ? AppStrings.regionRequired : null,
                       ),
                       const SizedBox(height: 22),
 

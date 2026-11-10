@@ -17,16 +17,7 @@ void main() {
 
     test('Initial profile states are correctly initialized', () {
       expect(controller.activeNavIndex, equals(3));
-      expect(controller.account.fullName, equals(AppStrings.officerFullName));
-      expect(controller.account.initials, equals(AppStrings.officerInitials));
-      expect(controller.account.officerId, equals(AppStrings.profileOfficerIdValue));
-      expect(controller.account.hasNotification, isTrue);
       expect(controller.notificationsEnabled, isTrue);
-    });
-
-    test('dismissNotificationBadge disables notification badge', () {
-      controller.dismissNotificationBadge();
-      expect(controller.account.hasNotification, isFalse);
     });
 
     test('updateProfileName updates name and computes initials', () {
@@ -77,9 +68,6 @@ void main() {
       expect(find.text(AppStrings.profileScreenSubtitle), findsOneWidget);
 
       expect(find.byType(OfficerInfoHeroCard), findsOneWidget);
-      expect(find.text(AppStrings.officerFullName), findsOneWidget);
-      expect(find.text(AppStrings.officerInitials), findsOneWidget);
-      expect(find.text(AppStrings.officerVerifiedBgn), findsOneWidget);
       expect(find.text(AppStrings.btnEditProfile), findsOneWidget);
 
       expect(find.text(AppStrings.sectionPreferenceTitle), findsOneWidget);

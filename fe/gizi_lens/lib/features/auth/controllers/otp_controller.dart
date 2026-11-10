@@ -24,8 +24,8 @@ class OtpController extends ChangeNotifier {
   bool _isVerified = false;
 
   OtpController({
-    this.email = 'nurulag***@gmail.com',
-    this.phone = '+62 812-****-789',
+    this.email = '-',
+    this.phone = '-',
     this.onAutoVerified,
   }) {
     _generateNewOtp();

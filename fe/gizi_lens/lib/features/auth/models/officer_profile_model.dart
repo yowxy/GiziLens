@@ -22,12 +22,12 @@ class OfficerProfileModel {
 
   factory OfficerProfileModel.initial() {
     return const OfficerProfileModel(
-      fullName: 'Nurul Gizi',
-      officerId: 'SPPG-2024-CIB02-GZ',
+      fullName: '-',
+      officerId: '-',
       selectedRole: OfficerRole.ahliGizi,
       isVerified: true,
       isCertificationActive: true,
-      initials: 'NG',
+      initials: '-',
     );
   }
 
