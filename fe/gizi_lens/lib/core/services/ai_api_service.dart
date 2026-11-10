@@ -173,17 +173,44 @@ class AiApiService {
   }
 
   String _userPrompt(TargetAkgModel target) =>
-      '''Analisis foto baki makanan ini.
-Target penerima: ${target.groupName}.
-Target makan siang berdasarkan AKG Indonesia 2019: ${target.lunchCalories.toStringAsFixed(1)} kkal, protein ${target.lunchProtein.toStringAsFixed(1)} g, lemak ${target.lunchFat.toStringAsFixed(1)} g, karbohidrat ${target.lunchCarbohydrate.toStringAsFixed(1)} g, serat ${target.lunchFiber.toStringAsFixed(1)} g.
+      '''Analisis gambar ompreng/baki makanan ini secara detail.
 
-Kembalikan hanya JSON valid dengan bentuk:
-{"items":[{"name":"...","category":"Pokok|Lauk|Sayur|Buah|Minuman|Lainnya","estimatedGram":0,"confidence":0.0,"bbox":[0,0,0,0],"nutrition":{"calories":0,"protein":0,"fat":0,"carbohydrate":0,"fiber":0}}],"summary":"...","akgAssessment":"..."}
+      KONTEKS TARGET GIZI (AKG 2019):
+      - Kelompok: ${target.groupName}
+      - Standar Makan Siang: Energi ${target.lunchCalories.toStringAsFixed(0)} kkal | Protein ${target.lunchProtein.toStringAsFixed(1)} g | Lemak ${target.lunchFat.toStringAsFixed(1)} g | Karbohidrat ${target.lunchCarbohydrate.toStringAsFixed(1)} g | Serat ${target.lunchFiber.toStringAsFixed(1)} g.
 
-bbox adalah [x, y, lebar, tinggi] dalam nilai 0 sampai 1 relatif terhadap seluruh foto, dengan titik (0,0) di pojok kiri atas, dan mengelilingi seluruh porsi makanan tersebut.
+      INSTRUKSI WAJIB:
+      1. Identifikasi setiap jenis makanan/minuman yang terlihat jelas secara terpisah (misal: Nasi, Ayam Goreng, Sayur Kangkung).
+      2. Jangan mengarang makanan yang tidak terlihat.
+      3. Estimasi berat (gram) dan nutrisi untuk ukuran porsi yang terlihat di foto.
+      4. Buat bounding box untuk setiap item. Format bbox: [x_min, y_min, lebar, tinggi]. Nilai berupa float 0.0 hingga 1.0 yang dinormalisasi (relatif terhadap dimensi gambar). Titik (0,0) adalah pojok kiri atas.
+      5. Jika foto bukan makanan, kembalikan array "items" kosong dan isi alasannya di "summary".
 
-Ambil hanya makanan yang benar-benar terlihat. Jangan mengarang makanan yang tertutup atau tidak jelas. Gunakan estimasi gram dan nutrisi per porsi yang wajar, tandai confidence 0 sampai 1, dan jelaskan kesesuaian total menu terhadap target AKG 2019 di summary atau akgAssessment. Jika foto tidak jelas, tetap kembalikan items kosong dan jelaskan alasannya.''';
+      FORMAT OUTPUT:
+      Kembalikan HANYA JSON berformat persis seperti ini:
+      {
+        "items": [
+          {
+            "name": "Nama Makanan",
+            "category": "Pokok|Lauk|Sayur|Buah|Minuman|Lainnya",
+            "estimatedGram": 150,
+            "confidence": 0.95,
+            "bbox": [0.1, 0.2, 0.4, 0.3],
+            "nutrition": {
+              "calories": 200,
+              "protein": 5.5,
+              "fat": 1.2,
+              "carbohydrate": 40.0,
+              "fiber": 1.0
+            }
+          }
+        ],
+        "summary": "Penjelasan singkat mengenai isi piring.",
+        "akgAssessment": "Analisis singkat apakah total nutrisi di gambar ini sudah memenuhi atau melebihi target AKG di atas."
+      }''';
 
   static const _systemPrompt =
-      'Kamu adalah analis gizi makanan Indonesia. Jawab dalam Bahasa Indonesia. Jangan memberikan markdown, komentar, atau teks di luar JSON yang diminta. Nilai nutrisi adalah estimasi, bukan diagnosis medis.';
+      'Kamu adalah ahli gizi dan vision AI profesional. Jawab murni HANYA dengan JSON valid tanpa markdown, tanpa penjelasan tambahan, tanpa prolog atau epilog. '
+      'Nilai nutrisi adalah estimasi per porsi yang terlihat di gambar. '
+      'Pastikan bounding box presisi mengelilingi porsi makanan secara individual.';
 }
