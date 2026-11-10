@@ -16,11 +16,6 @@ class UserSessionService extends ChangeNotifier {
 
   OfficerAccountModel get account => _account;
 
-  void dismissNotification() {
-    if (!_account.hasNotification) return;
-    _account = _account.copyWith(hasNotification: false);
-    notifyListeners();
-  }
 
   void resetForTesting() {
     _account = OfficerAccountModel.defaultAccount();

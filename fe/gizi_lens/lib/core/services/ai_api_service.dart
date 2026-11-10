@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:ui' show Rect;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,7 @@ class ApiFoodItem {
   final double fat;
   final double carbohydrate;
   final double fiber;
+  final Rect? boundingBox;
 
   const ApiFoodItem({
     required this.name,
@@ -27,11 +29,12 @@ class ApiFoodItem {
     required this.fat,
     required this.carbohydrate,
     required this.fiber,
+    this.boundingBox,
   });
 }
 
 class AiApiService {
-  static const _model = 'deepseek-v4-flash';
+  static const _model = 'gemini/gemini-3.5-flash';
 
   String get _apiKey => dotenv.env['SUMOPOD_API_KEY'] ?? '';
   String get _baseUrl =>
@@ -59,7 +62,7 @@ class AiApiService {
           body: jsonEncode({
             'model': _model,
             'temperature': 0.1,
-            'max_tokens': 1400,
+            'max_tokens': 4096,
             'messages': [
               {'role': 'system', 'content': _systemPrompt},
               {
@@ -88,12 +91,16 @@ class AiApiService {
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
     final choices = payload['choices'] as List<dynamic>?;
-    final content = choices == null || choices.isEmpty
+    final choice = choices == null || choices.isEmpty
         ? null
-        : (choices.first as Map<String, dynamic>)['message']
-              as Map<String, dynamic>?;
-    final rawContent = content?['content'];
-    final jsonText = _contentToJsonText(rawContent);
+        : choices.first as Map<String, dynamic>;
+    final message = choice?['message'] as Map<String, dynamic>?;
+    final jsonText = _contentToJsonText(message?['content']);
+    if (jsonText.isEmpty) {
+      throw StateError(
+        'AI tidak mengembalikan hasil (finish_reason: ${choice?['finish_reason']}). Coba analisis ulang.',
+      );
+    }
     final result = jsonDecode(jsonText) as Map<String, dynamic>;
     final items = result['items'] as List<dynamic>? ?? const [];
 
@@ -117,7 +124,18 @@ class AiApiService {
       fat: _number(nutrition['fat']),
       carbohydrate: _number(nutrition['carbohydrate']),
       fiber: _number(nutrition['fiber']),
+      boundingBox: _rect(item['bbox']),
     );
+  }
+
+  Rect? _rect(dynamic value) {
+    if (value is! List || value.length != 4) return null;
+    final x = _number(value[0]).clamp(0.0, 1.0);
+    final y = _number(value[1]).clamp(0.0, 1.0);
+    final width = _number(value[2]).clamp(0.0, 1.0 - x);
+    final height = _number(value[3]).clamp(0.0, 1.0 - y);
+    if (width <= 0 || height <= 0) return null;
+    return Rect.fromLTWH(x, y, width, height);
   }
 
   String _contentToJsonText(dynamic content) {
@@ -160,7 +178,9 @@ Target penerima: ${target.groupName}.
 Target makan siang berdasarkan AKG Indonesia 2019: ${target.lunchCalories.toStringAsFixed(1)} kkal, protein ${target.lunchProtein.toStringAsFixed(1)} g, lemak ${target.lunchFat.toStringAsFixed(1)} g, karbohidrat ${target.lunchCarbohydrate.toStringAsFixed(1)} g, serat ${target.lunchFiber.toStringAsFixed(1)} g.
 
 Kembalikan hanya JSON valid dengan bentuk:
-{"items":[{"name":"...","category":"Pokok|Lauk|Sayur|Buah|Minuman|Lainnya","estimatedGram":0,"confidence":0.0,"nutrition":{"calories":0,"protein":0,"fat":0,"carbohydrate":0,"fiber":0}}],"summary":"...","akgAssessment":"..."}
+{"items":[{"name":"...","category":"Pokok|Lauk|Sayur|Buah|Minuman|Lainnya","estimatedGram":0,"confidence":0.0,"bbox":[0,0,0,0],"nutrition":{"calories":0,"protein":0,"fat":0,"carbohydrate":0,"fiber":0}}],"summary":"...","akgAssessment":"..."}
+
+bbox adalah [x, y, lebar, tinggi] dalam nilai 0 sampai 1 relatif terhadap seluruh foto, dengan titik (0,0) di pojok kiri atas, dan mengelilingi seluruh porsi makanan tersebut.
 
 Ambil hanya makanan yang benar-benar terlihat. Jangan mengarang makanan yang tertutup atau tidak jelas. Gunakan estimasi gram dan nutrisi per porsi yang wajar, tandai confidence 0 sampai 1, dan jelaskan kesesuaian total menu terhadap target AKG 2019 di summary atau akgAssessment. Jika foto tidak jelas, tetap kembalikan items kosong dan jelaskan alasannya.''';
 

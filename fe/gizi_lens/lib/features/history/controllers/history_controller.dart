@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../models/history_filter_model.dart';
 
 /// Controller managing history tabs, search queries, date filters, and live Firestore data.
@@ -7,12 +8,12 @@ class HistoryController extends ChangeNotifier {
   final TextEditingController searchController = TextEditingController();
 
   HistoryFilterModel _filter = const HistoryFilterModel();
-  bool _hasNotification = true;
+
   List<Map<String, dynamic>> _inspections = [];
   bool _isLoading = false;
 
   HistoryFilterModel get filter => _filter;
-  bool get hasNotification => _hasNotification;
+  bool get hasNotification => NotificationService.instance.hasUnread;
   HistoryTab get activeTab => _filter.activeTab;
   HistoryDateFilter get activeDateFilter => _filter.dateFilter;
   bool get isLoading => _isLoading;
@@ -65,6 +66,7 @@ class HistoryController extends ChangeNotifier {
 
   HistoryController() {
     searchController.addListener(_onSearchChanged);
+    NotificationService.instance.addListener(_onNotificationsChanged);
     loadInspections();
   }
 
@@ -74,12 +76,17 @@ class HistoryController extends ChangeNotifier {
 
     try {
       _inspections = await FirestoreService.instance.getInspections();
+      NotificationService.instance.updateFromInspections(_inspections);
     } catch (_) {
       _inspections = [];
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _onNotificationsChanged() {
+    notifyListeners();
   }
 
   void _onSearchChanged() {
@@ -110,14 +117,11 @@ class HistoryController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void dismissNotification() {
-    _hasNotification = false;
-    notifyListeners();
-  }
 
   @override
   void dispose() {
     searchController.removeListener(_onSearchChanged);
+    NotificationService.instance.removeListener(_onNotificationsChanged);
     searchController.dispose();
     super.dispose();
   }

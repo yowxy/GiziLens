@@ -276,12 +276,16 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                               ),
                             ),
                           ] else ...[
-                            Text(
-                              AppStrings.btnViewRecommendations,
-                              style: AppTypography.titleMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14.5,
+                            Flexible(
+                              child: Text(
+                                AppStrings.btnViewRecommendations,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14.5,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -381,30 +385,36 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  AppStrings.targetAudienceTitle,
-                  style: AppTypography.titleMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5EE),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  _controller.targetGroupName,
-                  style: AppTypography.captionBold.copyWith(
-                    fontSize: 11.5,
-                    color: const Color(0xFF53675C),
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppStrings.targetAudienceTitle,
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5EE),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        _controller.targetGroupName,
+                        style: AppTypography.captionBold.copyWith(
+                          fontSize: 11.5,
+                          color: const Color(0xFF53675C),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

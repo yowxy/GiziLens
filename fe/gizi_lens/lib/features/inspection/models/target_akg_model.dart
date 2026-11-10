@@ -63,15 +63,5 @@ class TargetAkgModel {
       lunchCarbohydrate: 126.75,
       lunchFiber: 11.8625,
     ),
-    TargetAkgModel(
-      groupName: 'Ibu Hamil & Menyusui',
-      calories: 800,
-      proteinRange: '30–35g',
-      lunchCalories: 780.0,
-      lunchProtein: 29.25,
-      lunchFat: 25.35,
-      lunchCarbohydrate: 117.0,
-      lunchFiber: 8.125,
-    ),
   ];
 }

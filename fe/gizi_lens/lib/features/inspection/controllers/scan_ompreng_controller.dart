@@ -6,8 +6,8 @@ import 'package:camera/camera.dart';
 import '../../../core/services/ai_api_service.dart';
 import '../../../core/services/ai_mode.dart';
 import '../../../core/services/ai_service.dart';
+import '../../../core/services/inspection_session_service.dart';
 import '../models/food_component_model.dart';
-import '../models/inspection_session.dart';
 import '../services/food_nutrition_catalog.dart';
 
 class ScanOmprengController extends ChangeNotifier {
@@ -18,10 +18,10 @@ class ScanOmprengController extends ChangeNotifier {
   bool _isModelReady = false;
   String? _errorMessage;
   List<DetectionResult> _detections = const [];
-  bool _isLightingOk = true;
-  bool _isWholeTrayVisible = true;
-  bool _isCameraFocused = true;
-  bool _isWithinFrame = true;
+  bool _isLightingOk = false;
+  bool _isWholeTrayVisible = false;
+  bool _isCameraFocused = false;
+  bool _isWithinFrame = false;
   bool _showAiBoundingBoxes = true;
 
   bool get isFlashOn => _isFlashOn;
@@ -91,20 +91,24 @@ class ScanOmprengController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final bytes = await photo.readAsBytes();
+      final bytes = Uint8List.fromList(await photo.readAsBytes());
       if (useApiAi) {
         final items = await _aiApiService.analyzeImage(
-          Uint8List.fromList(bytes),
-          target: InspectionSession.instance.targetAkg,
+          bytes,
+          target: InspectionSessionService.instance.targetAkg,
         );
         if (items.isEmpty) {
           throw const FormatException('Tidak ada menu makanan yang terbaca.');
         }
         _saveApiComponents(items);
       } else {
-        _detections = await _aiService.detect(Uint8List.fromList(bytes));
+        _detections = await _aiService.detect(bytes);
         _saveDetectedComponents();
       }
+      final decoded = await decodeImageFromList(bytes);
+      final aspectRatio = decoded.width / decoded.height;
+      decoded.dispose();
+      InspectionSessionService.instance.setCapturedPhoto(bytes, aspectRatio);
       return true;
     } catch (error) {
       _errorMessage = 'Analisis citra gagal: $error';
@@ -116,7 +120,7 @@ class ScanOmprengController extends ChangeNotifier {
   }
 
   void _saveApiComponents(List<ApiFoodItem> items) {
-    InspectionSession.instance.components = [
+    InspectionSessionService.instance.components = [
       for (var index = 0; index < items.length; index++)
         _toComponent(items[index], index + 1),
     ];
@@ -138,6 +142,7 @@ class ScanOmprengController extends ChangeNotifier {
       fat: item.fat,
       carbohydrate: item.carbohydrate,
       fiber: item.fiber,
+      boundingBox: item.boundingBox,
     );
   }
 
@@ -174,12 +179,18 @@ class ScanOmprengController extends ChangeNotifier {
             0,
             100,
           ),
+          boundingBox: Rect.fromLTWH(
+            detection.x / 320,
+            detection.y / 320,
+            detection.width / 320,
+            detection.height / 320,
+          ),
         ),
       );
       if (components.length == 5) break;
     }
     if (components.isNotEmpty) {
-      InspectionSession.instance.components = components;
+      InspectionSessionService.instance.components = components;
     }
   }
 

@@ -1,10 +1,22 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../models/food_component_model.dart';
 
 class FoodPartitionView extends StatelessWidget {
-  const FoodPartitionView({super.key});
+  final Uint8List? photoBytes;
+  final double aspectRatio;
+  final List<FoodComponentModel> components;
+
+  const FoodPartitionView({
+    super.key,
+    required this.photoBytes,
+    required this.aspectRatio,
+    required this.components,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +44,6 @@ class FoodPartitionView extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          height: 250,
           decoration: BoxDecoration(
             color: Colors.black,
             borderRadius: BorderRadius.circular(18),
@@ -49,17 +60,86 @@ class FoodPartitionView extends StatelessWidget {
             ],
           ),
           clipBehavior: Clip.antiAlias,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Image.asset(
-                AppAssets.omprengBakiSample,
-                fit: BoxFit.cover,
-              ),
-            ],
-          ),
+          child: photoBytes == null ? _buildPlaceholder() : _buildPhoto(photoBytes!),
         ),
       ],
     );
+  }
+
+  Widget _buildPlaceholder() {
+    return SizedBox(
+      height: 250,
+      child: Center(
+        child: Text(
+          'Foto hasil scan belum tersedia',
+          style: AppTypography.bodySmall.copyWith(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoto(Uint8List bytes) {
+    return AspectRatio(
+      aspectRatio: aspectRatio,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.memory(bytes, fit: BoxFit.fill, gaplessPlayback: true),
+              for (final component in components)
+                if (component.boundingBox != null)
+                  ..._buildComponentOverlay(component, constraints),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  List<Widget> _buildComponentOverlay(
+    FoodComponentModel component,
+    BoxConstraints constraints,
+  ) {
+    final box = component.boundingBox!;
+    final left = box.left * constraints.maxWidth;
+    final top = box.top * constraints.maxHeight;
+    return [
+      Positioned(
+        left: left,
+        top: top,
+        width: box.width * constraints.maxWidth,
+        height: box.height * constraints.maxHeight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.primaryDeep, width: 2),
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ),
+      ),
+      Positioned(
+        left: left + 4,
+        top: top + 4,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.6),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.primaryDeep,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '${component.name} | ${component.estimatedGram} g',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.captionBold.copyWith(
+                color: Colors.white,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ];
   }
 }

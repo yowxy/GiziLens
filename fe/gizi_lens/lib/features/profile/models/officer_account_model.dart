@@ -8,7 +8,7 @@ class OfficerAccountModel {
   final String unitOperational;
   final String unitRegion;
   final bool isVerified;
-  final bool hasNotification;
+
 
   const OfficerAccountModel({
     required this.fullName,
@@ -18,7 +18,7 @@ class OfficerAccountModel {
     required this.unitOperational,
     required this.unitRegion,
     this.isVerified = true,
-    this.hasNotification = true,
+
   });
 
   factory OfficerAccountModel.defaultAccount() {
@@ -30,7 +30,7 @@ class OfficerAccountModel {
       unitOperational: AppStrings.unitOperationalValue,
       unitRegion: AppStrings.unitOperationalRegion,
       isVerified: true,
-      hasNotification: true,
+
     );
   }
 
@@ -42,7 +42,7 @@ class OfficerAccountModel {
     String? unitOperational,
     String? unitRegion,
     bool? isVerified,
-    bool? hasNotification,
+
   }) {
     return OfficerAccountModel(
       fullName: fullName ?? this.fullName,
@@ -52,7 +52,7 @@ class OfficerAccountModel {
       unitOperational: unitOperational ?? this.unitOperational,
       unitRegion: unitRegion ?? this.unitRegion,
       isVerified: isVerified ?? this.isVerified,
-      hasNotification: hasNotification ?? this.hasNotification,
+
     );
   }
 }

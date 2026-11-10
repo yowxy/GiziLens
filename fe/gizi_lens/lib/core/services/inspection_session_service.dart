@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import '../constants/app_strings.dart';
 import '../../features/inspection/models/food_component_model.dart';
@@ -19,6 +21,8 @@ class InspectionSessionService extends ChangeNotifier {
   String _schoolDestination = AppStrings.defaultSamplingSchool;
   String _notes = AppStrings.defaultInspectionNotes;
   List<FoodComponentModel> _components = [];
+  Uint8List? _capturedPhoto;
+  double _capturedPhotoAspectRatio = 1;
 
   String get batchCode => _batchCode;
   String get sppgUnit => _sppgUnit;
@@ -26,6 +30,19 @@ class InspectionSessionService extends ChangeNotifier {
   String get schoolDestination => _schoolDestination;
   String get notes => _notes;
   List<FoodComponentModel> get components => List.unmodifiable(_components);
+  Uint8List? get capturedPhoto => _capturedPhoto;
+  double get capturedPhotoAspectRatio => _capturedPhotoAspectRatio;
+
+  set components(List<FoodComponentModel> value) {
+    _components = List<FoodComponentModel>.from(value);
+    notifyListeners();
+  }
+
+  void setCapturedPhoto(Uint8List bytes, double aspectRatio) {
+    _capturedPhoto = bytes;
+    _capturedPhotoAspectRatio = aspectRatio;
+    notifyListeners();
+  }
 
   int get totalNetWeight =>
       _components.fold<int>(0, (sum, item) => sum + item.estimatedGram);
@@ -36,7 +53,9 @@ class InspectionSessionService extends ChangeNotifier {
     _targetAkg = TargetAkgModel.standardPresets[1];
     _schoolDestination = AppStrings.defaultSamplingSchool;
     _notes = AppStrings.defaultInspectionNotes;
-    _components = List<FoodComponentModel>.from(FoodComponentModel.getSampleComponents());
+    _components = [];
+    _capturedPhoto = null;
+    _capturedPhotoAspectRatio = 1;
     notifyListeners();
   }
 
@@ -75,16 +94,24 @@ class InspectionSessionService extends ChangeNotifier {
     final index = _components.indexWhere((c) => c.id == id);
     if (index != -1) {
       final old = _components[index];
+      final gram = newGram ?? old.estimatedGram;
+      final scale = old.estimatedGram == 0 ? 1.0 : gram / old.estimatedGram;
       _components[index] = FoodComponentModel(
         id: old.id,
         name: (newName != null && newName.trim().isNotEmpty) ? newName.trim() : old.name,
-        estimatedGram: newGram ?? old.estimatedGram,
+        estimatedGram: gram,
         compartmentNumber: old.compartmentNumber,
         category: (category != null && category.trim().isNotEmpty) ? category.trim() : old.category,
         confidencePercentage: old.confidencePercentage,
         isVerified: true,
         complianceStatus: complianceStatus ?? old.complianceStatus,
         iconData: old.iconData,
+        calories: old.calories * scale,
+        protein: old.protein * scale,
+        fat: old.fat * scale,
+        carbohydrate: old.carbohydrate * scale,
+        fiber: old.fiber * scale,
+        boundingBox: old.boundingBox,
       );
       notifyListeners();
     }

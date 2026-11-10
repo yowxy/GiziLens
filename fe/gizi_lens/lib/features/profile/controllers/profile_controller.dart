@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/user_session_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../models/officer_account_model.dart';
 
 class ProfileController extends ChangeNotifier {
   int _activeNavIndex = 3;
-  bool _notificationsEnabled = true;
+
 
   OfficerAccountModel get account => UserSessionService.instance.account;
   int get activeNavIndex => _activeNavIndex;
-  bool get notificationsEnabled => _notificationsEnabled;
+  bool get notificationsEnabled => NotificationService.instance.enabled;
+  bool get hasUnreadNotifications => NotificationService.instance.hasUnread;
 
   ProfileController() {
     UserSessionService.instance.addListener(_onUserSessionUpdated);
+    NotificationService.instance.addListener(_onUserSessionUpdated);
   }
 
   void _onUserSessionUpdated() {
@@ -30,12 +33,7 @@ class ProfileController extends ChangeNotifier {
   }
 
   void toggleNotifications(bool value) {
-    _notificationsEnabled = value;
-    notifyListeners();
-  }
-
-  void dismissNotificationBadge() {
-    UserSessionService.instance.dismissNotification();
+    NotificationService.instance.setEnabled(value);
   }
 
   /// Updates the officer profile in memory, Firebase Auth, and Cloud Firestore.
@@ -63,6 +61,7 @@ class ProfileController extends ChangeNotifier {
   @override
   void dispose() {
     UserSessionService.instance.removeListener(_onUserSessionUpdated);
+    NotificationService.instance.removeListener(_onUserSessionUpdated);
     super.dispose();
   }
 }

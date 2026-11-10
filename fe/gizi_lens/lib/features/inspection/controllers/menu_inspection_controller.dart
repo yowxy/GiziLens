@@ -3,7 +3,6 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/services/inspection_session_service.dart';
 import '../models/batch_info_model.dart';
 import '../models/target_akg_model.dart';
-import '../models/inspection_session.dart';
 
 /// Controller handling operational batch input and state validation.
 class MenuInspectionController extends ChangeNotifier {
@@ -80,7 +79,6 @@ class MenuInspectionController extends ChangeNotifier {
         notes: notesController.text.trim(),
       );
       await Future.delayed(const Duration(milliseconds: 500));
-      InspectionSession.instance.targetAkg = _selectedTargetAkg;
       _isLoading = false;
       notifyListeners();
       return true;

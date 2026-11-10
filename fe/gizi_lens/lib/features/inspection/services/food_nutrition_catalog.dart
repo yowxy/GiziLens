@@ -29,6 +29,7 @@ class FoodNutrition {
     required String id,
     required int compartmentNumber,
     required int confidencePercentage,
+    Rect? boundingBox,
   }) {
     final factor = defaultGram / 100;
     return FoodComponentModel(
@@ -44,6 +45,7 @@ class FoodNutrition {
       fat: fatPer100g * factor,
       carbohydrate: carbohydratePer100g * factor,
       fiber: fiberPer100g * factor,
+      boundingBox: boundingBox,
     );
   }
 }

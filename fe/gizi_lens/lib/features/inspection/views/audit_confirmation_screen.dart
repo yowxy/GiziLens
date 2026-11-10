@@ -10,7 +10,6 @@ import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/inspection_session_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
-import '../models/inspection_session.dart';
 import '../models/nutrition_analysis_model.dart';
 
 class AuditConfirmationScreen extends StatefulWidget {
@@ -31,7 +30,6 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
     final officer = UserSessionService.instance.account;
 
     try {
-      final session = InspectionSession.instance;
       final components = session.components;
       final metrics = NutrientMetricModel.fromComponents(
         components,
@@ -44,7 +42,9 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         'session': AppStrings.targetGroupSession,
         'totalNetWeight': '${session.totalNetWeight} gram',
         'totalLiquid': AppStrings.totalLiquidValue,
-        'complianceStatus': 'SESUAI',
+        'complianceStatus': metrics.every((metric) => metric.percentageOfTarget >= 85)
+            ? 'SESUAI'
+            : 'TIDAK SESUAI',
         'isLocked': true,
         'trayFraction': AppStrings.trayFraction,
         'verifierRole': AppStrings.verifierRolePill,

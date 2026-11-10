@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/frame_quality_analyzer.dart';
 import '../controllers/scan_ompreng_controller.dart';
 import 'widgets/google_lens_hologram_scanner.dart';
 import 'widgets/scan_validation_card.dart';
@@ -25,6 +26,8 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   CameraController? _cameraController;
   late Future<void> _initialization;
   bool _isCapturing = false;
+  DateTime _lastFrameAnalysis = DateTime.fromMillisecondsSinceEpoch(0);
+  static const _frameAnalysisInterval = Duration(milliseconds: 400);
 
   @override
   void initState() {
@@ -52,9 +55,30 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
       cameraDescription,
       ResolutionPreset.high,
       enableAudio: false,
+      imageFormatGroup: ImageFormatGroup.yuv420,
     );
     await camera.initialize();
     _cameraController = camera;
+    await camera.startImageStream(_onCameraFrame);
+  }
+
+  void _onCameraFrame(CameraImage image) {
+    final now = DateTime.now();
+    if (now.difference(_lastFrameAnalysis) < _frameAnalysisInterval) return;
+    _lastFrameAnalysis = now;
+    final plane = image.planes.first;
+    final quality = analyzeLuminanceFrame(
+      plane.bytes,
+      width: image.width,
+      height: image.height,
+      bytesPerRow: plane.bytesPerRow,
+    );
+    _controller.setValidationStates(
+      lighting: quality.lighting,
+      wholeTray: quality.wholeTray,
+      focused: quality.focused,
+      withinFrame: quality.withinFrame,
+    );
   }
 
   Future<void> _initializeModel() async {
@@ -79,6 +103,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   Future<void> _handleShutterTap() async {
     if (_isCapturing || _controller.isAnalyzing) return;
     setState(() => _isCapturing = true);
+    CameraController? camera;
     try {
       try {
         await _initialization;
@@ -86,8 +111,11 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
         return;
       }
 
-      final camera = _cameraController;
+      camera = _cameraController;
       if (camera == null || !camera.value.isInitialized) return;
+      if (camera.value.isStreamingImages) {
+        await camera.stopImageStream();
+      }
       final photo = await camera.takePicture();
       final success = await _controller.capturePhoto(photo);
       if (success && mounted) {
@@ -98,6 +126,11 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
         }
       }
     } finally {
+      if (camera != null &&
+          camera.value.isInitialized &&
+          !camera.value.isStreamingImages) {
+        await camera.startImageStream(_onCameraFrame);
+      }
       if (mounted) {
         setState(() => _isCapturing = false);
       }

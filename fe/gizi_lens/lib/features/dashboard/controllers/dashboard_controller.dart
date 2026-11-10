@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/services/firestore_service.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../models/dashboard_stats_model.dart';
 
@@ -8,14 +9,14 @@ import '../models/dashboard_stats_model.dart';
 class DashboardController extends ChangeNotifier {
   int _activeNavIndex = 0;
   MonitoringPeriod _selectedPeriod = MonitoringPeriod.hariIni;
-  bool _hasUnreadNotifications = true;
+
   DashboardStatsModel _stats = const DashboardStatsModel();
 
   final String _greeting = AppStrings.greetingWelcome;
 
   int get activeNavIndex => _activeNavIndex;
   MonitoringPeriod get selectedPeriod => _selectedPeriod;
-  bool get hasUnreadNotifications => _hasUnreadNotifications;
+  bool get hasUnreadNotifications => NotificationService.instance.hasUnread;
   DashboardStatsModel get stats => _stats;
 
   String get officerName => UserSessionService.instance.account.fullName;
@@ -24,12 +25,20 @@ class DashboardController extends ChangeNotifier {
 
   DashboardController() {
     UserSessionService.instance.addListener(_onUserSessionChanged);
+    NotificationService.instance.addListener(_onUserSessionChanged);
     loadStatsFromFirestore();
     loadUserProfile();
+    loadNotifications();
   }
 
   void _onUserSessionChanged() {
     notifyListeners();
+  }
+
+  Future<void> loadNotifications() async {
+    await NotificationService.instance.loadSettings();
+    final inspections = await FirestoreService.instance.getInspections();
+    NotificationService.instance.updateFromInspections(inspections);
   }
 
   Future<void> loadUserProfile() async {
@@ -83,14 +92,11 @@ class DashboardController extends ChangeNotifier {
     };
   }
 
-  void toggleNotifications() {
-    _hasUnreadNotifications = false;
-    notifyListeners();
-  }
 
   @override
   void dispose() {
     UserSessionService.instance.removeListener(_onUserSessionChanged);
+    NotificationService.instance.removeListener(_onUserSessionChanged);
     super.dispose();
   }
 }

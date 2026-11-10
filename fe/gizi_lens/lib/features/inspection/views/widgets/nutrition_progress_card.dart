@@ -6,16 +6,18 @@ import '../../models/nutrition_analysis_model.dart';
 class NutritionProgressCard extends StatelessWidget {
   final NutrientMetricModel metric;
 
-  const NutritionProgressCard({
-    super.key,
-    required this.metric,
-  });
+  const NutritionProgressCard({super.key, required this.metric});
+
+  String _formatValue(double value) =>
+      value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
     final progress = (metric.currentValue / metric.targetValue).clamp(0.0, 1.0);
     final isSurplus = metric.isSurplus;
-    final primaryBarColor = isSurplus ? const Color(0xFFD97706) : const Color(0xFF163E32);
+    final accentColor = isSurplus
+        ? const Color(0xFFD97706)
+        : const Color(0xFF1E6C45);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -28,7 +30,7 @@ class NutritionProgressCard extends StatelessWidget {
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: isSurplus ? const Color(0xFFD97706) : const Color(0xFF1E6C45),
+                  color: accentColor,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -43,27 +45,45 @@ class NutritionProgressCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Text.rich(
-                TextSpan(
-                  style: AppTypography.titleMedium.copyWith(
-                    fontSize: 14.5,
-                    color: const Color(0xFF64748B),
-                  ),
-                  children: [
-                    TextSpan(
-                      text: metric.currentValue % 1 == 0
-                          ? metric.currentValue.toInt().toString()
-                          : metric.currentValue.toStringAsFixed(1),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: isSurplus ? const Color(0xFFDC2626) : AppColors.textPrimary,
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    style: AppTypography.titleMedium.copyWith(
+                      fontSize: 14.5,
+                      color: const Color(0xFF64748B),
+                    ),
+                    children: [
+                      TextSpan(
+                        text: _formatValue(metric.currentValue),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: isSurplus
+                              ? const Color(0xFFDC2626)
+                              : AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    TextSpan(
-                      text: ' / ${metric.targetValue} ${metric.unit}',
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                  ],
+                      TextSpan(
+                        text:
+                            ' / ${_formatValue(metric.targetValue)} ${metric.unit}',
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${metric.percentageOfTarget}%',
+                style: AppTypography.captionBold.copyWith(
+                  fontSize: 12.5,
+                  color: accentColor,
                 ),
               ),
             ],
@@ -75,71 +95,35 @@ class NutritionProgressCard extends StatelessWidget {
               value: progress,
               minHeight: 7,
               backgroundColor: const Color(0xFFE5EDE3),
-              valueColor: AlwaysStoppedAnimation<Color>(primaryBarColor),
+              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
             ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              Text(
-                '${metric.percentageOfTarget}% Target${isSurplus ? ' (Surplus Lemak)' : ''}',
-                style: AppTypography.captionBold.copyWith(
-                  fontSize: 12,
-                  color: isSurplus ? const Color(0xFFB45309) : const Color(0xFF53675C),
+              Icon(
+                isSurplus
+                    ? Icons.warning_amber_rounded
+                    : Icons.check_circle_outline_rounded,
+                size: 13,
+                color: isSurplus
+                    ? const Color(0xFFB45309)
+                    : const Color(0xFF15803D),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  metric.statusLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.captionBold.copyWith(
+                    fontSize: 11.5,
+                    color: isSurplus
+                        ? const Color(0xFFB45309)
+                        : const Color(0xFF15803D),
+                  ),
                 ),
               ),
-              const Spacer(),
-              if (isSurplus) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: const Color(0xFFFDE68A),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        size: 12,
-                        color: Color(0xFFB45309),
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Di atas Target',
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFB45309),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ] else ...[
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.check_circle_outline_rounded,
-                      size: 13,
-                      color: Color(0xFF15803D),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      metric.statusLabel,
-                      style: AppTypography.captionBold.copyWith(
-                        fontSize: 11.5,
-                        color: const Color(0xFF15803D),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ],
           ),
         ],

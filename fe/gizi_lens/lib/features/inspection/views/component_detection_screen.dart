@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/inspection_session_service.dart';
 import '../controllers/component_detection_controller.dart';
 import '../models/food_component_model.dart';
 import 'widgets/detected_component_card.dart';
@@ -347,7 +348,11 @@ class _ComponentDetectionScreenState extends State<ComponentDetectionScreen> {
                   children: [
                     const SegmentationProcessCard(),
                     const SizedBox(height: 18),
-                    const FoodPartitionView(),
+                    FoodPartitionView(
+                      photoBytes: InspectionSessionService.instance.capturedPhoto,
+                      aspectRatio: InspectionSessionService.instance.capturedPhotoAspectRatio,
+                      components: _controller.components,
+                    ),
                     const SizedBox(height: 20),
                     Row(
                       children: [

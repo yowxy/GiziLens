@@ -7,6 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
+import '../../notifications/views/notification_sheet.dart';
 import '../controllers/profile_controller.dart';
 import 'dialogs/logout_confirmation_dialog.dart';
 import 'dialogs/profile_updated_success_dialog.dart';
@@ -43,21 +44,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  void _handleNotificationTap() {
-    _controller.dismissNotificationBadge();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Semua notifikasi audit operasional SPPG telah diperiksa.',
-          style: AppTypography.bodySmall.copyWith(color: Colors.white),
-        ),
-        backgroundColor: AppColors.primaryDeep,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
 
   void _handleEditProfileTap() {
     final nameController = TextEditingController(text: _controller.account.fullName);
@@ -594,8 +580,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Column(
           children: [
             ProfileHeaderAppBar(
-              hasNotification: _controller.account.hasNotification,
-              onNotificationTap: _handleNotificationTap,
+              hasNotification: _controller.hasUnreadNotifications,
+              onNotificationTap: () => showNotificationSheet(context),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -653,8 +639,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 20),
                     _buildLogoutCard(),
-                    const SizedBox(height: 18),
-                    _buildDialogDemoToolbar(),
                   ],
                 ),
               ),
@@ -744,100 +728,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDialogDemoToolbar() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5EE),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE0E7DC),
-          width: 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.widgets_outlined,
-                size: 16,
-                color: AppColors.primaryDeep,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'Pratinjau Cepat Box Dialog Modal',
-                style: AppTypography.captionBold.copyWith(
-                  fontSize: 11.5,
-                  color: AppColors.primaryDeep,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSmallActionButton(
-                  label: '1. Keluar Akun',
-                  onTap: _handleLogoutTap,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _buildSmallActionButton(
-                  label: '2. Simpan Profil',
-                  onTap: _handleEditProfileTap,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: _buildSmallActionButton(
-                  label: '3. Sukses Simpan',
-                  onTap: () => ProfileUpdatedSuccessDialog.show(context),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallActionButton({
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return SizedBox(
-      height: 36,
-      child: OutlinedButton(
-        onPressed: onTap,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppColors.primaryDeep,
-          side: const BorderSide(color: Color(0xFFCBD6C9)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTypography.caption.copyWith(
-            fontSize: 10.5,
-            fontWeight: FontWeight.w600,
-            color: AppColors.primaryDeep,
           ),
         ),
       ),

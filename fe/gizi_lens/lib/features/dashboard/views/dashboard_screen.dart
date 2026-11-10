@@ -12,7 +12,7 @@ import 'widgets/akg_summary_card.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/gizi_lens_bottom_nav.dart';
 import 'widgets/hero_menu_card.dart';
-import 'widgets/inspection_quick_dialog.dart';
+import '../../notifications/views/notification_sheet.dart';
 import 'widgets/period_filter_bar.dart';
 
 /// Dashboard screen presenting compliance metrics, period filters, and quick actions.
@@ -104,10 +104,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               officerName: _controller.officerName,
               unitName: _controller.unitName,
               hasNotification: _controller.hasUnreadNotifications,
-              onNotificationTap: () {
-                _controller.toggleNotifications();
-                InspectionQuickDialog.show(context);
-              },
+              onNotificationTap: () => showNotificationSheet(context),
             ),
 
             Expanded(

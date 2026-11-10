@@ -6,6 +6,7 @@ import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../controllers/splash_controller.dart';
 import 'widgets/cloud_sync_card.dart';
 import 'widgets/mascot_viewfinder.dart';
@@ -48,7 +49,11 @@ class _SplashScreenState extends State<SplashScreen> {
             if (widget.onCompleted != null) {
               widget.onCompleted!();
             } else {
-              context.go(RouteNames.onboarding);
+              context.go(
+                FirebaseAuthService.instance.isLoggedIn
+                    ? RouteNames.dashboard
+                    : RouteNames.onboarding,
+              );
             }
           },
         );

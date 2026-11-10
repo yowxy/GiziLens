@@ -5,6 +5,7 @@ import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/services/inspection_session_service.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/status_dot.dart';
 import '../controllers/menu_inspection_controller.dart';
@@ -27,7 +28,9 @@ class _MenuInspectionScreenState extends State<MenuInspectionScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = MenuInspectionController();
+    _controller = MenuInspectionController(
+      initialTargetAkg: InspectionSessionService.instance.targetAkg,
+    );
     _controller.addListener(_onControllerUpdate);
   }
 

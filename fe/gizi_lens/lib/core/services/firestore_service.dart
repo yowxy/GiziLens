@@ -161,7 +161,7 @@ class FirestoreService {
   /// Fetch list of inspections with optional limit.
   Future<List<Map<String, dynamic>>> getInspections({int limit = 50}) async {
     final col = inspectionsCollection;
-    if (col == null) return [];
+    if (col == null) return List.unmodifiable(_localInspections.take(limit).toList());
 
     try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -194,11 +194,9 @@ class FirestoreService {
           return data;
         }).toList();
       } catch (_) {
-        return [];
+        return List.unmodifiable(_localInspections.take(limit).toList());
       }
     }
-
-    return List.unmodifiable(_localInspections.take(limit).toList());
   }
 
   /// Stream real-time updates for inspection records.
@@ -229,12 +227,6 @@ class FirestoreService {
     final col = inspectionsCollection;
     if (col != null) {
       try {
-        final snapshot = await col.get();
-        if (snapshot.docs.isNotEmpty) {
-          int sesuai = 0;
-          int tidakSesuai = 0;
-
-    try {
       final userId = FirebaseAuth.instance.currentUser?.uid;
       var query = col.limit(500);
       if (userId != null) {
@@ -259,6 +251,12 @@ class FirestoreService {
         } else if (status == 'TIDAK SESUAI' || status == 'tidak_sesuai') {
           tidakSesuai++;
         }
+      }
+      return {
+        'total': snapshot.docs.length,
+        'sesuai': sesuai,
+        'tidakSesuai': tidakSesuai,
+      };
       } catch (e) {
         debugPrint('Error calculating dashboard stats from Firestore: $e');
       }
@@ -266,17 +264,23 @@ class FirestoreService {
 
     int sesuai = 0;
     int tidakSesuai = 0;
-    for (var doc in _localInspections) {
+    final local = since == null
+        ? _localInspections
+        : _localInspections.where((item) {
+            final created = DateTime.tryParse(
+              item['createdDateIso']?.toString() ?? '',
+            );
+            return created != null && !created.isBefore(since);
+          });
+    for (final doc in local) {
       final status = doc['complianceStatus'];
-      if (status == 'SESUAI' || status == 'sesuai') {
-        sesuai++;
-      } else if (status == 'TIDAK SESUAI' || status == 'tidak_sesuai') {
+      if (status == 'SESUAI' || status == 'sesuai') sesuai++;
+      if (status == 'TIDAK SESUAI' || status == 'tidak_sesuai') {
         tidakSesuai++;
       }
     }
-
     return {
-      'total': _localInspections.length,
+      'total': local.length,
       'sesuai': sesuai,
       'tidakSesuai': tidakSesuai,
     };

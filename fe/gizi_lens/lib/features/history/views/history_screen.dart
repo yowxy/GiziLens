@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
-import '../../dashboard/views/widgets/inspection_quick_dialog.dart';
+import '../../notifications/views/notification_sheet.dart';
 import '../controllers/history_controller.dart';
+import 'history_detail_screen.dart';
 import 'widgets/history_empty_state.dart';
 import 'widgets/history_filter_chips.dart';
 import 'widgets/history_header.dart';
@@ -137,10 +138,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               HistoryHeader(
                 onBackTap: _handleBackTap,
-                onNotificationTap: () {
-                  _controller.dismissNotification();
-                  InspectionQuickDialog.show(context);
-                },
+                onNotificationTap: () => showNotificationSheet(context),
                 hasNotification: _controller.hasNotification,
                 searchController: _controller.searchController,
                 onClearSearch: _controller.clearSearch,
@@ -221,7 +219,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final isSesuai = (item['complianceStatus'] as String? ?? 'SESUAI').toUpperCase() == 'SESUAI';
     final weight = item['totalNetWeight'] as String? ?? '520 gram';
 
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => HistoryDetailScreen(item: item)),
+      ),
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -290,6 +293,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
   }
