@@ -16,9 +16,8 @@ dependencies:
   firebase_auth: ^7.0.1
   cloud_firestore: ^7.1.0
   camera: ^0.12.2
-  onnxruntime: ^1.4.1
-  image: ^4.12.0
   http: ^1.4.0
+  http_parser: ^4.0.2
   flutter_dotenv: ^5.2.1
 
 dev_dependencies:
@@ -34,9 +33,6 @@ flutter:
     - assets/images/
     - assets/images/food/
     - assets/fonts/
-    - assets/ml/best.onnx
-    - assets/ml/classes.json
-    - assets/ml/labels.txt
     - .env
 
   fonts:

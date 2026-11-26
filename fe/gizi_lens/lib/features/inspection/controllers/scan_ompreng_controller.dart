@@ -3,21 +3,16 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
-import '../../../core/services/ai_api_service.dart';
-import '../../../core/services/ai_mode.dart';
-import '../../../core/services/ai_service.dart';
+import '../../../core/services/detection_api_service.dart';
 import '../../../core/services/inspection_session_service.dart';
 import '../models/food_component_model.dart';
-import '../services/food_nutrition_catalog.dart';
 
 class ScanOmprengController extends ChangeNotifier {
-  final AiService _aiService = AiService();
-  final AiApiService _aiApiService = AiApiService();
+  final DetectionApiService _detectionApi = DetectionApiService();
   bool _isFlashOn = false;
   bool _isAnalyzing = false;
   bool _isModelReady = false;
   String? _errorMessage;
-  List<DetectionResult> _detections = const [];
   bool _isLightingOk = false;
   bool _isWholeTrayVisible = false;
   bool _isCameraFocused = false;
@@ -28,7 +23,6 @@ class ScanOmprengController extends ChangeNotifier {
   bool get isAnalyzing => _isAnalyzing;
   bool get isModelReady => _isModelReady;
   String? get errorMessage => _errorMessage;
-  List<DetectionResult> get detections => List.unmodifiable(_detections);
   bool get isLightingOk => _isLightingOk;
   bool get isWholeTrayVisible => _isWholeTrayVisible;
   bool get isCameraFocused => _isCameraFocused;
@@ -41,25 +35,12 @@ class ScanOmprengController extends ChangeNotifier {
   }
 
   Future<bool> initializeModel() async {
-    if (useApiAi) {
-      _isModelReady = true;
-      _errorMessage = null;
-      notifyListeners();
-      return true;
-    }
-
-    try {
-      await _aiService.initModel();
-      _isModelReady = true;
-      _errorMessage = null;
-      notifyListeners();
-      return true;
-    } catch (error) {
-      _isModelReady = false;
-      _errorMessage = 'Model AI gagal dimuat: $error';
-      notifyListeners();
-      return false;
-    }
+    // Detection runs entirely on the backend, so there is no on-device model
+    // to load. Capture will surface any connectivity error.
+    _isModelReady = true;
+    _errorMessage = null;
+    notifyListeners();
+    return true;
   }
 
   void toggleBoundingBoxes() {
@@ -82,7 +63,7 @@ class ScanOmprengController extends ChangeNotifier {
 
   Future<bool> capturePhoto(XFile photo) async {
     if (!_isModelReady) {
-      _errorMessage ??= 'Model AI belum siap. Tunggu sampai pemuatan selesai.';
+      _errorMessage ??= 'Layanan deteksi belum siap. Tunggu sebentar.';
       notifyListeners();
       return false;
     }
@@ -92,19 +73,15 @@ class ScanOmprengController extends ChangeNotifier {
 
     try {
       final bytes = Uint8List.fromList(await photo.readAsBytes());
-      if (useApiAi) {
-        final items = await _aiApiService.analyzeImage(
-          bytes,
-          target: InspectionSessionService.instance.targetAkg,
-        );
-        if (items.isEmpty) {
-          throw const FormatException('Tidak ada menu makanan yang terbaca.');
-        }
-        _saveApiComponents(items);
-      } else {
-        _detections = await _aiService.detect(bytes);
-        _saveDetectedComponents();
+      final result = await _detectionApi.analyzeImage(
+        bytes,
+        target: InspectionSessionService.instance.targetAkg,
+      );
+      if (result.items.isEmpty) {
+        throw const FormatException('Tidak ada menu makanan yang terbaca.');
       }
+      _saveApiComponents(result.items);
+
       final decoded = await decodeImageFromList(bytes);
       final aspectRatio = decoded.width / decoded.height;
       decoded.dispose();
@@ -153,50 +130,5 @@ class ScanOmprengController extends ChangeNotifier {
     if (normalized.contains('buah')) return Icons.apple_rounded;
     if (normalized.contains('minum')) return Icons.local_drink_rounded;
     return Icons.restaurant_rounded;
-  }
-
-  void _saveDetectedComponents() {
-    final unique = <int, DetectionResult>{};
-    for (final detection in _detections) {
-      final current = unique[detection.classId];
-      if (current == null || detection.confidence > current.confidence) {
-        unique[detection.classId] = detection;
-      }
-    }
-
-    final components = <FoodComponentModel>[];
-    var compartment = 1;
-    for (final detection in unique.values) {
-      final nutrition = FoodNutritionCatalog.find(
-        _aiService.labelFor(detection.classId),
-      );
-      if (nutrition == null) continue;
-      components.add(
-        nutrition.toComponent(
-          id: 'detected_${detection.classId}',
-          compartmentNumber: compartment++,
-          confidencePercentage: (detection.confidence * 100).round().clamp(
-            0,
-            100,
-          ),
-          boundingBox: Rect.fromLTWH(
-            detection.x / 320,
-            detection.y / 320,
-            detection.width / 320,
-            detection.height / 320,
-          ),
-        ),
-      );
-      if (components.length == 5) break;
-    }
-    if (components.isNotEmpty) {
-      InspectionSessionService.instance.components = components;
-    }
-  }
-
-  @override
-  void dispose() {
-    _aiService.close();
-    super.dispose();
   }
 }
