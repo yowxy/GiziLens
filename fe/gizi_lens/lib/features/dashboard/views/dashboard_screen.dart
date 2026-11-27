@@ -101,6 +101,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final account = UserSessionService.instance.account;
+    final isPremium = account.isPremium;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -116,6 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               officerName: _controller.officerName,
               unitName: _controller.unitName,
               hasNotification: _controller.hasUnreadNotifications,
+              premiumPlanName: isPremium ? account.subscriptionPlan : null,
               onNotificationTap: () => showNotificationSheet(context),
             ),
 
@@ -140,18 +144,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          PremiumBannerCard(
-                            activePlanName:
-                                UserSessionService.instance.account.isPremium
-                                    ? UserSessionService
-                                        .instance
-                                        .account
-                                        .subscriptionPlan
-                                    : null,
-                            onTap: () => context.push(RouteNames.pricing),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 280),
+                            curve: Curves.easeOutCubic,
+                            child: isPremium
+                                ? const SizedBox.shrink()
+                                : Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: PremiumBannerCard(
+                                      onTap: () =>
+                                          context.push(RouteNames.pricing),
+                                    ),
+                                  ),
                           ),
-                          const SizedBox(height: 16),
-                          HeroMenuCard(onInspectTap: _handleScanOmprengTap),
+                          HeroMenuCard(
+                            isPremium: isPremium,
+                            onInspectTap: _handleScanOmprengTap,
+                          ),
                           const SizedBox(height: 22),
 
                           PeriodFilterBar(

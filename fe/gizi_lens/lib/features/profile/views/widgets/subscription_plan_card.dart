@@ -35,7 +35,12 @@ class SubscriptionPlanCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
+        border: Border.all(
+          color: isPremium
+              ? AppColors.accentGold.withValues(alpha: 0.45)
+              : const Color(0xFFE2ECE0),
+          width: isPremium ? 1.4 : 1.2,
+        ),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0A0F261E),
@@ -111,7 +116,7 @@ class SubscriptionPlanCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  isPremium ? 'PREMIUM' : AppStrings.planBadgeFree,
+                  isPremium ? 'PREMIUM AKTIF' : AppStrings.planBadgeFree,
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -202,7 +207,9 @@ class SubscriptionPlanCard extends StatelessWidget {
                   child: Container(
                     height: 6,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryDeep,
+                      color: isPremium
+                          ? AppColors.accentGold
+                          : AppColors.primaryDeep,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -213,23 +220,45 @@ class SubscriptionPlanCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(
-                Icons.sync_rounded,
+              Icon(
+                isPremium ? Icons.verified_rounded : Icons.sync_rounded,
                 size: 14,
-                color: AppColors.textMuted,
+                color: isPremium
+                    ? const Color(0xFF1E6C45)
+                    : AppColors.textMuted,
               ),
               const SizedBox(width: 6),
-              Text(
-                AppStrings.planRenewNote,
-                style: AppTypography.caption.copyWith(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
+              Expanded(
+                child: Text(
+                  isPremium
+                      ? 'Lisensi aktif • Scan AI & ekspor laporan tanpa batas.'
+                      : AppStrings.planRenewNote,
+                  style: AppTypography.caption.copyWith(
+                    fontSize: 11,
+                    color: isPremium
+                        ? const Color(0xFF1E6C45)
+                        : AppColors.textMuted,
+                    fontWeight: isPremium ? FontWeight.w600 : FontWeight.w400,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _buildUpgradeButton(),
+          if (isPremium) ...[
+            const SizedBox(height: 12),
+            const Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _ActiveBenefitChip(label: 'Unlimited Scan AI'),
+                _ActiveBenefitChip(label: 'Ekspor PDF & XLSX'),
+                _ActiveBenefitChip(label: 'Prioritas BGN'),
+              ],
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
+            _buildUpgradeButton(),
+          ],
         ],
       ),
     );
@@ -269,9 +298,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               ),
               const SizedBox(width: 9),
               Text(
-                isPremium
-                    ? 'Kelola Paket Langganan'
-                    : AppStrings.btnUpgradePremium,
+                AppStrings.btnUpgradePremium,
                 style: AppTypography.titleMedium.copyWith(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,
@@ -287,6 +314,42 @@ class SubscriptionPlanCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ActiveBenefitChip extends StatelessWidget {
+  final String label;
+
+  const _ActiveBenefitChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.planRemainingBg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle_rounded,
+            size: 13,
+            color: AppColors.planRemainingText,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: AppTypography.caption.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.planRemainingText,
+            ),
+          ),
+        ],
       ),
     );
   }

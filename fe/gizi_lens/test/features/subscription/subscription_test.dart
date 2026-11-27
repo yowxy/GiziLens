@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gizi_lens/core/constants/app_strings.dart';
 import 'package:gizi_lens/core/services/user_session_service.dart';
+import 'package:gizi_lens/features/dashboard/views/dashboard_screen.dart';
+import 'package:gizi_lens/features/dashboard/views/widgets/premium_banner_card.dart';
 import 'package:gizi_lens/features/profile/views/widgets/subscription_plan_card.dart';
 import 'package:gizi_lens/features/subscription/controllers/checkout_controller.dart';
 import 'package:gizi_lens/features/subscription/controllers/pricing_controller.dart';
@@ -189,7 +192,7 @@ void main() {
       expect(find.text('Sentral'), findsOneWidget);
     });
 
-    testWidgets('SubscriptionPlanCard reflects upgraded premium plan', (tester) async {
+    testWidgets('SubscriptionPlanCard hides manage/upgrade button when premium is active', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -205,9 +208,36 @@ void main() {
       );
 
       expect(find.text('Paket SPPG Pro'), findsOneWidget);
-      expect(find.text('PREMIUM'), findsOneWidget);
+      expect(find.text('PREMIUM AKTIF'), findsOneWidget);
       expect(find.text('Unlimited'), findsOneWidget);
-      expect(find.text('Kelola Paket Langganan'), findsOneWidget);
+      expect(find.text('Unlimited Scan AI'), findsOneWidget);
+      expect(find.text('Kelola Paket Langganan'), findsNothing);
+      expect(find.text(AppStrings.btnUpgradePremium), findsNothing);
+    });
+
+    testWidgets('DashboardScreen hides PremiumBannerCard and shows PRO UX after upgrade', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(430, 932));
+      addTearDown(() async {
+        UserSessionService.instance.reset();
+        await tester.binding.setSurfaceSize(null);
+      });
+
+      await UserSessionService.instance.upgradeSubscription(
+        planName: 'Paket SPPG Pro',
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: DashboardScreen(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PremiumBannerCard), findsNothing);
+      expect(find.text(AppStrings.premiumCta), findsNothing);
+      expect(find.text('Kelola Paket Langganan'), findsNothing);
+      expect(find.text('Paket SPPG Pro'), findsOneWidget);
+      expect(find.text('${AppStrings.heroActionBadge} • PRO'), findsOneWidget);
     });
   });
 }

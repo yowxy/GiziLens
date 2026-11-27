@@ -6,8 +6,13 @@ import '../../../../core/constants/app_typography.dart';
 /// Hero inspection banner card with AI CAM action card and decorative cutlery watermark.
 class HeroMenuCard extends StatelessWidget {
   final VoidCallback onInspectTap;
+  final bool isPremium;
 
-  const HeroMenuCard({super.key, required this.onInspectTap});
+  const HeroMenuCard({
+    super.key,
+    required this.onInspectTap,
+    this.isPremium = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +21,12 @@ class HeroMenuCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.heroCardGreen,
         borderRadius: BorderRadius.circular(20),
+        border: isPremium
+            ? Border.all(
+                color: AppColors.accentGold.withValues(alpha: 0.55),
+                width: 1.4,
+              )
+            : null,
         boxShadow: const [
           BoxShadow(
             color: Color(0x14000000),
@@ -137,11 +148,13 @@ class HeroMenuCard extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
-                                        AppStrings.heroActionBadge,
-                                        style: TextStyle(
+                                        isPremium
+                                            ? '${AppStrings.heroActionBadge} • PRO'
+                                            : AppStrings.heroActionBadge,
+                                        style: const TextStyle(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w800,
-                                          color: const Color(0xFF382305),
+                                          color: Color(0xFF382305),
                                           letterSpacing: 0.3,
                                         ),
                                       ),
