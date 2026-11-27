@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/services/firebase_auth_service.dart';
-import '../../../../core/services/user_session_service.dart';
-import '../models/operational_options.dart';
+import '../../../core/constants/app_strings.dart';
+import '../../../core/services/firebase_auth_service.dart';
+import '../../../core/services/user_session_service.dart';
 import '../models/officer_profile_model.dart';
 import '../models/officer_role.dart';
 
@@ -9,33 +9,21 @@ import '../models/officer_role.dart';
 class CompleteProfileController extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   late final TextEditingController fullNameController;
+  final TextEditingController unitController = TextEditingController();
+  final TextEditingController regionController = TextEditingController();
 
   OfficerProfileModel _profile = OfficerProfileModel.initial();
   bool _isLoading = false;
   String? _errorMessage;
-  String? _selectedUnit;
-  String? _selectedRegion;
 
   OfficerProfileModel get profile => _profile;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   OfficerRole get selectedRole => _profile.selectedRole;
   List<OfficerRole> get availableRoles => OfficerRole.defaultRoles;
-  String? get selectedUnit => _selectedUnit;
-  String? get selectedRegion => _selectedRegion;
-  List<String> get availableUnits => OperationalOptions.sppgUnits;
-  List<String> get availableRegions => OperationalOptions.regions;
+  String get selectedUnit => unitController.text.trim();
+  String get selectedRegion => regionController.text.trim();
   String get accountEmail => FirebaseAuthService.instance.currentUser?.email ?? '-';
-
-  void selectUnit(String? unit) {
-    _selectedUnit = unit;
-    notifyListeners();
-  }
-
-  void selectRegion(String? region) {
-    _selectedRegion = region;
-    notifyListeners();
-  }
 
   CompleteProfileController() {
     final user = FirebaseAuthService.instance.currentUser;
@@ -95,6 +83,20 @@ class CompleteProfileController extends ChangeNotifier {
     return null;
   }
 
+  String? validateUnit(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppStrings.operationalUnitRequired;
+    }
+    return null;
+  }
+
+  String? validateRegion(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppStrings.regionRequired;
+    }
+    return null;
+  }
+
   Future<bool> saveProfile() async {
     if (!formKey.currentState!.validate()) {
       return false;
@@ -108,8 +110,8 @@ class CompleteProfileController extends ChangeNotifier {
       final ok = await UserSessionService.instance.updateProfile(
         fullName: _profile.fullName,
         role: _profile.selectedRole.title,
-        unit: _selectedUnit,
-        region: _selectedRegion,
+        unit: selectedUnit,
+        region: selectedRegion,
         officerId: _profile.officerId,
       );
 
@@ -131,6 +133,8 @@ class CompleteProfileController extends ChangeNotifier {
   void dispose() {
     fullNameController.removeListener(_onNameChanged);
     fullNameController.dispose();
+    unitController.dispose();
+    regionController.dispose();
     super.dispose();
   }
 }

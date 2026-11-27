@@ -39,6 +39,21 @@ void main() {
       expect(controller.profile.fullName, equals('Fita Andini'));
       expect(controller.profile.initials, equals('FA'));
     });
+
+    test('Unit and region controllers and validators work for text input', () {
+      expect(controller.validateUnit(''), equals(AppStrings.operationalUnitRequired));
+      expect(controller.validateUnit('   '), equals(AppStrings.operationalUnitRequired));
+      expect(controller.validateRegion(''), equals(AppStrings.regionRequired));
+      expect(controller.validateRegion('   '), equals(AppStrings.regionRequired));
+
+      controller.unitController.text = '  SPPG Cibinong Sentral 02  ';
+      controller.regionController.text = '  Kab. Bogor, Jawa Barat  ';
+
+      expect(controller.selectedUnit, equals('SPPG Cibinong Sentral 02'));
+      expect(controller.selectedRegion, equals('Kab. Bogor, Jawa Barat'));
+      expect(controller.validateUnit(controller.unitController.text), isNull);
+      expect(controller.validateRegion(controller.regionController.text), isNull);
+    });
   });
 
   group('CompleteProfileScreen Widget Tests', () {

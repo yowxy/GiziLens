@@ -186,73 +186,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     );
   }
 
-  Widget _buildSelectField({
-    required String label,
-    required String hint,
-    required IconData icon,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-    required FormFieldValidator<String> validator,
-  }) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: AppColors.borderMedium, width: 1.0),
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTypography.titleSmall.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 13,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          initialValue: value,
-          isExpanded: true,
-          hint: Text(
-            hint,
-            style: AppTypography.bodyMedium.copyWith(
-              fontSize: 13,
-              color: AppColors.textLight,
-            ),
-          ),
-          decoration: InputDecoration(
-            prefixIcon: Icon(icon, size: 20, color: AppColors.iconFieldMuted),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-            border: border,
-            enabledBorder: border,
-            focusedBorder: border.copyWith(
-              borderSide: const BorderSide(color: AppColors.primaryDeep, width: 1.5),
-            ),
-          ),
-          items: items
-              .map(
-                (item) => DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(
-                    item,
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: onChanged,
-          validator: validator,
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -377,27 +310,33 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       ),
                       const SizedBox(height: 18),
 
-                      _buildSelectField(
+                      CustomTextField(
                         label: AppStrings.operationalUnitLabel,
-                        hint: AppStrings.operationalUnitHint,
-                        icon: Icons.apartment_outlined,
-                        value: _controller.selectedUnit,
-                        items: _controller.availableUnits,
-                        onChanged: _controller.selectUnit,
-                        validator: (value) =>
-                            value == null ? AppStrings.operationalUnitRequired : null,
+                        hintText: AppStrings.operationalUnitHint,
+                        prefixIcon: const Icon(
+                          Icons.apartment_outlined,
+                          size: 20,
+                          color: AppColors.iconFieldMuted,
+                        ),
+                        controller: _controller.unitController,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.next,
+                        validator: _controller.validateUnit,
                       ),
                       const SizedBox(height: 18),
 
-                      _buildSelectField(
+                      CustomTextField(
                         label: AppStrings.regionLabel,
-                        hint: AppStrings.regionHint,
-                        icon: Icons.map_outlined,
-                        value: _controller.selectedRegion,
-                        items: _controller.availableRegions,
-                        onChanged: _controller.selectRegion,
-                        validator: (value) =>
-                            value == null ? AppStrings.regionRequired : null,
+                        hintText: AppStrings.regionHint,
+                        prefixIcon: const Icon(
+                          Icons.map_outlined,
+                          size: 20,
+                          color: AppColors.iconFieldMuted,
+                        ),
+                        controller: _controller.regionController,
+                        keyboardType: TextInputType.text,
+                        textInputAction: TextInputAction.done,
+                        validator: _controller.validateRegion,
                       ),
                       const SizedBox(height: 22),
 

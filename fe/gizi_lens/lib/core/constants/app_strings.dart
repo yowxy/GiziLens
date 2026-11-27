@@ -100,12 +100,12 @@ class AppStrings {
       'Nomor registrasi unik diterbitkan otomatis oleh Sistem Pusat MBG.';
   static const String operationalRoleTitle = 'Peran Operasional';
   static const String operationalUnitLabel = 'Unit Operasional SPPG';
-  static const String operationalUnitHint = 'Pilih unit operasional';
+  static const String operationalUnitHint = 'Cth. SPPG Cibinong Sentral 02';
   static const String operationalUnitRequired =
-      'Unit operasional wajib dipilih';
+      'Unit operasional wajib diisi';
   static const String regionLabel = 'Wilayah';
-  static const String regionHint = 'Pilih wilayah tugas';
-  static const String regionRequired = 'Wilayah wajib dipilih';
+  static const String regionHint = 'Cth. Kab. Bogor, Jawa Barat';
+  static const String regionRequired = 'Wilayah wajib diisi';
 
   static const String roleAhliGiziTitle = 'Ahli Gizi Lapangan';
   static const String roleAhliGiziDesc =
