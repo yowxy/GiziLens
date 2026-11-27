@@ -45,6 +45,7 @@ def _check_upload(content: bytes, content_type: str | None) -> str:
     if content_type and content_type.startswith("image/"):
         return content_type
     raise HTTPException(status_code=415, detail="File harus berupa gambar.")
+
 @router.get("/quota")
 def get_detection_quota(
     user: dict = Depends(get_current_user),
