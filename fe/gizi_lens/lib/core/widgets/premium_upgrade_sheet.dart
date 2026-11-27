@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
 import '../constants/app_typography.dart';
+import '../routing/route_names.dart';
 
 /// Displays the premium plan information sheet.
 ///
@@ -93,9 +95,12 @@ Future<void> showPremiumUpgradeSheet(BuildContext context) {
               const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
-                height: 46,
+                height: 48,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    sheetContext.push(RouteNames.pricing);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryDeep,
                     foregroundColor: Colors.white,
@@ -104,12 +109,19 @@ Future<void> showPremiumUpgradeSheet(BuildContext context) {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    AppStrings.btnClose,
-                    style: AppTypography.titleMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Lihat Pilihan Paket Bundling',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 18, color: Colors.white),
+                    ],
                   ),
                 ),
               ),

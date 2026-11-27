@@ -19,6 +19,10 @@ class RouteNames {
   static const String nutritionAnalysis = '/inspection/analysis';
   static const String auditConfirmation = '/inspection/confirmation';
 
+  // Subscription and Payment Routes
+  static const String pricing = '/pricing';
+  static const String checkout = '/checkout';
+
   // Inspection and Preview Routes
   static const String splash01 = '/splash-01';
   static const String splash02 = '/splash-02';

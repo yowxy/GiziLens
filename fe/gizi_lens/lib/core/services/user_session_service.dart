@@ -61,6 +61,8 @@ class UserSessionService extends ChangeNotifier {
         final fsUnit = profileData['unit'] as String?;
         final fsRegion = profileData['region'] as String?;
         final fsOfficerId = profileData['officerId'] as String?;
+        final fsSubscriptionPlan = profileData['subscriptionPlan'] as String?;
+        final fsIsPremium = profileData['isPremium'] as bool?;
 
         String finalName = resolvedName;
         if (fsName != null && fsName.trim().isNotEmpty && fsName != 'Petugas SPPG') {
@@ -76,12 +78,33 @@ class UserSessionService extends ChangeNotifier {
           unitOperational: (fsUnit != null && fsUnit.trim().isNotEmpty) ? fsUnit.trim() : _account.unitOperational,
           unitRegion: (fsRegion != null && fsRegion.trim().isNotEmpty) ? fsRegion.trim() : _account.unitRegion,
           officerId: (fsOfficerId != null && fsOfficerId.trim().isNotEmpty) ? fsOfficerId.trim() : _account.officerId,
+          subscriptionPlan: (fsSubscriptionPlan != null && fsSubscriptionPlan.trim().isNotEmpty)
+              ? fsSubscriptionPlan.trim()
+              : _account.subscriptionPlan,
+          isPremium: fsIsPremium ?? _account.isPremium,
         );
         notifyListeners();
       }
     } catch (e) {
       debugPrint('Notice loading UserSession from Firebase: $e');
     }
+  }
+
+  /// Upgrade active officer subscription tier to a premium bundle plan.
+  Future<bool> upgradeSubscription({required String planName}) async {
+    _account = _account.copyWith(
+      subscriptionPlan: planName,
+      isPremium: true,
+    );
+    notifyListeners();
+    try {
+      await FirestoreService.instance.updateCurrentUserProfile({
+        'subscriptionPlan': planName,
+        'isPremium': true,
+        'upgradedAt': DateTime.now().toIso8601String(),
+      });
+    } catch (_) {}
+    return true;
   }
 
   /// Update active officer profile and immediately persist to Firebase Auth and Cloud Firestore.

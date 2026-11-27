@@ -6,7 +6,8 @@ class OfficerAccountModel {
   final String unitOperational;
   final String unitRegion;
   final bool isVerified;
-
+  final String subscriptionPlan;
+  final bool isPremium;
 
   const OfficerAccountModel({
     required this.fullName,
@@ -16,7 +17,8 @@ class OfficerAccountModel {
     required this.unitOperational,
     required this.unitRegion,
     this.isVerified = true,
-
+    this.subscriptionPlan = 'GiziLens Free',
+    this.isPremium = false,
   });
 
   factory OfficerAccountModel.defaultAccount() {
@@ -28,7 +30,8 @@ class OfficerAccountModel {
       unitOperational: '-',
       unitRegion: '-',
       isVerified: false,
-
+      subscriptionPlan: 'GiziLens Free',
+      isPremium: false,
     );
   }
 
@@ -40,7 +43,8 @@ class OfficerAccountModel {
     String? unitOperational,
     String? unitRegion,
     bool? isVerified,
-
+    String? subscriptionPlan,
+    bool? isPremium,
   }) {
     return OfficerAccountModel(
       fullName: fullName ?? this.fullName,
@@ -50,7 +54,8 @@ class OfficerAccountModel {
       unitOperational: unitOperational ?? this.unitOperational,
       unitRegion: unitRegion ?? this.unitRegion,
       isVerified: isVerified ?? this.isVerified,
-
+      subscriptionPlan: subscriptionPlan ?? this.subscriptionPlan,
+      isPremium: isPremium ?? this.isPremium,
     );
   }
 }

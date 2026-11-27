@@ -7,7 +7,7 @@ import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
-import '../../../../core/widgets/premium_upgrade_sheet.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../controllers/dashboard_controller.dart';
 import 'widgets/akg_stat_card.dart';
 import 'widgets/akg_summary_card.dart';
@@ -37,7 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onUpdate() {
-    if (!mounted) return;
+    if (!mounted) return; 
     if (SchedulerBinding.instance.schedulerPhase ==
         SchedulerPhase.persistentCallbacks) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -141,7 +141,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           PremiumBannerCard(
-                            onTap: () => showPremiumUpgradeSheet(context),
+                            activePlanName:
+                                UserSessionService.instance.account.isPremium
+                                    ? UserSessionService
+                                        .instance
+                                        .account
+                                        .subscriptionPlan
+                                    : null,
+                            onTap: () => context.push(RouteNames.pricing),
                           ),
                           const SizedBox(height: 16),
                           HeroMenuCard(onInspectTap: _handleScanOmprengTap),

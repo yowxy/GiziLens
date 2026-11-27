@@ -8,7 +8,6 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/user_session_service.dart';
-import '../../../../core/widgets/premium_upgrade_sheet.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../../notifications/views/notification_sheet.dart';
 import '../controllers/profile_controller.dart';
@@ -650,9 +649,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 18),
                     SubscriptionPlanCard(
+                      planName: _controller.account.isPremium
+                          ? _controller.account.subscriptionPlan
+                          : AppStrings.planFreeName,
+                      isPremium: _controller.account.isPremium,
                       scansUsed: _controller.monthlyScansUsed,
                       monthlyQuota: ProfileController.monthlyScanQuota,
-                      onUpgradeTap: () => showPremiumUpgradeSheet(context),
+                      onUpgradeTap: () => context.push(RouteNames.pricing),
                     ),
                     const SizedBox(height: 20),
                     ProfileMenuSection(

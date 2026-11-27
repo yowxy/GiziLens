@@ -16,6 +16,9 @@ import '../../features/inspection/views/scan_ompreng_screen.dart';
 import '../../features/onboarding/views/onboarding_screen.dart';
 import '../../features/profile/views/profile_screen.dart';
 import '../../features/splash/views/splash_screen.dart';
+import '../../features/subscription/models/pricing_plan_model.dart';
+import '../../features/subscription/views/checkout_screen.dart';
+import '../../features/subscription/views/pricing_screen.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -535,6 +538,69 @@ class AppRouter {
         pageBuilder: (context, state) => const MaterialPage(
           child: AuditConfirmationScreen(),
         ),
+      ),
+      // Subscription & Midtrans Payment Routes
+      GoRoute(
+        path: RouteNames.pricing,
+        name: 'pricing',
+        pageBuilder: (context, state) {
+          final initialPlan = state.extra is PricingPlanModel
+              ? state.extra as PricingPlanModel
+              : null;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: PricingScreen(initialPlan: initialPlan),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.06, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 320),
+          );
+        },
+      ),
+      GoRoute(
+        path: RouteNames.checkout,
+        name: 'checkout',
+        pageBuilder: (context, state) {
+          final plan = state.extra is PricingPlanModel
+              ? state.extra as PricingPlanModel
+              : PricingPlanModel.defaultPlans[1];
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: CheckoutScreen(plan: plan),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.06, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 320),
+          );
+        },
       ),
     ],
   );

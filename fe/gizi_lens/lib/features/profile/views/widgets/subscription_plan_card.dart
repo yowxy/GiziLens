@@ -7,6 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 /// upgrade call-to-action.
 class SubscriptionPlanCard extends StatelessWidget {
   final String planName;
+  final bool isPremium;
   final int scansUsed;
   final int monthlyQuota;
   final VoidCallback onUpgradeTap;
@@ -14,6 +15,7 @@ class SubscriptionPlanCard extends StatelessWidget {
   const SubscriptionPlanCard({
     super.key,
     this.planName = AppStrings.planFreeName,
+    this.isPremium = false,
     required this.scansUsed,
     required this.monthlyQuota,
     required this.onUpgradeTap,
@@ -24,7 +26,7 @@ class SubscriptionPlanCard extends StatelessWidget {
     final safeQuota = monthlyQuota > 0 ? monthlyQuota : 1;
     final used = scansUsed.clamp(0, safeQuota).toInt();
     final remaining = safeQuota - used;
-    final progress = used / safeQuota;
+    final progress = isPremium ? 1.0 : used / safeQuota;
     final percent = (progress * 100).round();
 
     return Container(
@@ -97,20 +99,26 @@ class SubscriptionPlanCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.planFreePillBg,
+                  color: isPremium
+                      ? const Color(0xFFFEF3E2)
+                      : AppColors.planFreePillBg,
                   borderRadius: BorderRadius.circular(999),
                   border: Border.all(
-                    color: AppColors.planFreePillBorder,
+                    color: isPremium
+                        ? const Color(0xFFF3C97A)
+                        : AppColors.planFreePillBorder,
                     width: 1,
                   ),
                 ),
                 child: Text(
-                  AppStrings.planBadgeFree,
+                  isPremium ? 'PREMIUM' : AppStrings.planBadgeFree,
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.4,
-                    color: AppColors.textSecondary,
+                    color: isPremium
+                        ? const Color(0xFF9E5C14)
+                        : AppColors.textSecondary,
                   ),
                 ),
               ),
@@ -136,7 +144,9 @@ class SubscriptionPlanCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                AppStrings.planQuotaUsage(scansUsed, monthlyQuota),
+                isPremium
+                    ? 'Unlimited ($scansUsed scan bulan ini)'
+                    : AppStrings.planQuotaUsage(scansUsed, monthlyQuota),
                 style: AppTypography.titleSmall.copyWith(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -150,7 +160,9 @@ class SubscriptionPlanCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  AppStrings.planQuotaPercent(percent),
+                  isPremium
+                      ? 'Kuota tak terbatas aktif'
+                      : AppStrings.planQuotaPercent(percent),
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     color: AppColors.textMuted,
@@ -167,7 +179,9 @@ class SubscriptionPlanCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  AppStrings.planQuotaRemaining(remaining),
+                  isPremium
+                      ? 'Unlimited'
+                      : AppStrings.planQuotaRemaining(remaining),
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -255,7 +269,9 @@ class SubscriptionPlanCard extends StatelessWidget {
               ),
               const SizedBox(width: 9),
               Text(
-                AppStrings.btnUpgradePremium,
+                isPremium
+                    ? 'Kelola Paket Langganan'
+                    : AppStrings.btnUpgradePremium,
                 style: AppTypography.titleMedium.copyWith(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w700,

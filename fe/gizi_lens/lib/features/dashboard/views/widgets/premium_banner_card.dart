@@ -9,8 +9,16 @@ import '../../../../core/constants/app_typography.dart';
 /// ribbon watermark, benefit highlights, and a gradient call-to-action.
 class PremiumBannerCard extends StatelessWidget {
   final VoidCallback onTap;
+  final String? activePlanName;
 
-  const PremiumBannerCard({super.key, required this.onTap});
+  const PremiumBannerCard({
+    super.key,
+    required this.onTap,
+    this.activePlanName,
+  });
+
+  bool get _isPremium =>
+      activePlanName != null && activePlanName!.trim().isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +129,9 @@ class PremiumBannerCard extends StatelessWidget {
           ),
           const SizedBox(width: 7),
           Text(
-            AppStrings.premiumBadgeLabel,
+            _isPremium
+                ? 'AKTIF • ${activePlanName!.toUpperCase()}'
+                : AppStrings.premiumBadgeLabel,
             style: AppTypography.caption.copyWith(
               color: Colors.white,
               fontSize: 10.5,
@@ -168,7 +178,9 @@ class PremiumBannerCard extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  AppStrings.premiumCta,
+                  _isPremium
+                      ? 'Kelola Paket Langganan'
+                      : AppStrings.premiumCta,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleMedium.copyWith(
