@@ -21,13 +21,12 @@ from app.database.models import (
     Subscription,
 )
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import verify_api_key, require_admin
 from app.schemas_api import UserListOut, UserOut, UserStatusPatch, UserUpsert
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(verify_api_key)],
 )
 
 MEMBERSHIP_ROLES = ("OWNER", "MANAGER", "NUTRITIONIST", "OFFICER", "SCHOOL_PIC", "VIEWER")
@@ -94,7 +93,7 @@ def serialize_member(member: OrganizationMember, plans: dict[uuid.UUID, str]) ->
     )
 
 
-@router.get("", response_model=UserListOut)
+@router.get("", response_model=UserListOut, dependencies=[Depends(require_admin)])
 def list_users(
     search: str | None = Query(default=None),
     status: str | None = Query(default=None),
@@ -151,7 +150,7 @@ def list_users(
     )
 
 
-@router.get("/{uid}", response_model=UserOut)
+@router.get("/{uid}", response_model=UserOut, dependencies=[Depends(verify_api_key)])
 def get_user(uid: str, db: Session = Depends(get_db)) -> UserOut:
     member = db.scalar(
         select(OrganizationMember)
@@ -184,7 +183,7 @@ def _find_or_create_organization(db: Session, name: str, uid: str) -> Organizati
     return org
 
 
-@router.post("", response_model=UserOut, status_code=201)
+@router.post("", response_model=UserOut, status_code=201, dependencies=[Depends(verify_api_key)])
 def upsert_user(payload: UserUpsert, db: Session = Depends(get_db)) -> UserOut:
     uid = payload.uid
     member = db.scalar(
@@ -219,7 +218,7 @@ def upsert_user(payload: UserUpsert, db: Session = Depends(get_db)) -> UserOut:
     return serialize_member(member, active_plans(db))
 
 
-@router.patch("/{uid}/status", response_model=UserOut)
+@router.patch("/{uid}/status", response_model=UserOut, dependencies=[Depends(require_admin)])
 def update_user_status(
     uid: str,
     payload: UserStatusPatch,

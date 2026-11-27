@@ -18,7 +18,7 @@ from app.database.models import (
     Subscription,
 )
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import verify_api_key, require_admin
 from app.schemas_api import (
     TransactionCreate,
     TransactionListOut,
@@ -29,7 +29,6 @@ from app.schemas_api import (
 router = APIRouter(
     prefix="/transactions",
     tags=["transactions"],
-    dependencies=[Depends(verify_api_key)],
 )
 
 BILLING_MONTHS = {"MONTHLY": 1, "QUARTERLY": 3, "ANNUAL": 12}
@@ -73,7 +72,7 @@ def serialize_payment(payment: Payment) -> TransactionOut:
     )
 
 
-@router.get("", response_model=TransactionListOut)
+@router.get("", response_model=TransactionListOut, dependencies=[Depends(require_admin)])
 def list_transactions(
     search: str | None = Query(default=None),
     status: str | None = Query(default=None),
@@ -226,7 +225,7 @@ def _activate(db: Session, payment: Payment, plan: Plan) -> None:
     payment.updated_at = now
 
 
-@router.post("", response_model=TransactionOut, status_code=201)
+@router.post("", response_model=TransactionOut, status_code=201, dependencies=[Depends(verify_api_key)])
 def create_transaction(
     payload: TransactionCreate,
     db: Session = Depends(get_db),
@@ -237,9 +236,9 @@ def create_transaction(
 
     plan = _resolve_plan(db, payload.plan_id, payload.plan_name)
     org = _resolve_organization(db, payload.user_uid, payload.sppg_unit)
-    gross = payload.total_amount or payload.plan_price or plan.price
-    status_sql = CLIENT_TO_SQL.get(payload.status, "PENDING")
-
+    gross = plan.price
+    status_sql = "PENDING"
+    
     payment = Payment(
         organization_id=org.id,
         plan_id=plan.id,
@@ -264,7 +263,7 @@ def create_transaction(
     return serialize_payment(payment)
 
 
-@router.patch("/{order_id}/status", response_model=TransactionOut)
+@router.patch("/{order_id}/status", response_model=TransactionOut, dependencies=[Depends(require_admin)])
 def update_transaction_status(
     order_id: str,
     payload: TransactionStatusPatch,

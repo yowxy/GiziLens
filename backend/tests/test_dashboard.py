@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from app.database.base import Base
 from app.database.models import Organization, OrganizationMember
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import require_admin
 from app.main import create_app
 from app.routers.dashboard import WIB
 
@@ -37,7 +37,10 @@ class DashboardTest(unittest.TestCase):
         self.conn = conn
         app = create_app()
         app.dependency_overrides[get_db] = database
-        app.dependency_overrides[verify_api_key] = lambda: None
+        app.dependency_overrides[require_admin] = lambda: {
+           "uid": "test-admin",
+           "admin": True,
+        }
         self.client = TestClient(app, base_url="http://testserver/api/v1/")
         self.addCleanup(self.client.close)
 

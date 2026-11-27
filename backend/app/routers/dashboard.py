@@ -24,7 +24,7 @@ from app.database.models import (
     Subscription,
 )
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import require_admin
 from app.schemas_api import (
     ActivityOut,
     ActivityPointOut,
@@ -36,7 +36,9 @@ from app.schemas_api import (
 )
 
 router = APIRouter(
-    prefix="/dashboard", tags=["dashboard"], dependencies=[Depends(verify_api_key)],
+    prefix="/dashboard",
+    tags=["dashboard"],
+    dependencies=[Depends(require_admin)],
 )
 
 WIB = timezone(timedelta(hours=7))

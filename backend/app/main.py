@@ -15,6 +15,7 @@ from app.routers import (
     plans,
     transactions,
     users,
+    admin,
 )
 
 
@@ -39,6 +40,7 @@ def create_app() -> FastAPI:
     app.include_router(inspections.router, prefix=settings.api_prefix)
     app.include_router(plans.router, prefix=settings.api_prefix)
     app.include_router(transactions.router, prefix=settings.api_prefix)
+    app.include_router(admin.router, prefix=settings.api_prefix)
 
     media_dir = BASE_DIR / "storage"
     media_dir.mkdir(parents=True, exist_ok=True)
