@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from app.config import get_settings
 from app.dependencies import verify_api_key
 from app.schemas import DetectionResponse
-from app.services import llm_detector, onnx_detector
+from app.services import llm_detector
 
 router = APIRouter(prefix="/detect", tags=["detection"])
 
@@ -80,11 +80,14 @@ async def detect_food(
                 fiber=target_fiber,
             )
         elif selected == "onnx":
-            result = onnx_detector.detect(settings, content)
+            raise HTTPException(
+                status_code=400,
+                detail="Engine 'onnx' dinonaktifkan. Gunakan 'llm' atau 'auto'.",
+            )
         else:
             raise HTTPException(
                 status_code=400,
-                detail="Engine harus 'llm', 'onnx', atau 'auto'.",
+                detail="Engine harus 'llm' atau 'auto'.",
             )
     except httpx.TimeoutException as exc:
         raise HTTPException(
@@ -101,8 +104,6 @@ async def detect_food(
         ) from exc
     except llm_detector.LlmError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-    except onnx_detector.OnnxError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     result.processing_ms = int((time.perf_counter() - started) * 1000)
     return result

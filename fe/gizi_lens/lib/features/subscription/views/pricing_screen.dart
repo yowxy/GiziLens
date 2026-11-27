@@ -566,26 +566,29 @@ class _PricingScreenState extends State<PricingScreen> {
           ...PricingController.faqs.map(
             (faq) => Theme(
               data: ThemeData(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: const EdgeInsets.only(bottom: 12),
-                title: Text(
-                  faq['question']!,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                    fontSize: 13,
-                  ),
-                ),
-                children: [
-                  Text(
-                    faq['answer']!,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.45,
+              child: Material(
+                type: MaterialType.transparency,
+                child: ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  childrenPadding: const EdgeInsets.only(bottom: 12),
+                  title: Text(
+                    faq['question']!,
+                    style: AppTypography.titleSmall.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                      fontSize: 13,
                     ),
                   ),
-                ],
+                  children: [
+                    Text(
+                      faq['answer']!,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
