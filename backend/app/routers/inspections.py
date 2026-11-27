@@ -16,7 +16,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from PIL import Image
+from PIL import Image, ImageOps
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
@@ -90,7 +90,12 @@ def save_scan_image(scan_id: str, encoded: str | None) -> dict | None:
 
     try:
         with Image.open(io.BytesIO(raw)) as image:
-            converted = image.convert("RGB")
+            # Camera JPEGs carry the real orientation in EXIF while the pixels
+            # stay in sensor order. Dropping EXIF without rotating the pixels
+            # makes the stored photo appear sideways later, so bake the
+            # orientation in before saving.
+            oriented = ImageOps.exif_transpose(image) or image
+            converted = oriented.convert("RGB")
             width, height = converted.size
             INSPECTION_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
             safe_id = re.sub(r"[^A-Za-z0-9._-]", "_", scan_id)
@@ -109,13 +114,18 @@ def save_scan_image(scan_id: str, encoded: str | None) -> dict | None:
     }
 
 
-def image_url_for(scan: Scan | None) -> str | None:
+def original_image(scan: Scan | None) -> ScanImage | None:
     if scan is None:
         return None
     for image in scan.images:
         if image.image_type == "ORIGINAL" and image.deleted_at is None:
-            return f"/media/{image.object_key}"
+            return image
     return None
+
+
+def image_url_for(scan: Scan | None) -> str | None:
+    image = original_image(scan)
+    return f"/media/{image.object_key}" if image else None
 
 
 def build_nutrition(inspection: Inspection, target: dict | None) -> dict[str, dict]:
@@ -146,6 +156,7 @@ def serialize_summary(inspection: Inspection) -> InspectionSummaryOut:
     scan = inspection.scan
     batch = scan.batch if scan else None
     school = batch.school if batch else None
+    image = original_image(scan)
     return InspectionSummaryOut(
         id=str(inspection.id),
         batch_code=batch.batch_code if batch else "-",
@@ -161,6 +172,8 @@ def serialize_summary(inspection: Inspection) -> InspectionSummaryOut:
         unit_operational=scan.organization.name if scan and scan.organization else None,
         created_at=iso_or_none(inspection.created_at),
         image_url=image_url_for(scan),
+        image_width=image.width if image else None,
+        image_height=image.height if image else None,
     )
 
 

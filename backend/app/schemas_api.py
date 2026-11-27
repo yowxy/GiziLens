@@ -222,6 +222,8 @@ class InspectionSummaryOut(ApiModel):
     unit_operational: str | None = None
     created_at: str | None = None
     image_url: str | None = None
+    image_width: int | None = None
+    image_height: int | None = None
 
 
 class InspectionListOut(ApiModel):

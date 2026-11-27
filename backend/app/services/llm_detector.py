@@ -19,7 +19,9 @@ _SYSTEM_PROMPT = (
     "Kamu adalah ahli gizi dan vision AI profesional. Jawab murni HANYA dengan JSON valid "
     "tanpa markdown, tanpa penjelasan tambahan, tanpa prolog atau epilog. "
     "Nilai nutrisi adalah estimasi per porsi yang terlihat di gambar. "
-    "Pastikan bounding box presisi mengelilingi porsi makanan secara individual."
+    "Pastikan bounding box presisi mengelilingi porsi makanan secara individual, "
+    "termasuk makanan atau minuman yang masih berada di dalam kemasan, botol, kaleng, "
+    "sachet, atau bungkus."
 )
 
 
@@ -38,18 +40,21 @@ KONTEKS TARGET GIZI (AKG 2019):
 - Standar Makan Siang: Energi {calories:.0f} kkal | Protein {protein:.1f} g | Lemak {fat:.1f} g | Karbohidrat {carbohydrate:.1f} g | Serat {fiber:.1f} g.
 
 INSTRUKSI WAJIB:
-1. Identifikasi setiap jenis makanan/minuman yang terlihat jelas secara terpisah (misal: Nasi, Ayam Goreng, Sayur Kangkung).
-2. Jangan mengarang makanan yang tidak terlihat.
-3. Estimasi berat (gram) dan nutrisi untuk ukuran porsi yang terlihat di foto.
-4. Buat bounding box untuk setiap item. Format bbox: [x_min, y_min, lebar, tinggi]. Nilai berupa float 0.0 hingga 1.0 yang dinormalisasi (relatif terhadap dimensi gambar). Titik (0,0) adalah pojok kiri atas.
-5. Jika foto bukan makanan, kembalikan array "items" kosong dan isi alasannya di "summary".
+1. Identifikasi setiap jenis makanan dan minuman yang terlihat, dipisah per jenis (misal: Nasi, Ayam Goreng, Sayur Kangkung).
+2. Deteksi juga item yang masih terbungkus kemasan: susu kotak/karton, botol air atau minuman, kaleng, sachet, bungkus snack, cup, dus, dan makanan yang dilapisi plastik, kertas, atau daun. Kemasan bukan alasan untuk melewatkan item.
+3. Untuk item berkemasan, sebutkan jenis kemasan dan isinya, serta merek dan ukuran bila terbaca di label (contoh: "Susu UHT Kotak Indomilk Kids 125 ml", "Air Mineral Botol 600 ml", "Snack Bungkus Keripik 40 g").
+4. Jangan mengarang makanan yang tidak terlihat. Jika isi kemasan tidak terbaca, tetap catat itemnya dengan perkiraan wajar dan turunkan nilai confidence.
+5. Estimasi berat (gram) dan nutrisi untuk ukuran porsi yang terlihat di foto. Untuk minuman, gunakan volume dalam mililiter sebagai perkiraan gram.
+6. Buat bounding box untuk setiap item, mengelilingi kemasannya bila item berkemasan. Format bbox: [x_min, y_min, lebar, tinggi]. Nilai berupa float 0.0 hingga 1.0 yang dinormalisasi (relatif terhadap dimensi gambar). Titik (0,0) adalah pojok kiri atas.
+7. Daftarkan SEMUA item yang terlihat tanpa membatasi jumlahnya, berapa pun banyaknya di dalam ompreng.
+8. Jika foto bukan makanan, kembalikan array "items" kosong dan isi alasannya di "summary".
 
 FORMAT OUTPUT:
 Kembalikan HANYA JSON berformat persis seperti ini:
 {{
   "items": [
     {{
-      "name": "Nama Makanan",
+      "name": "Nama Makanan atau Minuman",
       "category": "Pokok|Lauk|Sayur|Buah|Minuman|Lainnya",
       "estimatedGram": 150,
       "confidence": 0.95,
@@ -89,16 +94,161 @@ def _content_to_json_text(content: object) -> str:
     raise LlmError("Respons API AI tidak berisi JSON.")
 
 
+def _extract_json_object(text: str) -> dict | None:
+    """Return the first balanced ``{...}`` block found in ``text``.
+
+    Vision models occasionally wrap the payload in prose or markdown, or leave
+    trailing text after the closing brace. Scanning for the matching brace is
+    more forgiving than ``json.loads`` on the whole string.
+    """
+    start = text.find("{")
+    if start == -1:
+        return None
+
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(start, len(text)):
+        char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    value = json.loads(text[start : index + 1])
+                except json.JSONDecodeError:
+                    return None
+                return value if isinstance(value, dict) else None
+    return None
+
+
+def _parse_json_payload(text: str) -> dict | None:
+    """Best-effort parse of a model reply into the expected payload object."""
+    if not text or not text.strip():
+        return None
+
+    for candidate in (text, _strip_markdown_fence(text)):
+        try:
+            value = json.loads(candidate)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(value, dict) and isinstance(value.get("items"), list):
+            return value
+
+    value = _extract_json_object(text)
+    if isinstance(value, dict) and isinstance(value.get("items"), list):
+        return value
+    return None
+
+
+async def _repair_payload(
+    settings: Settings,
+    base_url: str,
+    raw_text: str,
+) -> dict | None:
+    """Ask the model to turn an unparsable reply into strict JSON.
+
+    The second pass is text-only (no image), so it is cheap and fast, and it
+    keeps the user from seeing a hard error just because the first reply was
+    wrapped in prose or had a trailing comma.
+    """
+    snippet = (raw_text or "").strip()
+    if not snippet:
+        return None
+    if len(snippet) > 12000:
+        snippet = snippet[:12000]
+
+    payload = {
+        "model": settings.llm_model,
+        "stream": False,
+        "temperature": 0,
+        "max_tokens": 8192,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Kamu adalah pengubah teks menjadi JSON. Balas HANYA dengan satu objek "
+                    "JSON valid. Tanpa markdown, tanpa penjelasan, tanpa teks lain."
+                ),
+            },
+            {
+                "role": "user",
+                "content": (
+                    "Ubah teks berikut menjadi satu objek JSON valid dengan bentuk "
+                    '{"items": [...], "summary": "...", "akgAssessment": "..."}. '
+                    "Setiap item memakai kunci: name, category, estimatedGram, "
+                    "confidence, bbox ([x, y, lebar, tinggi] ternormalisasi 0-1), dan "
+                    "nutrition {calories, protein, fat, carbohydrate, fiber}. "
+                    "Pertahankan semua item yang ada di teks, jangan menambah atau "
+                    "mengurangi, dan jangan mengarang nilai baru.\n\n"
+                    f"TEKS:\n{snippet}"
+                ),
+            },
+        ],
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
+            response = await client.post(
+                f"{base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.sumopod_api_key}",
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+            )
+        if response.status_code < 200 or response.status_code >= 300:
+            return None
+        body = response.json()
+        choices = body.get("choices") if isinstance(body, dict) else None
+        if not isinstance(choices, list) or not choices:
+            return None
+        message = choices[0].get("message") if isinstance(choices[0], dict) else None
+        if not isinstance(message, dict):
+            return None
+        return _parse_json_payload(_content_to_json_text(message.get("content")))
+    except (httpx.HTTPError, ValueError, LlmError, KeyError, TypeError):
+        return None
+
+
 def _number(value: object) -> float:
     if isinstance(value, (int, float)):
         return float(value)
+    text = str(value).strip()
     try:
-        return float(str(value))
+        return float(text)
     except (TypeError, ValueError):
-        return 0.0
+        pass
+    # Models sometimes answer "150 gram" or "0,9" instead of a bare number.
+    match = re.search(r"-?\d+(?:[.,]\d+)?", text)
+    if match:
+        try:
+            return float(match.group(0).replace(",", "."))
+        except ValueError:
+            return 0.0
+    return 0.0
 
 
 def _bbox(value: object) -> BoundingBox | None:
+    if isinstance(value, dict):
+        value = [
+            value.get("x"),
+            value.get("y"),
+            value.get("width", value.get("w")),
+            value.get("height", value.get("h")),
+        ]
     if not isinstance(value, list) or len(value) != 4:
         return None
     x = min(max(_number(value[0]), 0.0), 1.0)
@@ -149,7 +299,7 @@ async def detect(
         "model": settings.llm_model,
         "stream": False,
         "temperature": 0.1,
-        "max_tokens": 4096,
+        "max_tokens": 8192,
         "messages": [
             {"role": "system", "content": _SYSTEM_PROMPT},
             {
@@ -215,25 +365,31 @@ async def detect(
     if not isinstance(message, dict):
         raise LlmError("Respons router AI tidak memuat pesan model.")
     json_text = _content_to_json_text(message.get("content"))
+    finish_reason = choice.get("finish_reason")
     if not json_text:
         raise LlmError(
             "AI tidak mengembalikan hasil "
-            f"(finish_reason: {choice.get('finish_reason')}). Coba analisis ulang."
+            f"(finish_reason: {finish_reason}). Coba analisis ulang."
         )
 
-    try:
-        parsed = json.loads(json_text)
-    except json.JSONDecodeError as exc:
-        raise LlmError(f"JSON dari AI tidak valid: {exc}") from exc
+    parsed = _parse_json_payload(json_text)
+    if parsed is None:
+        # The model replied with something that is not strict JSON (prose
+        # wrapper, trailing comma, truncated output). Ask it to convert the
+        # reply instead of failing the whole scan.
+        parsed = await _repair_payload(settings, base_url, json_text)
+    if parsed is None:
+        raise LlmError(
+            "AI mengembalikan format yang tidak bisa dibaca "
+            f"(finish_reason: {finish_reason}). Coba analisis ulang."
+        )
 
-    if not isinstance(parsed, dict) or not isinstance(parsed.get("items"), list):
-        raise LlmError("Hasil model tidak memuat daftar makanan.")
     raw_items = parsed["items"]
     items = [
         _parse_item(item)
         for item in raw_items
         if isinstance(item, dict) and str(item.get("name") or "").strip()
-    ][:5]
+    ]
 
     return DetectionResponse(
         engine="llm",
