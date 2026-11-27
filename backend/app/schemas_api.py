@@ -330,3 +330,41 @@ class DbHealthOut(ApiModel):
     status: str
     database: bool
     latency_ms: float | None = None
+
+
+# ---------------------------------------------------------------------------
+# Menu recommendations
+# ---------------------------------------------------------------------------
+
+
+class MenuComponentIn(ApiModel):
+    name: str
+    category: str = "Lainnya"
+    gram: float = 0
+    calories: float = 0
+    protein: float = 0
+    fat: float = 0
+    carbohydrate: float = 0
+    fiber: float = 0
+
+
+class MenuRecommendationIn(ApiModel):
+    target_group: str = ""
+    target: dict[str, Any] = Field(default_factory=dict)
+    current: dict[str, Any] = Field(default_factory=dict)
+    components: list[MenuComponentIn] = Field(default_factory=list)
+    notes: str | None = None
+
+
+class RecommendedMenuItemOut(ApiModel):
+    name: str
+    category: str = "Lainnya"
+    portion: str = ""
+    reason: str = ""
+    estimated_gram: float = 0
+
+
+class MenuRecommendationOut(ApiModel):
+    summary: str = ""
+    items: list[RecommendedMenuItemOut] = Field(default_factory=list)
+    tips: list[str] = Field(default_factory=list)

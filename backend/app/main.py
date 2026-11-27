@@ -13,6 +13,7 @@ from app.routers import (
     inspections,
     payment,
     plans,
+    recommendations,
     transactions,
     users,
     admin,
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(detection.router, prefix=settings.api_prefix)
+    app.include_router(recommendations.router, prefix=settings.api_prefix)
     app.include_router(payment.router, prefix=settings.api_prefix)
     app.include_router(dashboard.router, prefix=settings.api_prefix)
     app.include_router(users.router, prefix=settings.api_prefix)

@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import base64
+import io
 import json
 import re
 
 import httpx
+from PIL import Image, ImageOps
 
 from app.config import Settings
 from app.schemas import BoundingBox, DetectionResponse, FoodItem, Nutrition
@@ -45,7 +47,7 @@ INSTRUKSI WAJIB:
 3. Untuk item berkemasan, sebutkan jenis kemasan dan isinya, serta merek dan ukuran bila terbaca di label (contoh: "Susu UHT Kotak Indomilk Kids 125 ml", "Air Mineral Botol 600 ml", "Snack Bungkus Keripik 40 g").
 4. Jangan mengarang makanan yang tidak terlihat. Jika isi kemasan tidak terbaca, tetap catat itemnya dengan perkiraan wajar dan turunkan nilai confidence.
 5. Estimasi berat (gram) dan nutrisi untuk ukuran porsi yang terlihat di foto. Untuk minuman, gunakan volume dalam mililiter sebagai perkiraan gram.
-6. Buat bounding box untuk setiap item, mengelilingi kemasannya bila item berkemasan. Format bbox: [x_min, y_min, lebar, tinggi]. Nilai berupa float 0.0 hingga 1.0 yang dinormalisasi (relatif terhadap dimensi gambar). Titik (0,0) adalah pojok kiri atas.
+6. Buat bounding box untuk setiap item, mengelilingi kemasannya bila item berkemasan. Format bbox: [x1, y1, x2, y2] — (x1, y1) adalah pojok KIRI-ATAS kotak dan (x2, y2) adalah pojok KANAN-BAWAH kotak. Semua nilai float 0.0 sampai 1.0 hasil normalisasi terhadap lebar dan tinggi gambar. Wajib x2 > x1 dan y2 > y1. JANGAN mengirim lebar atau tinggi kotak.
 7. Daftarkan SEMUA item yang terlihat tanpa membatasi jumlahnya, berapa pun banyaknya di dalam ompreng.
 8. Jika foto bukan makanan, kembalikan array "items" kosong dan isi alasannya di "summary".
 
@@ -58,7 +60,7 @@ Kembalikan HANYA JSON berformat persis seperti ini:
       "category": "Pokok|Lauk|Sayur|Buah|Minuman|Lainnya",
       "estimatedGram": 150,
       "confidence": 0.95,
-      "bbox": [0.1, 0.2, 0.4, 0.3],
+      "bbox": [0.1, 0.2, 0.4, 0.5],
       "nutrition": {{
         "calories": 200,
         "protein": 5.5,
@@ -133,9 +135,14 @@ def _extract_json_object(text: str) -> dict | None:
     return None
 
 
-def _parse_json_payload(text: str) -> dict | None:
-    """Best-effort parse of a model reply into the expected payload object."""
+def _parse_json_payload(text: str, required_key: str = "items") -> dict | None:
+    """Best-effort parse of a model reply into an object holding ``required_key``."""
     if not text or not text.strip():
+        return None
+
+    def usable(value: object) -> dict | None:
+        if isinstance(value, dict) and required_key in value:
+            return value
         return None
 
     for candidate in (text, _strip_markdown_fence(text)):
@@ -143,19 +150,19 @@ def _parse_json_payload(text: str) -> dict | None:
             value = json.loads(candidate)
         except json.JSONDecodeError:
             continue
-        if isinstance(value, dict) and isinstance(value.get("items"), list):
-            return value
+        parsed = usable(value)
+        if parsed is not None:
+            return parsed
 
-    value = _extract_json_object(text)
-    if isinstance(value, dict) and isinstance(value.get("items"), list):
-        return value
-    return None
+    return usable(_extract_json_object(text))
 
 
-async def _repair_payload(
+async def _repair_json(
     settings: Settings,
     base_url: str,
     raw_text: str,
+    shape_instruction: str,
+    required_key: str = "items",
 ) -> dict | None:
     """Ask the model to turn an unparsable reply into strict JSON.
 
@@ -185,12 +192,8 @@ async def _repair_payload(
             {
                 "role": "user",
                 "content": (
-                    "Ubah teks berikut menjadi satu objek JSON valid dengan bentuk "
-                    '{"items": [...], "summary": "...", "akgAssessment": "..."}. '
-                    "Setiap item memakai kunci: name, category, estimatedGram, "
-                    "confidence, bbox ([x, y, lebar, tinggi] ternormalisasi 0-1), dan "
-                    "nutrition {calories, protein, fat, carbohydrate, fiber}. "
-                    "Pertahankan semua item yang ada di teks, jangan menambah atau "
+                    f"{shape_instruction} "
+                    "Pertahankan semua data yang ada di teks, jangan menambah atau "
                     "mengurangi, dan jangan mengarang nilai baru.\n\n"
                     f"TEKS:\n{snippet}"
                 ),
@@ -218,9 +221,104 @@ async def _repair_payload(
         message = choices[0].get("message") if isinstance(choices[0], dict) else None
         if not isinstance(message, dict):
             return None
-        return _parse_json_payload(_content_to_json_text(message.get("content")))
+        return _parse_json_payload(
+            _content_to_json_text(message.get("content")), required_key
+        )
     except (httpx.HTTPError, ValueError, LlmError, KeyError, TypeError):
         return None
+
+
+_DETECTION_SHAPE = (
+    "Ubah teks berikut menjadi satu objek JSON valid dengan bentuk "
+    '{"items": [...], "summary": "...", "akgAssessment": "..."}. '
+    "Setiap item memakai kunci: name, category, estimatedGram, "
+    "confidence, bbox ([x1, y1, x2, y2] ternormalisasi 0-1: pojok kiri-atas "
+    "lalu pojok kanan-bawah), dan "
+    "nutrition {calories, protein, fat, carbohydrate, fiber}."
+)
+
+
+async def _repair_payload(
+    settings: Settings,
+    base_url: str,
+    raw_text: str,
+) -> dict | None:
+    return await _repair_json(
+        settings, base_url, raw_text, _DETECTION_SHAPE, required_key="items"
+    )
+
+
+async def complete_json(
+    settings: Settings,
+    system_prompt: str,
+    user_prompt: str,
+    required_key: str,
+    shape_instruction: str,
+    *,
+    temperature: float = 0.2,
+    max_tokens: int = 4096,
+) -> dict:
+    """Run a text-only completion and return it as a JSON object.
+
+    Shares the same JSON recovery as detection: strict parse first, then a
+    text-only repair pass when the model wraps its answer in prose.
+    """
+    if not settings.sumopod_api_key:
+        raise LlmError("SUMOPOD_API_KEY belum diatur pada backend.")
+
+    base_url = settings.sumopod_api_base_url.rstrip("/")
+    payload = {
+        "model": settings.llm_model,
+        "stream": False,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+    }
+
+    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as client:
+        response = await client.post(
+            f"{base_url}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.sumopod_api_key}",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+        )
+
+    if response.status_code < 200 or response.status_code >= 300:
+        raise LlmError(f"API AI gagal ({response.status_code}): {response.text}")
+
+    try:
+        body = response.json()
+    except ValueError as exc:
+        raise LlmError("AI Gateway mengembalikan respons JSON yang tidak valid.") from exc
+
+    choices = body.get("choices") if isinstance(body, dict) else None
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+        raise LlmError("Respons router AI tidak memuat hasil model.")
+    message = choices[0].get("message")
+    if not isinstance(message, dict):
+        raise LlmError("Respons router AI tidak memuat pesan model.")
+
+    json_text = _content_to_json_text(message.get("content"))
+    if not json_text:
+        raise LlmError(
+            "AI tidak mengembalikan hasil "
+            f"(finish_reason: {choices[0].get('finish_reason')}). Coba lagi."
+        )
+
+    parsed = _parse_json_payload(json_text, required_key)
+    if parsed is None:
+        parsed = await _repair_json(
+            settings, base_url, json_text, shape_instruction, required_key
+        )
+    if parsed is None:
+        raise LlmError("AI mengembalikan format yang tidak bisa dibaca. Coba lagi.")
+    return parsed
 
 
 def _number(value: object) -> float:
@@ -242,19 +340,33 @@ def _number(value: object) -> float:
 
 
 def _bbox(value: object) -> BoundingBox | None:
+    """Normalise a model bounding box into x/y/width/height in 0..1 space.
+
+    The prompt asks for corner coordinates (``[x1, y1, x2, y2]``), which is what
+    vision models produce naturally; asking for width/height made them answer
+    with the bottom-right corner instead, which rendered as tall vertical strips.
+    Payloads that already carry x/y/width/height are still accepted.
+    """
     if isinstance(value, dict):
-        value = [
-            value.get("x"),
-            value.get("y"),
-            value.get("width", value.get("w")),
-            value.get("height", value.get("h")),
-        ]
-    if not isinstance(value, list) or len(value) != 4:
+        if any(key in value for key in ("x1", "y1", "x2", "y2")):
+            left = _number(value.get("x1"))
+            top = _number(value.get("y1"))
+            right = _number(value.get("x2"))
+            bottom = _number(value.get("y2"))
+        else:
+            left = _number(value.get("x"))
+            top = _number(value.get("y"))
+            right = left + _number(value.get("width", value.get("w")))
+            bottom = top + _number(value.get("height", value.get("h")))
+    elif isinstance(value, list) and len(value) == 4:
+        left, top, right, bottom = (_number(part) for part in value)
+    else:
         return None
-    x = min(max(_number(value[0]), 0.0), 1.0)
-    y = min(max(_number(value[1]), 0.0), 1.0)
-    width = min(max(_number(value[2]), 0.0), 1.0 - x)
-    height = min(max(_number(value[3]), 0.0), 1.0 - y)
+
+    x = min(max(min(left, right), 0.0), 1.0)
+    y = min(max(min(top, bottom), 0.0), 1.0)
+    width = min(max(abs(right - left), 0.0), 1.0 - x)
+    height = min(max(abs(bottom - top), 0.0), 1.0 - y)
     if width <= 0 or height <= 0:
         return None
     return BoundingBox(x=x, y=y, width=width, height=height)
@@ -280,6 +392,26 @@ def _parse_item(raw: dict) -> FoodItem:
     )
 
 
+def _upright(image_bytes: bytes, mime_type: str) -> tuple[bytes, str]:
+    """Bake EXIF rotation into the pixels before uploading to the model.
+
+    Phone photos often store a landscape frame plus an EXIF rotation tag. When
+    the model ignores that tag it answers in the unrotated frame, so the boxes
+    end up rotated off the food. Rotating the pixels first keeps both sides in
+    the same coordinate space.
+    """
+    try:
+        with Image.open(io.BytesIO(image_bytes)) as image:
+            if image.getexif().get(274, 1) in (None, 1):
+                return image_bytes, mime_type
+            oriented = ImageOps.exif_transpose(image) or image
+            buffer = io.BytesIO()
+            oriented.convert("RGB").save(buffer, format="JPEG", quality=92)
+            return buffer.getvalue(), "image/jpeg"
+    except (OSError, ValueError):
+        return image_bytes, mime_type
+
+
 async def detect(
     settings: Settings,
     image_bytes: bytes,
@@ -293,6 +425,8 @@ async def detect(
 ) -> DetectionResponse:
     if not settings.sumopod_api_key:
         raise LlmError("SUMOPOD_API_KEY belum diatur pada backend.")
+
+    image_bytes, mime_type = _upright(image_bytes, mime_type)
 
     base_url = settings.sumopod_api_base_url.rstrip("/")
     payload = {
