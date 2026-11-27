@@ -69,6 +69,7 @@ class ScanOmprengController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    final scannedAt = DateTime.now().toUtc();
     _isAnalyzing = true;
     _errorMessage = null;
     notifyListeners();
@@ -88,7 +89,7 @@ class ScanOmprengController extends ChangeNotifier {
       final aspectRatio = decoded.width / decoded.height;
       decoded.dispose();
       _saveApiComponents(result.items);
-      InspectionSessionService.instance.setCapturedPhoto(bytes, aspectRatio);
+      InspectionSessionService.instance.setCapturedPhoto(bytes, aspectRatio, scannedAt: scannedAt);
       return true;
     } on TimeoutException {
       _errorMessage = 'Server belum merespons. Periksa koneksi lalu coba lagi.';

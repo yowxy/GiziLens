@@ -11,6 +11,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../constants/app_assets.dart';
+import '../utils/wib_time.dart';
 
 /// Result returned after generating and optionally saving/sharing an audit PDF.
 class PdfExportResult {
@@ -88,7 +89,8 @@ class PdfReportService {
 
     final components = _mapList(item['components']);
     final scannedIso = (item['scannedAt'] ?? item['createdDateIso']) as String?;
-    final parsedDate = DateTime.tryParse(scannedIso ?? '')?.toLocal();
+    final instant = WibTime.parseInstant(scannedIso);
+    final parsedDate = instant == null ? null : WibTime.calendar(instant);
     final dateText = _formatIndonesianDate(parsedDate);
     final timeText = _formatTimeWib(parsedDate);
     final targetGroup = item['targetGroup'] as String? ?? '-';

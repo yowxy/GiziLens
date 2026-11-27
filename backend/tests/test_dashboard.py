@@ -1,7 +1,7 @@
 """PostgreSQL integration tests. Set DASHBOARD_TEST_DATABASE_URL to run them."""
 import os
 import unittest
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -48,6 +48,26 @@ class DashboardTest(unittest.TestCase):
         response = self.client.get("dashboard/" + path, params=params)
         response.raise_for_status()
         return response.json()
+
+    def test_scan_time_round_trips_across_wib_midnight(self):
+        inputs = ("2026-12-31T17:05:00Z", "2027-01-01T00:05:00",
+                  "2027-01-01T02:05:00+09:00")
+        expected = datetime(2026, 12, 31, 17, 5, tzinfo=timezone.utc)
+        for index, stamp in enumerate(inputs):
+            self.client.post("inspections", json=dict(
+                id=f"wib-{index}", scannedAt=stamp, userUid="time-test",
+                unitOperational="SPPG Test", targetGroup="Target Uji", components=[],
+            )).raise_for_status()
+        response = self.client.get("inspections/full", params={
+            "userId": "time-test", "since": "2026-12-31T17:00:00Z",
+        })
+        response.raise_for_status()
+        rows = response.json()["items"]
+        self.assertEqual(len(rows), len(inputs))
+        for row in rows:
+            self.assertEqual(datetime.fromisoformat(row["scannedAt"].replace("Z", "+00:00")), expected)
+            self.assertEqual(row["batchCode"], "BATCH-20270101")
+        self.assertEqual(self.conn.scalar(text("SELECT production_date FROM batches")), date(2027, 1, 1))
 
     def test_empty_periods_and_custom_dates(self):
         for period, size in (("Harian", 24), ("Mingguan", 7), ("Bulanan", 30)):

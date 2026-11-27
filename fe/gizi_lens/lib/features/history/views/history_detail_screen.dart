@@ -7,6 +7,7 @@ import '../../../core/constants/app_typography.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/services/pdf_report_service.dart';
 import '../../../core/services/user_session_service.dart';
+import '../../../core/utils/wib_time.dart';
 import 'widgets/annotated_scan_image.dart';
 import 'widgets/audit_export_action_footer.dart';
 import 'widgets/pdf_export_success_dialog.dart';
@@ -626,9 +627,9 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
   }
 
   static String _formatDate(String? iso) {
-    final date = DateTime.tryParse(iso ?? '');
+    final date = WibTime.parseInstant(iso);
     if (date == null) return '-';
-    final local = date.toLocal();
+    final local = WibTime.calendar(date);
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
       'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',

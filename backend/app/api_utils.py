@@ -1,7 +1,7 @@
 """Small formatting helpers shared by the data API routers."""
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone, tzinfo
 
 WIB = timezone(timedelta(hours=7))
 
@@ -85,7 +85,7 @@ def transaction_status_label(status: str | None) -> str:
     return "Terkonfirmasi"
 
 
-def parse_datetime(value: str | None) -> datetime | None:
+def parse_datetime(value: str | None, *, default_tz: tzinfo = timezone.utc) -> datetime | None:
     if not value:
         return None
     cleaned = value.strip().replace("Z", "+00:00")
@@ -94,7 +94,7 @@ def parse_datetime(value: str | None) -> datetime | None:
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+        parsed = parsed.replace(tzinfo=default_tz)
     return parsed
 
 

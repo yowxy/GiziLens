@@ -16,8 +16,8 @@ class InspectionSessionService extends ChangeNotifier {
   String _batchCode = '';
   String _sppgUnit = AppStrings.defaultSppgUnit;
   TargetAkgModel _targetAkg = TargetAkgModel.standardPresets[1];
-  String _schoolDestination = AppStrings.defaultSamplingSchool;
-  String _notes = AppStrings.defaultInspectionNotes;
+  String _schoolDestination = '';
+  String _notes = '';
   List<FoodComponentModel> _components = [];
   Uint8List? _capturedPhoto;
   double _capturedPhotoAspectRatio = 1;
@@ -38,10 +38,10 @@ class InspectionSessionService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setCapturedPhoto(Uint8List bytes, double aspectRatio) {
+  void setCapturedPhoto(Uint8List bytes, double aspectRatio, {required DateTime scannedAt}) {
     _capturedPhoto = bytes;
     _capturedPhotoAspectRatio = aspectRatio;
-    _scannedAt = DateTime.now();
+    _scannedAt = scannedAt.toUtc();
     notifyListeners();
   }
 
@@ -52,8 +52,8 @@ class InspectionSessionService extends ChangeNotifier {
     _batchCode = '';
     _sppgUnit = AppStrings.defaultSppgUnit;
     _targetAkg = TargetAkgModel.standardPresets[1];
-    _schoolDestination = AppStrings.defaultSamplingSchool;
-    _notes = AppStrings.defaultInspectionNotes;
+    _schoolDestination = '';
+    _notes = '';
     _components = [];
     _capturedPhoto = null;
     _capturedPhotoAspectRatio = 1;

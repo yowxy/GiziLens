@@ -12,6 +12,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/frame_quality_analyzer.dart';
 import '../../../../core/services/scan_quota_service.dart';
+import '../../../core/utils/wib_time.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../controllers/scan_ompreng_controller.dart';
 import 'widgets/google_lens_hologram_scanner.dart';
@@ -83,7 +84,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     _quotaSheetShown = true;
 
     final isPremium = UserSessionService.instance.account.isPremium;
-    final reset = quota.periodEnd;
+    final reset = WibTime.calendar(quota.periodEnd);
     final resetLabel = '${reset.day}/${reset.month}/${reset.year}';
 
     showModalBottomSheet<void>(

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../utils/wib_time.dart';
 import 'firestore_service.dart';
 import 'user_session_service.dart';
 
@@ -20,7 +21,7 @@ class ScanQuota {
   double get progress => limit <= 0 ? 0 : (used / limit).clamp(0, 1).toDouble();
 
   /// First day of the next month, when the counter starts over.
-  DateTime get periodEnd => DateTime(periodStart.year, periodStart.month + 1, 1);
+  DateTime get periodEnd => WibTime.startOfMonthUtc(periodStart, monthsAhead: 1);
 }
 
 /// Counts inspections created in the current calendar month and compares them
@@ -38,8 +39,7 @@ class ScanQuotaService {
   Future<ScanQuota> load() async {
     final isPremium = UserSessionService.instance.account.isPremium;
     final limit = isPremium ? premiumMonthlyQuota : freeMonthlyQuota;
-    final now = DateTime.now();
-    final monthStart = DateTime(now.year, now.month, 1);
+    final monthStart = WibTime.startOfMonthUtc(DateTime.now());
 
     var used = 0;
     try {
@@ -47,8 +47,8 @@ class ScanQuotaService {
         limit: 500,
       );
       used = inspections.where((inspection) {
-        final created = DateTime.tryParse(
-          inspection['createdDateIso']?.toString() ?? '',
+        final created = WibTime.parseInstant(
+          (inspection['scannedAt'] ?? inspection['createdDateIso'])?.toString(),
         );
         return created != null && !created.isBefore(monthStart);
       }).length;

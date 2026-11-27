@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
+import '../utils/wib_time.dart';
 import 'backend_api_service.dart';
 
 /// Data persistence facade for GiziLens.
@@ -55,7 +56,7 @@ class FirestoreService {
     required String uid,
     required Map<String, dynamic> data,
   }) async {
-    final nowIso = DateTime.now().toIso8601String();
+    final nowIso = DateTime.now().toUtc().toIso8601String();
     final merged = <String, dynamic>{
       ...?_localUserProfiles[uid],
       ...data,
@@ -206,7 +207,7 @@ class FirestoreService {
   Future<String?> saveInspection(Map<String, dynamic> inspectionData) async {
     final user = _currentUser;
     final generatedId = 'insp-${DateTime.now().millisecondsSinceEpoch}';
-    final nowIso = DateTime.now().toIso8601String();
+    final nowIso = DateTime.now().toUtc().toIso8601String();
     final payload = <String, dynamic>{
       ...inspectionData,
       'id': generatedId,
@@ -259,8 +260,8 @@ class FirestoreService {
     final records = summaries ??
         _localInspections.where((item) {
           if (since == null) return true;
-          final created = DateTime.tryParse(
-            item['createdDateIso']?.toString() ?? '',
+          final created = WibTime.parseInstant(
+            (item['scannedAt'] ?? item['createdDateIso'])?.toString(),
           );
           return created != null && !created.isBefore(since);
         }).toList();

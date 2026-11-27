@@ -3,7 +3,7 @@ import 'package:gizi_lens/core/services/scan_quota_service.dart';
 
 void main() {
   group('ScanQuota', () {
-    final periodStart = DateTime(2026, 11, 1);
+    final periodStart = DateTime.utc(2026, 10, 31, 17);
 
     test('is exhausted once the used count reaches the limit', () {
       final quota = ScanQuota(used: 10, limit: 10, periodStart: periodStart);
@@ -30,11 +30,11 @@ void main() {
 
     test('period end points at the first day of the next month', () {
       expect(ScanQuota(used: 0, limit: 10, periodStart: periodStart).periodEnd,
-          DateTime(2026, 12, 1));
+          DateTime.utc(2026, 11, 30, 17));
       expect(
-        ScanQuota(used: 0, limit: 10, periodStart: DateTime(2026, 12, 1))
+        ScanQuota(used: 0, limit: 10, periodStart: DateTime.utc(2026, 11, 30, 17))
             .periodEnd,
-        DateTime(2027, 1, 1),
+        DateTime.utc(2026, 12, 31, 17),
       );
     });
 

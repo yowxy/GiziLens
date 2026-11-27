@@ -127,8 +127,11 @@ class AppStrings {
   // Dashboard and Metrics
   static const String greetingWelcome = 'Selamat datang,';
   static const String greetingMorning = 'Selamat pagi,';
-  static const String dashboardOfficerName = 'Nurul Anggraini, S.Gz';
-  static const String dashboardOfficerUnit = 'SPPG Cibinong Sentral 02';
+  static const String greetingAfternoon = 'Selamat siang,';
+  static const String greetingEvening = 'Selamat sore,';
+  static const String greetingNight = 'Selamat malam,';
+  static const String dashboardOfficerName = 'Petugas SPPG';
+  static const String dashboardOfficerUnit = '-';
 
   // Dashboard Premium Banner
   static const String premiumBadgeLabel = 'GIZILENS PREMIUM';
@@ -275,7 +278,7 @@ class AppStrings {
   static const String proposedRoleLabel = 'Peran Diajukan';
   static const String defaultProposedRole = 'Ahli Gizi Lapangan';
   static const String assignmentUnitLabel = 'Unit Penugasan';
-  static const String defaultAssignmentUnit = 'SPPG Cibinong Sentral 02';
+  static const String defaultAssignmentUnit = 'Belum ditentukan';
   static const String btnKembaliKeLogin = 'Kembali ke Login';
   static const String btnMasukDashboard = 'Masuk ke Dasbor';
   static const String autoRedirectingDashboard = 'Mengalihkan ke dasbor dalam';
@@ -299,13 +302,10 @@ class AppStrings {
   static const String lockedAutoBadge = 'Terkunci / Otomatis';
   static const String defaultSppgUnit = '-';
   static const String schoolDestinationLabel = 'Tujuan Distribusi / Sekolah';
-  static const String defaultSchoolDestination = 'SMAN 1 Surabaya';
   static const String schoolDestinationHint =
       'Pilih atau masukkan nama sekolah tujuan';
   static const String inspectionNotesLabel = 'Catatan Pemeriksaan';
   static const String optionalBadge = 'Opsional';
-  static const String defaultInspectionNotes =
-      'Menu reguler nasi kuning telur balado dan oseng tempe kacang';
   static const String inspectionNotesHint =
       'Tambahkan catatan pemeriksaan jika diperlukan...';
   static const String juknisVerificationNotice =
@@ -428,12 +428,10 @@ class AppStrings {
   // Confirmation Step
   static const String confirmationTitle = 'Simpan Hasil Pemeriksaan';
   static const String confirmationSubtitle = 'Verifikasi Berita Acara Audit';
-  static const String sppgBadgeCode = 'SPPG #02';
   static const String finalStageTitle = 'Tahap Akhir: Validasi Fisik & Digital';
 
   static const String samplingProtocolTitle = 'PROTOKOL SAMPLING';
 
-  static const String defaultSamplingSchool = 'SMAN 1 JAKARTA';
   static const String targetGroupInfo = 'SMA (15–18 Thn)';
   static const String targetGroupSession = 'Sesi Makan Siang';
 

@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gizi_lens/core/constants/app_strings.dart';
 import 'package:gizi_lens/features/history/controllers/history_controller.dart';
 import 'package:gizi_lens/features/history/models/history_filter_model.dart';
 import 'package:gizi_lens/features/history/views/history_screen.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
 void main() {
   group('HistoryController Unit Tests', () {
@@ -142,6 +146,31 @@ void main() {
       // Tap 30 Hari Terakhir
       await tester.tap(find.text(AppStrings.period30Hari));
       await tester.pumpAndSettle();
+    });
+
+    testWidgets('calendar on the history card and detail use the same WIB scan time', (tester) async {
+      final today = DateTime.now().toUtc().add(const Duration(hours: 7));
+      final scannedAt = DateTime.utc(today.year, today.month, today.day, 0, 5)
+          .subtract(const Duration(hours: 7)).toIso8601String();
+      final client = MockClient((request) async => http.Response(
+        jsonEncode({
+          'items': [
+            {'id': 'scan-wib', 'batchCode': 'UJI-WIB', 'scannedAt': scannedAt},
+          ],
+        }), 200,
+      ));
+      await http.runWithClient(() async {
+        await tester.pumpWidget(const MaterialApp(home: HistoryScreen()));
+        await tester.pumpAndSettle();
+        final timestamp = find.textContaining('• 00.05 WIB');
+        expect(timestamp, findsOneWidget);
+        await tester.tap(timestamp);
+        await tester.pumpAndSettle();
+        expect(find.text('Detail Pemeriksaan'), findsOneWidget);
+        final detailTime = find.textContaining('00:05 WIB');
+        await tester.scrollUntilVisible(detailTime, 180);
+        expect(detailTime, findsOneWidget);
+      }, () => client);
     });
   });
 }

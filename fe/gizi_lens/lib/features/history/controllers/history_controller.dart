@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/firestore_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/wib_time.dart';
 import '../models/history_filter_model.dart';
 
 /// Controller managing history tabs, search queries, date filters, and live Firestore data.
@@ -31,8 +32,8 @@ class HistoryController extends ChangeNotifier {
         return false;
       }
 
-      final createdDate = DateTime.tryParse(
-        item['createdDateIso']?.toString() ?? '',
+      final createdDate = WibTime.parseInstant(
+        (item['scannedAt'] ?? item['createdDateIso'])?.toString(),
       );
       if (createdDate != null && !_matchesDateFilter(createdDate)) {
         return false;
@@ -53,8 +54,7 @@ class HistoryController extends ChangeNotifier {
   }
 
   bool _matchesDateFilter(DateTime createdDate) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = WibTime.startOfDayUtc(DateTime.now());
     final start = switch (_filter.dateFilter) {
       HistoryDateFilter.hariIni => today,
       HistoryDateFilter.tujuhHari => today.subtract(const Duration(days: 6)),

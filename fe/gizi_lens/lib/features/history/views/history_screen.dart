@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../core/utils/wib_time.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../../notifications/views/notification_sheet.dart';
 import '../controllers/history_controller.dart';
@@ -500,9 +501,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   static String _formatDateTime(Map<String, dynamic> item) {
     final iso = (item['scannedAt'] ?? item['createdDateIso']) as String?;
-    final date = DateTime.tryParse(iso ?? '');
+    final date = WibTime.parseInstant(iso);
     if (date == null) return '-';
-    final local = date.toLocal();
+    final local = WibTime.calendar(date);
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
       'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',

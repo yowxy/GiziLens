@@ -11,6 +11,7 @@ import '../../../../core/services/ai_mode.dart';
 import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/inspection_session_service.dart';
 import '../../../../core/services/user_session_service.dart';
+import '../../../core/utils/wib_time.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
 import '../../history/views/history_detail_screen.dart';
 import '../models/nutrition_analysis_model.dart';
@@ -36,7 +37,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
       components,
       session.targetAkg,
     );
-    final scannedAtIso = (session.scannedAt ?? DateTime.now()).toIso8601String();
+    final scannedAtIso = (session.scannedAt ?? DateTime.now()).toUtc().toIso8601String();
     final inspectionPayload = <String, dynamic>{
       'batchCode': session.batchCode,
       'schoolName': session.schoolDestination,
@@ -161,16 +162,18 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
     );
   }
 
-  String _formatAuditDate(DateTime? date) {
-    if (date == null) return '-';
+  String _formatAuditDate(DateTime? instant) {
+    if (instant == null) return '-';
+    final date = WibTime.calendar(instant);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    final now = DateTime.now();
+    final now = WibTime.calendar(DateTime.now());
     final isToday = date.year == now.year && date.month == now.month && date.day == now.day;
     return '${isToday ? 'Hari ini, ' : ''}${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  String _formatAuditClock(DateTime? date) {
-    if (date == null) return '-';
+  String _formatAuditClock(DateTime? instant) {
+    if (instant == null) return '-';
+    final date = WibTime.calendar(instant);
     String two(int n) => n.toString().padLeft(2, '0');
     return '${two(date.hour)}:${two(date.minute)} WIB';
   }
@@ -235,17 +238,24 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(color: const Color(0xFFDCE6DA), width: 1.0),
               ),
-              child: const Row(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.sizeOf(context).width * 0.35,
+              ),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.circle, size: 7, color: Color(0xFF1E6C45)),
-                  SizedBox(width: 5),
-                  Text(
-                    AppStrings.sppgBadgeCode,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primaryDeep,
+                  const Icon(Icons.circle, size: 7, color: Color(0xFF1E6C45)),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      InspectionSessionService.instance.sppgUnit,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryDeep,
+                      ),
                     ),
                   ),
                 ],

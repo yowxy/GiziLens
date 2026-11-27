@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_strings.dart';
 import '../../../core/services/firestore_service.dart';
 import '../../../core/services/inspection_session_service.dart';
 import '../../../core/services/user_session_service.dart';
+import '../../../core/utils/wib_time.dart';
 import '../models/batch_info_model.dart';
 import '../models/target_akg_model.dart';
 
@@ -24,9 +24,8 @@ class MenuInspectionController extends ChangeNotifier {
     String? initialNotes,
   }) : sppgUnit = UserSessionService.instance.account.unitOperational {
     _selectedTargetAkg = initialTargetAkg ?? TargetAkgModel.standardPresets[1];
-    schoolController.text =
-        initialSchool ?? AppStrings.defaultSchoolDestination;
-    notesController.text = initialNotes ?? AppStrings.defaultInspectionNotes;
+    schoolController.text = initialSchool ?? '';
+    notesController.text = initialNotes ?? '';
   }
 
   TargetAkgModel get selectedTargetAkg => _selectedTargetAkg;
@@ -48,7 +47,7 @@ class MenuInspectionController extends ChangeNotifier {
 
   Future<void> prepareBatchCode() async {
     final inspections = await FirestoreService.instance.getInspections(limit: 500);
-    _batchCode = nextBatchCode(inspections, DateTime.now().year);
+    _batchCode = nextBatchCode(inspections, WibTime.calendar(DateTime.now()).year);
     notifyListeners();
   }
 

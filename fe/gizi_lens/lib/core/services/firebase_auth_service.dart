@@ -117,7 +117,7 @@ class FirebaseAuthService {
             'unit': unit,
             'officerId': buildOfficerId(user.uid),
             'isVerified': false,
-            'createdAt': DateTime.now().toIso8601String(),
+            'createdAt': DateTime.now().toUtc().toIso8601String(),
           },
         );
       }
@@ -177,7 +177,7 @@ class FirebaseAuthService {
               'unit': 'SPPG Ketintang',
               'officerId': buildOfficerId(user.uid),
               'isVerified': true,
-              'createdAt': DateTime.now().toIso8601String(),
+              'createdAt': DateTime.now().toUtc().toIso8601String(),
             },
           );
         } else if (profile['fullName'] == 'Petugas SPPG' ||

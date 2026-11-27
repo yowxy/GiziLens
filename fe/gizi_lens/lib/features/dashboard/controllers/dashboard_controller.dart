@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/services/firestore_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/wib_time.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../models/dashboard_stats_model.dart';
 
@@ -12,7 +13,7 @@ class DashboardController extends ChangeNotifier {
 
   DashboardStatsModel _stats = const DashboardStatsModel();
 
-  final String _greeting = AppStrings.greetingMorning;
+  final String _greeting = _resolveGreeting();
 
   int get activeNavIndex => _activeNavIndex;
   MonitoringPeriod get selectedPeriod => _selectedPeriod;
@@ -30,6 +31,14 @@ class DashboardController extends ChangeNotifier {
   }
 
   String get greeting => _greeting;
+
+  static String _resolveGreeting() {
+    final hour = WibTime.calendar(DateTime.now()).hour;
+    if (hour < 11) return AppStrings.greetingMorning;
+    if (hour < 15) return AppStrings.greetingAfternoon;
+    if (hour < 18) return AppStrings.greetingEvening;
+    return AppStrings.greetingNight;
+  }
 
   DashboardController() {
     UserSessionService.instance.addListener(_onUserSessionChanged);
@@ -91,8 +100,7 @@ class DashboardController extends ChangeNotifier {
   }
 
   DateTime _periodStart(MonitoringPeriod period) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    final today = WibTime.startOfDayUtc(DateTime.now());
     return switch (period) {
       MonitoringPeriod.hariIni => today,
       MonitoringPeriod.tujuhHari => today.subtract(const Duration(days: 6)),

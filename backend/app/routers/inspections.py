@@ -20,7 +20,7 @@ from PIL import Image, ImageOps
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api_utils import iso_or_none, parse_datetime
+from app.api_utils import WIB, iso_or_none, parse_datetime
 from app.config import BASE_DIR
 from app.database.models import (
     AkgTarget,
@@ -474,14 +474,17 @@ def create_inspection(
             id=str(inspection.id) if inspection else client_id, created=False
         )
 
-    scanned_at = parse_datetime(payload.scanned_at) or datetime.now(timezone.utc)
+    # Older Flutter clients sent the WIB clock reading without a UTC offset.
+    scanned_at = parse_datetime(payload.scanned_at, default_tz=WIB) or datetime.now(timezone.utc)
+    production_date = scanned_at.astimezone(WIB).date()
+    scanned_at = scanned_at.astimezone(timezone.utc)
     uid = payload.user_uid or "anonymous"
-    batch_code = (payload.batch_code or "").strip() or f"BATCH-{scanned_at:%Y%m%d}"
+    batch_code = (payload.batch_code or "").strip() or f"BATCH-{production_date:%Y%m%d}"
     sppg = _get_or_create_org(db, payload.unit_operational, "SPPG")
     school = _get_or_create_org(db, payload.school_name, "SCHOOL") if payload.school_name else None
     _get_or_create_member(db, sppg, uid)
     batch = _get_or_create_batch(
-        db, sppg, school, batch_code, scanned_at.date(), uid
+        db, sppg, school, batch_code, production_date, uid
     )
     akg = _get_or_create_akg(db, payload)
     target_snapshot = payload.target_akg2019 or {}

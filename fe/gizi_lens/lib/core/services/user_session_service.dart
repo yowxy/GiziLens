@@ -155,7 +155,7 @@ class UserSessionService extends ChangeNotifier {
       await FirestoreService.instance.updateCurrentUserProfile({
         'subscriptionPlan': planName,
         'isPremium': true,
-        'upgradedAt': DateTime.now().toIso8601String(),
+        'upgradedAt': DateTime.now().toUtc().toIso8601String(),
       });
     } catch (_) {}
     return true;
