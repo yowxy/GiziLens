@@ -34,9 +34,11 @@ class DashboardController extends ChangeNotifier {
   DashboardController() {
     UserSessionService.instance.addListener(_onUserSessionChanged);
     NotificationService.instance.addListener(_onUserSessionChanged);
-    loadStatsFromFirestore();
-    loadUserProfile();
-    loadNotifications();
+    Future.microtask(() {
+      loadStatsFromFirestore();
+      loadUserProfile();
+      loadNotifications();
+    });
   }
 
   void _onUserSessionChanged() {

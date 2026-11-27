@@ -23,8 +23,10 @@ class ProfileController extends ChangeNotifier {
     // Ensure profile data is loaded from Firestore even if the user
     // navigates directly to Profile without going through Dashboard first
     // (e.g. after app kill → relaunch → auto-login → tap Profile tab).
-    _loadProfile();
-    _loadMonthlyUsage();
+    Future.microtask(() {
+      _loadProfile();
+      _loadMonthlyUsage();
+    });
   }
 
   Future<void> _loadProfile() async {
