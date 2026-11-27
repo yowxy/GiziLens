@@ -26,6 +26,9 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   CameraController? _cameraController;
   late Future<void> _initialization;
   bool _isCapturing = false;
+  double _currentZoom = 1.0;
+  double _maxZoom = 1.0;
+  double _zoomAtGestureStart = 1.0;
   DateTime _lastFrameAnalysis = DateTime.fromMillisecondsSinceEpoch(0);
   static const _frameAnalysisInterval = Duration(milliseconds: 400);
 
@@ -43,23 +46,70 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     if (cameras.isEmpty) {
       throw StateError('Kamera tidak ditemukan pada perangkat ini.');
     }
-    final backCameras = cameras
-        .where((camera) => camera.lensDirection == CameraLensDirection.back)
-        .toList();
-    final cameraDescription = (backCameras.isNotEmpty ? backCameras : cameras)
-        .firstWhere(
-          (camera) => camera.lensType == CameraLensType.wide,
-          orElse: () => (backCameras.isNotEmpty ? backCameras : cameras).first,
-        );
+    final cameraDescription = _pickBackCamera(cameras);
     final camera = CameraController(
       cameraDescription,
       ResolutionPreset.high,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.yuv420,
     );
-    await camera.initialize();
+    // Assign before initialization so dispose() can always clean up.
     _cameraController = camera;
+    await camera.initialize();
+    if (!mounted) return;
+    try {
+      _maxZoom = await camera.getMaxZoomLevel();
+    } catch (_) {
+      _maxZoom = 1.0;
+    }
     await camera.startImageStream(_onCameraFrame);
+  }
+
+  /// Picks the primary back camera. The main `wide` lens is preferred because
+  /// ultra-wide lenses introduce the strong barrel distortion ("cembung") that
+  /// makes a flat ompreng tray look bowed at close range.
+  CameraDescription _pickBackCamera(List<CameraDescription> cameras) {
+    final back = cameras
+        .where((camera) => camera.lensDirection == CameraLensDirection.back)
+        .toList();
+    final pool = back.isNotEmpty ? back : cameras;
+    const preference = <CameraLensType>[
+      CameraLensType.wide,
+      CameraLensType.unknown,
+      CameraLensType.telephoto,
+    ];
+    for (final type in preference) {
+      for (final camera in pool) {
+        if (camera.lensType == type) return camera;
+      }
+    }
+    return pool.first;
+  }
+
+  void _handleScaleStart(ScaleStartDetails details) {
+    _zoomAtGestureStart = _currentZoom;
+  }
+
+  Future<void> _handleScaleUpdate(ScaleUpdateDetails details) async {
+    final camera = _cameraController;
+    if (camera == null || !camera.value.isInitialized) return;
+    final next = (_zoomAtGestureStart * details.scale)
+        .clamp(1.0, _maxZoom)
+        .toDouble();
+    if ((next - _currentZoom).abs() < 0.02) return;
+    setState(() => _currentZoom = next);
+    try {
+      await camera.setZoomLevel(next);
+    } catch (_) {}
+  }
+
+  Future<void> _resetZoom() async {
+    final camera = _cameraController;
+    if (camera == null || !camera.value.isInitialized) return;
+    setState(() => _currentZoom = 1.0);
+    try {
+      await camera.setZoomLevel(1.0);
+    } catch (_) {}
   }
 
   void _onCameraFrame(CameraImage image) {
@@ -125,11 +175,26 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
           context.go(RouteNames.componentDetection);
         }
       }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengambil foto: $error'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFB3261E),
+          ),
+        );
+      }
     } finally {
-      if (camera != null &&
+      // Restart the live stream so the preview stays live when the user comes
+      // back (e.g. "retake photo"). Guard against a disposed controller.
+      if (mounted &&
+          camera != null &&
           camera.value.isInitialized &&
           !camera.value.isStreamingImages) {
-        await camera.startImageStream(_onCameraFrame);
+        try {
+          await camera.startImageStream(_onCameraFrame);
+        } catch (_) {}
       }
       if (mounted) {
         setState(() => _isCapturing = false);
@@ -170,7 +235,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Posisikan kamera smartphone tepat di atas nampan makan saji (tegak lurus 90 derajat). Pastikan seluruh 5 sekat ompreng masuk ke dalam bingkai panduan emas dan pencahayaan ruangan cukup terang agar AI dapat mendeteksi gramatur porsi secara akurat.',
+              'Posisikan kamera smartphone tepat di atas nampan makan saji (tegak lurus 90 derajat). Jaga jarak sekitar 30–40 cm dari baki, lalu cubit layar (pinch) untuk memperbesar gambar hingga baki memenuhi bingkai. Menjaga jarak ini penting agar lensa wide tidak membuat tepi baki terlihat melengkung (cembung). Pastikan seluruh 5 sekat ompreng masuk ke dalam bingkai panduan emas dan pencahayaan ruangan cukup terang agar AI dapat mendeteksi gramatur porsi secara akurat.',
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.5,
@@ -282,66 +347,65 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                           showBoundingBoxes: _controller.showAiBoundingBoxes,
                           child: Stack(
                             children: [
-                              FutureBuilder<void>(
-                                future: _initialization,
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasError) {
-                                    return _buildCameraStatus(
-                                      snapshot.error.toString(),
-                                      isError: true,
-                                    );
-                                  }
-                                  final camera = _cameraController;
-                                  if (snapshot.connectionState !=
-                                          ConnectionState.done ||
-                                      camera == null ||
-                                      !camera.value.isInitialized) {
-                                    return const Center(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  }
-                                  return LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      final boxAspectRatio =
-                                          constraints.maxWidth /
-                                          constraints.maxHeight;
-                                      final previewAspectRatio =
-                                          1 / camera.value.aspectRatio;
-                                      final previewWidth =
-                                          previewAspectRatio > boxAspectRatio
-                                          ? constraints.maxHeight *
-                                                previewAspectRatio
-                                          : constraints.maxWidth;
-                                      final previewHeight =
-                                          previewWidth / previewAspectRatio;
-
-                                      return ClipRect(
-                                        child: Center(
-                                          child: SizedBox(
-                                            width: previewWidth,
-                                            height: previewHeight,
-                                            child: CameraPreview(camera),
+                              Positioned.fill(
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onScaleStart: _handleScaleStart,
+                                  onScaleUpdate: _handleScaleUpdate,
+                                  child: FutureBuilder<void>(
+                                    future: _initialization,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasError) {
+                                        return _buildCameraStatus(
+                                          snapshot.error.toString(),
+                                          isError: true,
+                                        );
+                                      }
+                                      final camera = _cameraController;
+                                      if (snapshot.connectionState !=
+                                              ConnectionState.done ||
+                                          camera == null ||
+                                          !camera.value.isInitialized) {
+                                        return const Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
                                           ),
-                                        ),
-                                      );
+                                        );
+                                      }
+                                      return _buildCameraPreview(camera);
                                     },
-                                  );
-                                },
+                                  ),
+                                ),
                               ),
+                              if (_currentZoom > 1.01)
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: _buildZoomBadge(),
+                                ),
                               if (_isCapturing || _controller.isAnalyzing)
-                                _buildCameraStatus(
-                                  _controller.isAnalyzing
-                                      ? 'Menganalisis gambar...'
-                                      : 'Mengambil foto...',
+                                Positioned(
+                                  left: 12,
+                                  right: 12,
+                                  bottom: 12,
+                                  child: _buildStatusBanner(
+                                    _controller.isAnalyzing
+                                        ? 'Menganalisis gambar...'
+                                        : 'Mengambil foto...',
+                                  ),
                                 ),
                               if (_controller.errorMessage != null &&
                                   !_isCapturing &&
                                   !_controller.isAnalyzing)
-                                _buildCameraStatus(
-                                  _controller.errorMessage!,
-                                  isError: true,
+                                Positioned(
+                                  left: 12,
+                                  right: 12,
+                                  bottom: 12,
+                                  child: _buildStatusBanner(
+                                    _controller.errorMessage!,
+                                    isError: true,
+                                    onRetry: _handleShutterTap,
+                                  ),
                                 ),
                             ],
                           ),
@@ -455,6 +519,138 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                   ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Renders the live camera feed so it always covers the square viewfinder
+  /// without stretching the image. The scale is uniform (aspect ratio is
+  /// preserved); any overflow is simply clipped, which keeps a flat tray from
+  /// looking bowed or "cembung".
+  Widget _buildCameraPreview(CameraController camera) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boxWidth = constraints.maxWidth;
+        final boxHeight = constraints.maxHeight;
+        final ratio = camera.value.aspectRatio;
+
+        // `CameraPreview` lays the feed out with a `1 / aspectRatio` box while
+        // the app is locked to portrait. Using exactly the same ratio here keeps
+        // the preview in sync with its own aspect ratio, so it can never be
+        // letterboxed or stretched.
+        final displayAspect = ratio > 0 ? 1 / ratio : boxWidth / boxHeight;
+
+        var width = boxWidth;
+        var height = width / displayAspect;
+        if (height < boxHeight) {
+          height = boxHeight;
+          width = height * displayAspect;
+        }
+
+        return ClipRect(
+          child: Center(
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: CameraPreview(camera),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildZoomBadge() {
+    return GestureDetector(
+      onTap: _resetZoom,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.72),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFD6A64B), width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.zoom_in_rounded,
+              size: 14,
+              color: Color(0xFFD6A64B),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${_currentZoom.toStringAsFixed(1)}x',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBanner(
+    String message, {
+    bool isError = false,
+    VoidCallback? onRetry,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.84),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isError ? const Color(0xFFE57373) : const Color(0xFFD6A64B),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (isError)
+            const Icon(
+              Icons.error_outline,
+              color: Color(0xFFE57373),
+              size: 18,
+            )
+          else
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                color: Color(0xFFD6A64B),
+                strokeWidth: 2,
+              ),
+            ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ),
+          if (onRetry != null)
+            TextButton(
+              onPressed: onRetry,
+              style: TextButton.styleFrom(
+                minimumSize: Size.zero,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text(
+                'Coba lagi',
+                style: TextStyle(
+                  color: Color(0xFFD6A64B),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

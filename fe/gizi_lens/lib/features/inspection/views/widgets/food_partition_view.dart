@@ -86,7 +86,7 @@ class FoodPartitionView extends StatelessWidget {
           return Stack(
             fit: StackFit.expand,
             children: [
-              Image.memory(bytes, fit: BoxFit.fill, gaplessPlayback: true),
+              Image.memory(bytes, fit: BoxFit.cover, gaplessPlayback: true),
               for (final component in components)
                 if (component.boundingBox != null)
                   ..._buildComponentOverlay(component, constraints),
