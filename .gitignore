@@ -1,0 +1,4 @@
+# Local build artifacts (APK/AAB are distributed via GitHub Releases, not git)
+dist/
+*.apk
+*.aab
