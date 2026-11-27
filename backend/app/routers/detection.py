@@ -7,7 +7,10 @@ import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from app.config import get_settings
-from app.dependencies import verify_api_key
+from app.dependencies import get_current_user, verify_api_key
+from app.database.session import get_db
+from app.services import detection_quota
+from sqlalchemy.orm import Session
 from app.schemas import DetectionResponse
 from app.services import llm_detector
 
@@ -43,6 +46,13 @@ def _check_upload(content: bytes, content_type: str | None) -> str:
         return content_type
     raise HTTPException(status_code=415, detail="File harus berupa gambar.")
 
+@router.get("/quota")
+def get_detection_quota(
+    user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    _api_key: str | None = Depends(verify_api_key),
+) -> dict:
+    return detection_quota.quota_for_user(db, user)
 
 @router.post("", response_model=DetectionResponse)
 async def detect_food(
