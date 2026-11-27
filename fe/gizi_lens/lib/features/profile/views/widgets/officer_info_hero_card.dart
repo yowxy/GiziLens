@@ -16,15 +16,18 @@ class OfficerInfoHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showVerifiedTag =
+        account.isVerified && !account.roleTitle.contains('Terverifikasi');
+    final roleLabel = showVerifiedTag
+        ? '${account.roleTitle}${AppStrings.roleVerifiedSuffix}'
+        : account.roleTitle;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE2ECE0),
-          width: 1.2,
-        ),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0C0F261E),
@@ -43,14 +46,16 @@ class OfficerInfoHeroCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 4.5,
+            height: 5,
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
                   Color(0xFF0F3628),
-                  Color(0xFF1E6C45),
+                  Color(0xFFD6A24A),
+                  Color(0xFF0F3628),
                 ],
+                stops: [0.0, 0.5, 1.0],
               ),
             ),
           ),
@@ -98,12 +103,13 @@ class OfficerInfoHeroCard extends StatelessWidget {
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
-                                    account.roleTitle,
-                                    maxLines: 1,
+                                    roleLabel,
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: AppTypography.caption.copyWith(
-                                      fontSize: 11,
+                                      fontSize: 11.5,
                                       fontWeight: FontWeight.w600,
+                                      height: 1.3,
                                       color: AppColors.verifiedBgnText,
                                     ),
                                   ),
@@ -118,21 +124,23 @@ class OfficerInfoHeroCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFBFDFB),
+                              color: const Color(0xFFF7F5ED),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: const Color(0xFFE2E8F0),
+                                color: const Color(0xFFE2DED2),
                                 width: 1.0,
                               ),
                             ),
                             child: Text.rich(
                               TextSpan(
                                 style: AppTypography.caption.copyWith(
-                                  fontSize: 11.5,
+                                  fontSize: 12,
                                   color: const Color(0xFF64748B),
                                 ),
                                 children: [
-                                  const TextSpan(text: AppStrings.officerIdPrefix),
+                                  const TextSpan(
+                                    text: AppStrings.officerIdPrefix,
+                                  ),
                                   TextSpan(
                                     text: account.officerId,
                                     style: const TextStyle(
@@ -208,7 +216,7 @@ class OfficerInfoHeroCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 46,
+                  height: 48,
                   child: OutlinedButton(
                     onPressed: onEditProfileTap,
                     style: OutlinedButton.styleFrom(
@@ -229,7 +237,7 @@ class OfficerInfoHeroCard extends StatelessWidget {
                       children: [
                         const Icon(
                           Icons.edit_outlined,
-                          size: 17,
+                          size: 18,
                           color: AppColors.primaryDeep,
                         ),
                         const SizedBox(width: 8),
@@ -238,7 +246,7 @@ class OfficerInfoHeroCard extends StatelessWidget {
                           style: AppTypography.titleSmall.copyWith(
                             color: AppColors.primaryDeep,
                             fontWeight: FontWeight.w600,
-                            fontSize: 13.5,
+                            fontSize: 14.5,
                           ),
                         ),
                       ],
@@ -280,18 +288,14 @@ class OfficerInfoHeroCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: 0,
-            bottom: 0,
+            right: -1,
+            bottom: -1,
             child: Container(
-              width: 21,
-              height: 21,
+              width: 25,
+              height: 25,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E824C),
+                color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2.0,
-                ),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x1F000000),
@@ -302,9 +306,9 @@ class OfficerInfoHeroCard extends StatelessWidget {
               ),
               child: const Center(
                 child: Icon(
-                  Icons.check_rounded,
-                  size: 13,
-                  color: Colors.white,
+                  Icons.verified_rounded,
+                  size: 24,
+                  color: Color(0xFF1E824C),
                 ),
               ),
             ),

@@ -6,6 +6,7 @@ import '../../../../core/constants/app_dimensions.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
+import '../../../../core/widgets/premium_upgrade_sheet.dart';
 import '../controllers/dashboard_controller.dart';
 import 'widgets/akg_stat_card.dart';
 import 'widgets/akg_summary_card.dart';
@@ -14,6 +15,7 @@ import 'widgets/gizi_lens_bottom_nav.dart';
 import 'widgets/hero_menu_card.dart';
 import '../../notifications/views/notification_sheet.dart';
 import 'widgets/period_filter_bar.dart';
+import 'widgets/premium_banner_card.dart';
 
 /// Dashboard screen presenting compliance metrics, period filters, and quick actions.
 class DashboardScreen extends StatefulWidget {
@@ -113,9 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: AppColors.backgroundSplash,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(28),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
                 ),
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(
@@ -131,9 +131,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          HeroMenuCard(
-                            onInspectTap: _handleScanOmprengTap,
+                          PremiumBannerCard(
+                            onTap: () => showPremiumUpgradeSheet(context),
                           ),
+                          const SizedBox(height: 16),
+                          HeroMenuCard(onInspectTap: _handleScanOmprengTap),
                           const SizedBox(height: 22),
 
                           PeriodFilterBar(
@@ -144,12 +146,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                           Row(
                             children: [
-                              Text(
-                                AppStrings.sectionAkgSummary,
-                                style: AppTypography.titleSmall.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                  color: AppColors.textPrimary,
+                              Flexible(
+                                child: Text(
+                                  AppStrings.sectionAkgSummary,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 6),

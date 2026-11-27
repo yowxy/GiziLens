@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../models/officer_account_model.dart';
 
 class ProfileController extends ChangeNotifier {
+  /// Number of free inspection scans granted each calendar month.
+  static const int monthlyScanQuota = 10;
+
   int _activeNavIndex = 3;
+  int _monthlyScansUsed = 0;
 
   OfficerAccountModel get account => UserSessionService.instance.account;
   int get activeNavIndex => _activeNavIndex;
+  int get monthlyScansUsed => _monthlyScansUsed;
   bool get notificationsEnabled => NotificationService.instance.enabled;
   bool get hasUnreadNotifications => NotificationService.instance.hasUnread;
 
@@ -18,11 +24,37 @@ class ProfileController extends ChangeNotifier {
     // navigates directly to Profile without going through Dashboard first
     // (e.g. after app kill → relaunch → auto-login → tap Profile tab).
     _loadProfile();
+    _loadMonthlyUsage();
   }
 
   Future<void> _loadProfile() async {
     await UserSessionService.instance.initializeFromFirebase();
     notifyListeners();
+  }
+
+  /// Counts inspections created since the first day of the current month so
+  /// the subscription card can display live quota usage.
+  Future<void> _loadMonthlyUsage() async {
+    try {
+      final inspections = await FirestoreService.instance.getInspections(
+        limit: 200,
+      );
+      final now = DateTime.now();
+      final monthStart = DateTime(now.year, now.month, 1);
+      final used = inspections.where((inspection) {
+        final created = DateTime.tryParse(
+          inspection['createdDateIso']?.toString() ?? '',
+        );
+        return created != null && !created.isBefore(monthStart);
+      }).length;
+
+      if (used != _monthlyScansUsed) {
+        _monthlyScansUsed = used;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Quota display falls back to zero when the data source is unreachable.
+    }
   }
 
   void _onUserSessionUpdated() {

@@ -7,10 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 class HeroMenuCard extends StatelessWidget {
   final VoidCallback onInspectTap;
 
-  const HeroMenuCard({
-    super.key,
-    required this.onInspectTap,
-  });
+  const HeroMenuCard({super.key, required this.onInspectTap});
 
   @override
   Widget build(BuildContext context) {
@@ -35,14 +32,14 @@ class HeroMenuCard extends StatelessWidget {
               right: 14,
               top: 14,
               child: Opacity(
-                opacity: 0.12,
-                child: Row(
+                opacity: 0.22,
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.restaurant_rounded,
                       size: 64,
-                      color: AppColors.accentGold,
+                      color: Color(0xFF3E755E),
                     ),
                   ],
                 ),
@@ -61,9 +58,9 @@ class HeroMenuCard extends StatelessWidget {
                       AppStrings.heroMenuTitle,
                       style: AppTypography.titleLarge.copyWith(
                         color: Colors.white,
-                        fontSize: 19,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: -0.2,
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ),
@@ -121,11 +118,12 @@ class HeroMenuCard extends StatelessWidget {
                                         AppStrings.heroActionTitle,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppTypography.titleSmall.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 15,
-                                          color: AppColors.textPrimary,
-                                        ),
+                                        style: AppTypography.titleSmall
+                                            .copyWith(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 15,
+                                              color: AppColors.textPrimary,
+                                            ),
                                       ),
                                     ),
                                     const SizedBox(width: 6),

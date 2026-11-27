@@ -12,15 +12,23 @@ class DashboardController extends ChangeNotifier {
 
   DashboardStatsModel _stats = const DashboardStatsModel();
 
-  final String _greeting = AppStrings.greetingWelcome;
+  final String _greeting = AppStrings.greetingMorning;
 
   int get activeNavIndex => _activeNavIndex;
   MonitoringPeriod get selectedPeriod => _selectedPeriod;
   bool get hasUnreadNotifications => NotificationService.instance.hasUnread;
   DashboardStatsModel get stats => _stats;
 
-  String get officerName => UserSessionService.instance.account.fullName;
-  String get unitName => UserSessionService.instance.account.unitOperational;
+  String get officerName {
+    final name = UserSessionService.instance.account.fullName.trim();
+    return name.isEmpty || name == '-' ? AppStrings.dashboardOfficerName : name;
+  }
+
+  String get unitName {
+    final unit = UserSessionService.instance.account.unitOperational.trim();
+    return unit.isEmpty || unit == '-' ? AppStrings.dashboardOfficerUnit : unit;
+  }
+
   String get greeting => _greeting;
 
   DashboardController() {
@@ -91,7 +99,6 @@ class DashboardController extends ChangeNotifier {
       ),
     };
   }
-
 
   @override
   void dispose() {

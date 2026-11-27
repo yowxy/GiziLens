@@ -66,6 +66,25 @@ class AppColors {
   static const Color notificationDot = Color(0xFFE53935);
   static const Color bottomNavInactive = Color(0xFF53675C);
 
+  // Premium banner colors
+  static const Color premiumGradientStart = Color(0xFF102A4A);
+  static const Color premiumGradientEnd = Color(0xFF091A30);
+  static const Color premiumBorder = Color(0xFF2A4767);
+  static const Color premiumBadgeBg = Color(0xFF071426);
+  static const Color premiumAccent = Color(0xFF3FC2F2);
+  static const Color premiumTextMuted = Color(0xFFC3D3E6);
+  static const Color premiumButtonStart = Color(0xFF2FB6F2);
+  static const Color premiumButtonEnd = Color(0xFF5A8CD4);
+  static const Color premiumRibbon = Color(0xFF6C8EB6);
+
+  // Subscription / plan colors
+  static const Color planIconBg = Color(0xFFE3F2E7);
+  static const Color planFreePillBg = Color(0xFFF6F5EE);
+  static const Color planFreePillBorder = Color(0xFFD8D5C9);
+  static const Color planRemainingBg = Color(0xFFE0F1E5);
+  static const Color planRemainingText = Color(0xFF1E6C45);
+  static const Color goldStar = Color(0xFFD9A441);
+
   // Dialog & Profile Colors
   static const Color dialogLogoutRed = Color(0xFFB91C1C);
   static const Color dialogLogoutRedPressed = Color(0xFF991B1B);

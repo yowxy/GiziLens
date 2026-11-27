@@ -21,8 +21,7 @@ class AppStrings {
 
   static const String institutionBgn =
       'Badan Gizi Nasional (BGN) & Kementerian Kesehatan RI';
-  static const String institutionSpk =
-      'Sistem Pendukung Keputusan MBG v1.2';
+  static const String institutionSpk = 'Sistem Pendukung Keputusan MBG v1.2';
 
   static const String btnLewati = 'Lewati';
   static const String btnLanjutkan = 'Lanjutkan';
@@ -102,7 +101,8 @@ class AppStrings {
   static const String operationalRoleTitle = 'Peran Operasional';
   static const String operationalUnitLabel = 'Unit Operasional SPPG';
   static const String operationalUnitHint = 'Pilih unit operasional';
-  static const String operationalUnitRequired = 'Unit operasional wajib dipilih';
+  static const String operationalUnitRequired =
+      'Unit operasional wajib dipilih';
   static const String regionLabel = 'Wilayah';
   static const String regionHint = 'Pilih wilayah tugas';
   static const String regionRequired = 'Wilayah wajib dipilih';
@@ -126,9 +126,28 @@ class AppStrings {
 
   // Dashboard and Metrics
   static const String greetingWelcome = 'Selamat datang,';
-  static const String greetingMorning = greetingWelcome;
+  static const String greetingMorning = 'Selamat pagi,';
   static const String dashboardOfficerName = 'Nurul Anggraini, S.Gz';
   static const String dashboardOfficerUnit = 'SPPG Cibinong Sentral 02';
+
+  // Dashboard Premium Banner
+  static const String premiumBadgeLabel = 'GIZILENS PREMIUM';
+  static const String premiumTitle = 'Pemeriksaan Lebih Maksimal!';
+  static const String premiumDescription =
+      'Nikmati fitur lengkap, riwayat pemeriksaan tanpa batas, dan laporan yang lebih praktis untuk mendukung monitoring MBG.';
+  static const String premiumFeatureUnlimited = 'Unlimited Scan';
+  static const String premiumFeatureExport = 'Ekspor Otomatis';
+  static const String premiumCta = 'Lihat Paket Premium';
+
+  // Premium upgrade sheet
+  static const String premiumSheetTitle = 'GiziLens Premium';
+  static const String premiumSheetSubtitle =
+      'Buka seluruh kemampuan audit gizi untuk kebutuhan operasional SPPG.';
+  static const String premiumBenefitUnlimited = 'Scan & inspeksi tanpa batas';
+  static const String premiumBenefitHistory = 'Riwayat pemeriksaan tanpa batas';
+  static const String premiumBenefitExport = 'Ekspor laporan otomatis';
+  static const String premiumBenefitPriority = 'Dukungan prioritas tim BGN';
+  static const String btnClose = 'Tutup';
 
   static const String heroMenuTitle = 'Periksa Menu Hari Ini';
   static const String heroActionTitle = 'Periksa Ompreng';
@@ -211,7 +230,8 @@ class AppStrings {
   static const String otpTitle = 'Verifikasi Akun';
   static const String otpSubtitle =
       'Kami mengirimkan kode verifikasi untuk memastikan email atau nomor HP kamu aktif.';
-  static const String otpSentToPrefix = 'Kode verifikasi 6 digit telah dikirim ke:';
+  static const String otpSentToPrefix =
+      'Kode verifikasi 6 digit telah dikirim ke:';
 
   static const String btnUbah = 'Ubah';
   static const String enterOtpLabel = 'Masukkan 6-Digit Kode Sandi (OTP)';
@@ -284,6 +304,22 @@ class AppStrings {
   static const String officerIdPrefix = 'ID Petugas: ';
   static const String unitOperationalLabel = 'Unit Operasional: ';
   static const String btnEditProfile = 'Edit Profil Petugas';
+  static const String roleVerifiedSuffix = ' (Terverifikasi BGN)';
+
+  // Profile subscription plan
+  static const String planFreeName = 'GiziLensFree';
+  static const String planActiveLabel = 'Paket aktif saat ini';
+  static const String planBadgeFree = 'FREE';
+  static const String planQuotaTitle = 'Kuota Pemeriksaan Bulan Ini';
+  static const String planQuotaUnit = 'scan';
+  static const String planRenewNote = 'Kuota diperbarui setiap bulan.';
+  static const String btnUpgradePremium = 'Upgrade ke Premium';
+
+  static String planQuotaUsage(int used, int total) =>
+      '$used dari $total $planQuotaUnit';
+  static String planQuotaRemaining(int remaining) =>
+      '$remaining $planQuotaUnit tersisa';
+  static String planQuotaPercent(int percent) => '$percent% terpakai';
 
   static const String sectionPreferenceTitle = 'Preferensi & Standar Gizi';
   static const String badgeKemenkesBgn = 'Kemenkes / BGN';
@@ -318,7 +354,8 @@ class AppStrings {
   static const String saveProfileDialogConfirmBtn = 'Ya, Simpan Perubahan';
   static const String saveProfileDialogCancelBtn = 'Periksa Kembali';
 
-  static const String profileUpdatedSuccessTitle = 'Profil Berhasil Diperbarui!';
+  static const String profileUpdatedSuccessTitle =
+      'Profil Berhasil Diperbarui!';
   static const String profileUpdatedSuccessSubtitle =
       'Perubahan data profil kamu berhasil disimpan.';
   static const String profileUpdatedBackButton = 'Kembali ke Profil';

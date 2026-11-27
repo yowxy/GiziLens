@@ -21,7 +21,7 @@ void main() {
       expect(controller.stats.totalDiperiksa, equals(0));
       expect(controller.stats.totalSesuai, equals(0));
       expect(controller.stats.totalTidakSesuai, equals(0));
-      expect(controller.greeting, equals(AppStrings.greetingWelcome));
+      expect(controller.greeting, equals(AppStrings.greetingMorning));
       expect(controller.officerName, equals(AppStrings.dashboardOfficerName));
     });
 
@@ -61,7 +61,9 @@ void main() {
   });
 
   group('DashboardScreen Widget Tests', () {
-    testWidgets('Renders all essential visual components from dashboard.png', (tester) async {
+    testWidgets('Renders all essential visual components from dashboard.png', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -69,17 +71,18 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: DashboardScreen(),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
 
       // Verify Header Elements
       expect(find.text(AppStrings.greetingMorning), findsOneWidget);
       expect(find.text(AppStrings.dashboardOfficerName), findsOneWidget);
       expect(find.text(AppStrings.dashboardOfficerUnit), findsOneWidget);
       expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
+
+      // Verify Premium Upsell Banner
+      expect(find.text(AppStrings.premiumBadgeLabel), findsOneWidget);
+      expect(find.text(AppStrings.premiumTitle), findsOneWidget);
+      expect(find.text(AppStrings.premiumCta), findsOneWidget);
 
       // Verify Hero AI Camera Card
       expect(find.text(AppStrings.heroMenuTitle), findsOneWidget);
@@ -109,7 +112,9 @@ void main() {
       expect(find.text(AppStrings.navProfil), findsOneWidget);
     });
 
-    testWidgets('Tapping period filter updates active selection', (tester) async {
+    testWidgets('Tapping period filter updates active selection', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -117,11 +122,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: DashboardScreen(),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
 
       // Tap 7 Hari Terakhir
       await tester.tap(find.text(AppStrings.period7Hari));
@@ -140,11 +141,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: DashboardScreen(),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: DashboardScreen()));
 
       // Tap Riwayat tab
       await tester.tap(find.text(AppStrings.navRiwayat));

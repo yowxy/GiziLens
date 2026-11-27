@@ -13,7 +13,7 @@ class DashboardHeader extends StatelessWidget {
 
   const DashboardHeader({
     super.key,
-    this.greeting = AppStrings.greetingWelcome,
+    this.greeting = AppStrings.greetingMorning,
     this.officerName = AppStrings.dashboardOfficerName,
     this.unitName = AppStrings.dashboardOfficerUnit,
     this.hasNotification = true,
@@ -43,25 +43,29 @@ class DashboardHeader extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
+                    letterSpacing: -0.4,
+                    height: 1.25,
                   ),
                 ),
-                const SizedBox(height: 4),
                 Text(
                   officerName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleLarge.copyWith(
                     color: Colors.white,
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFF7F6EF),
                     borderRadius: BorderRadius.circular(999),
                     boxShadow: const [
                       BoxShadow(
@@ -75,14 +79,14 @@ class DashboardHeader extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        width: 7,
-                        height: 7,
+                        width: 8,
+                        height: 8,
                         decoration: const BoxDecoration(
                           color: AppColors.accentCheckGreen,
                           shape: BoxShape.circle,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 7),
                       Flexible(
                         child: Text(
                           unitName,
@@ -90,8 +94,8 @@ class DashboardHeader extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: AppTypography.badge.copyWith(
                             color: AppColors.primaryDark,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

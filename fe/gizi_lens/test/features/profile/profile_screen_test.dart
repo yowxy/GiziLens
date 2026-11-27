@@ -36,7 +36,10 @@ void main() {
       expect(success, isTrue);
       expect(controller.account.fullName, equals('Budi Santoso, S.Tr.Gz'));
       expect(controller.account.roleTitle, equals('Supervisor SPPG'));
-      expect(controller.account.unitOperational, equals('SPPG Cibinong Sentral 01'));
+      expect(
+        controller.account.unitOperational,
+        equals('SPPG Cibinong Sentral 01'),
+      );
       expect(controller.account.unitRegion, equals('Kab. Bogor'));
       expect(controller.account.initials, equals('BS'));
     });
@@ -48,7 +51,9 @@ void main() {
   });
 
   group('ProfileScreen Widget Tests', () {
-    testWidgets('Renders all profile header and officer card elements', (tester) async {
+    testWidgets('Renders all profile header and officer card elements', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(() {
@@ -56,11 +61,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: ProfileScreen(),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: ProfileScreen()));
       await tester.pumpAndSettle();
 
       expect(find.byType(ProfileHeaderAppBar), findsOneWidget);
@@ -69,6 +70,11 @@ void main() {
 
       expect(find.byType(OfficerInfoHeroCard), findsOneWidget);
       expect(find.text(AppStrings.btnEditProfile), findsOneWidget);
+
+      expect(find.text(AppStrings.planFreeName), findsOneWidget);
+      expect(find.text(AppStrings.planActiveLabel), findsOneWidget);
+      expect(find.text(AppStrings.planQuotaTitle), findsOneWidget);
+      expect(find.text(AppStrings.btnUpgradePremium), findsOneWidget);
 
       expect(find.text(AppStrings.sectionPreferenceTitle), findsOneWidget);
       expect(find.text(AppStrings.menuAkgTitle), findsOneWidget);

@@ -28,17 +28,13 @@ class ProfileMenuSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Row(
             children: [
-              Icon(
-                headerIcon,
-                size: 19,
-                color: headerIconColor,
-              ),
+              Icon(headerIcon, size: 20, color: headerIconColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
                   style: AppTypography.titleLarge.copyWith(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     letterSpacing: -0.2,
@@ -49,7 +45,7 @@ class ProfileMenuSection extends StatelessWidget {
                 Text(
                   trailingText!,
                   style: AppTypography.caption.copyWith(
-                    fontSize: 12,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFF64748B),
                   ),
@@ -63,10 +59,7 @@ class ProfileMenuSection extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFE2ECE0),
-              width: 1.2,
-            ),
+            border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x0A0F261E),

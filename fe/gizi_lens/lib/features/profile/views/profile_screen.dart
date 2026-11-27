@@ -7,6 +7,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/user_session_service.dart';
+import '../../../../core/widgets/premium_upgrade_sheet.dart';
 import '../../dashboard/views/widgets/gizi_lens_bottom_nav.dart';
 import '../../notifications/views/notification_sheet.dart';
 import '../controllers/profile_controller.dart';
@@ -16,6 +17,7 @@ import 'widgets/officer_info_hero_card.dart';
 import 'widgets/profile_header_app_bar.dart';
 import 'widgets/profile_menu_item.dart';
 import 'widgets/profile_menu_section.dart';
+import 'widgets/subscription_plan_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -45,12 +47,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-
   void _handleEditProfileTap() {
-    final nameController = TextEditingController(text: _controller.account.fullName);
-    final roleController = TextEditingController(text: _controller.account.roleTitle);
-    final unitController = TextEditingController(text: _controller.account.unitOperational);
-    final regionController = TextEditingController(text: _controller.account.unitRegion);
+    final nameController = TextEditingController(
+      text: _controller.account.fullName,
+    );
+    final roleController = TextEditingController(
+      text: _controller.account.roleTitle,
+    );
+    final unitController = TextEditingController(
+      text: _controller.account.unitOperational,
+    );
+    final regionController = TextEditingController(
+      text: _controller.account.unitRegion,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -104,7 +113,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: AppStrings.fullNameFieldLabel,
                     hintText: 'Contoh: Nurul Anggraini, S.Gz',
-                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 20, color: AppColors.primaryDeep),
+                    prefixIcon: const Icon(
+                      Icons.person_outline_rounded,
+                      size: 20,
+                      color: AppColors.primaryDeep,
+                    ),
                     labelStyle: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -129,7 +142,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Peran / Jabatan Petugas',
                     hintText: 'Contoh: Ahli Gizi Lapangan',
-                    prefixIcon: const Icon(Icons.badge_outlined, size: 20, color: AppColors.primaryDeep),
+                    prefixIcon: const Icon(
+                      Icons.badge_outlined,
+                      size: 20,
+                      color: AppColors.primaryDeep,
+                    ),
                     labelStyle: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -154,7 +171,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Unit Operasional SPPG',
                     hintText: 'Contoh: SPPG Cibinong Sentral 02',
-                    prefixIcon: const Icon(Icons.business_outlined, size: 20, color: AppColors.primaryDeep),
+                    prefixIcon: const Icon(
+                      Icons.business_outlined,
+                      size: 20,
+                      color: AppColors.primaryDeep,
+                    ),
                     labelStyle: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -179,7 +200,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Wilayah Operasional',
                     hintText: 'Contoh: Kab. Bogor, Jawa Barat',
-                    prefixIcon: const Icon(Icons.location_on_outlined, size: 20, color: AppColors.primaryDeep),
+                    prefixIcon: const Icon(
+                      Icons.location_on_outlined,
+                      size: 20,
+                      color: AppColors.primaryDeep,
+                    ),
                     labelStyle: AppTypography.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -210,11 +235,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SnackBar(
                             content: Text(
                               'Nama lengkap tidak boleh kosong.',
-                              style: AppTypography.bodySmall.copyWith(color: Colors.white),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                             backgroundColor: AppColors.statTidakSesuaiRed,
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         );
                         return;
@@ -342,7 +371,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Tutup', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -389,7 +421,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   contentPadding: EdgeInsets.zero,
                   activeTrackColor: AppColors.primaryDeep,
                   title: const Text('Notifikasi Defisit Porsi >15%'),
-                  subtitle: const Text('Peringatan instan saat ompreng tidak sesuai AKG'),
+                  subtitle: const Text(
+                    'Peringatan instan saat ompreng tidak sesuai AKG',
+                  ),
                   value: _controller.notificationsEnabled,
                   onChanged: (val) {
                     setModalState(() {});
@@ -409,7 +443,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text('Simpan Pengaturan', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Simpan Pengaturan',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -472,7 +509,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Mengerti',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -533,7 +573,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text('Tutup', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
@@ -596,10 +639,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       account: _controller.account,
                       onEditProfileTap: _handleEditProfileTap,
                     ),
+                    const SizedBox(height: 18),
+                    SubscriptionPlanCard(
+                      scansUsed: _controller.monthlyScansUsed,
+                      monthlyQuota: ProfileController.monthlyScanQuota,
+                      onUpgradeTap: () => showPremiumUpgradeSheet(context),
+                    ),
                     const SizedBox(height: 20),
                     ProfileMenuSection(
                       headerIcon: Icons.tune_rounded,
-                      headerIconColor: AppColors.dialogAccentRing,
+                      headerIconColor: AppColors.accentGold,
                       title: AppStrings.sectionPreferenceTitle,
                       trailingText: AppStrings.badgeKemenkesBgn,
                       items: [
@@ -659,10 +708,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFF1D5D5),
-          width: 1.0,
-        ),
+        border: Border.all(color: const Color(0xFFF1D5D5), width: 1.0),
         boxShadow: const [
           BoxShadow(
             color: Color(0x08000000),

@@ -20,7 +20,10 @@ class ProfileHeaderAppBar extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: AppColors.backgroundSplash,
+      decoration: const BoxDecoration(
+        color: AppColors.backgroundSplash,
+        border: Border(bottom: BorderSide(color: Color(0xFFE9E7DC), width: 1)),
+      ),
       padding: EdgeInsets.fromLTRB(20, topPadding + 10, 20, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -31,10 +34,7 @@ class ProfileHeaderAppBar extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFE4EAE0),
-                width: 1.0,
-              ),
+              border: Border.all(color: const Color(0xFFE4EAE0), width: 1.0),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x0A000000),
@@ -64,9 +64,9 @@ class ProfileHeaderAppBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: AppTypography.titleLarge.copyWith(
                     color: AppColors.textPrimary,
-                    fontSize: 17,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: -0.2,
+                    letterSpacing: -0.3,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -86,7 +86,7 @@ class ProfileHeaderAppBar extends StatelessWidget {
                       AppStrings.profileScreenSubtitle,
                       style: AppTypography.caption.copyWith(
                         color: AppColors.textSecondary,
-                        fontSize: 11.5,
+                        fontSize: 12.5,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
