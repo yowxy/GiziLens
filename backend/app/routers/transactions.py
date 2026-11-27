@@ -179,10 +179,10 @@ def _resolve_plan(db: Session, plan_id: str | None, plan_name: str | None) -> Pl
         code="plan_premium",
         name="GiziLens Premium",
         description="Akses penuh audit gizi AI, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud",
-        price=99000,
+        price=299000,
         billing_cycle="MONTHLY",
         quota_cycle="MONTHLY",
-        scan_quota=None,
+        scan_quota=500,
         max_members=None,
         history_retention_days=365,
         features=[

@@ -27,6 +27,7 @@ ON CONFLICT (code) DO UPDATE SET
   billing_cycle = EXCLUDED.billing_cycle,
   quota_cycle = EXCLUDED.quota_cycle,
   scan_quota = EXCLUDED.scan_quota,
+  max_members = EXCLUDED.max_members,
   history_retention_days = EXCLUDED.history_retention_days,
   features = EXCLUDED.features,
   is_active = true,
