@@ -162,7 +162,13 @@ def get_user(uid: str, db: Session = Depends(get_db)) -> UserOut:
     return serialize_member(member, active_plans(db))
 
 
-def _find_or_create_organization(db: Session, name: str, uid: str) -> Organization:
+def _find_or_create_organization(
+    db: Session,
+    name: str,
+    uid: str,
+    region: str | None = None,
+) -> Organization:
+    clean_region = (region or "").strip() or None
     existing = db.scalar(
         select(Organization).where(
             func.lower(func.btrim(Organization.name)) == name.strip().lower(),
@@ -170,11 +176,15 @@ def _find_or_create_organization(db: Session, name: str, uid: str) -> Organizati
         )
     )
     if existing is not None:
+        if clean_region:
+            existing.province = clean_region
+            existing.updated_at = datetime.now(timezone.utc)
         return existing
 
     org = Organization(
         name=name.strip(),
         type="SPPG",
+        province=clean_region,
         registration_code=f"SPPG-{uid[:8].upper()}",
         status="VERIFIED",
     )
@@ -197,7 +207,7 @@ def upsert_user(payload: UserUpsert, db: Session = Depends(get_db)) -> UserOut:
         raise HTTPException(status_code=422, detail="Field institution wajib diisi.")
 
     if member is None:
-        org = _find_or_create_organization(db, org_name, uid)
+        org = _find_or_create_organization(db, org_name, uid, region=payload.region)
         member = OrganizationMember(
             organization_id=org.id,
             firebase_uid=uid,
@@ -209,8 +219,11 @@ def upsert_user(payload: UserUpsert, db: Session = Depends(get_db)) -> UserOut:
         if payload.role:
             member.membership_role = _membership_role(payload.role)
         if payload.institution or payload.unit:
-            org = _find_or_create_organization(db, org_name, uid)
+            org = _find_or_create_organization(db, org_name, uid, region=payload.region)
             member.organization_id = org.id
+        elif payload.region and member.organization is not None:
+            member.organization.province = payload.region.strip()
+            member.organization.updated_at = datetime.now(timezone.utc)
         member.updated_at = datetime.now(timezone.utc)
 
     db.commit()
