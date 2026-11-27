@@ -44,3 +44,21 @@ class HealthResponse(BaseModel):
     engine: str
     llm_configured: bool
     onnx_available: bool
+
+
+class MidtransTransactionRequest(BaseModel):
+    order_id: str = Field(min_length=4, max_length=64)
+    plan_id: str
+    plan_name: str
+    gross_amount: int = Field(gt=0)
+    customer_name: str = "Petugas SPPG"
+    customer_email: str = "petugas.sppg@gizilens.id"
+    payment_method: str = "qris"
+
+
+class MidtransTransactionResponse(BaseModel):
+    mode: str
+    order_id: str
+    snap_token: str | None = None
+    redirect_url: str
+    status: str = "pending"

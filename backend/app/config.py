@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     require_api_key: bool = False
     api_keys: str = ""
 
+    midtrans_server_key: str = ""
+    midtrans_client_key: str = ""
+    midtrans_is_production: bool = False
+
     @property
     def max_upload_bytes(self) -> int:
         return self.max_upload_mb * 1024 * 1024
