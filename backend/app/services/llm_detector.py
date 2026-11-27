@@ -81,9 +81,9 @@ def _content_to_json_text(content: object) -> str:
         return _strip_markdown_fence(content)
     if isinstance(content, list):
         text = "".join(
-            part.get("text", "")
+            part["text"]
             for part in content
-            if isinstance(part, dict)
+            if isinstance(part, dict) and isinstance(part.get("text"), str)
         )
         return _strip_markdown_fence(text)
     raise LlmError("Respons API AI tidak berisi JSON.")
@@ -147,6 +147,7 @@ async def detect(
     base_url = settings.sumopod_api_base_url.rstrip("/")
     payload = {
         "model": settings.llm_model,
+        "stream": False,
         "temperature": 0.1,
         "max_tokens": 4096,
         "messages": [
@@ -177,6 +178,7 @@ async def detect(
             f"{base_url}/chat/completions",
             headers={
                 "Authorization": f"Bearer {settings.sumopod_api_key}",
+                "Accept": "application/json",
                 "Content-Type": "application/json",
             },
             json=payload,
@@ -185,10 +187,33 @@ async def detect(
     if response.status_code < 200 or response.status_code >= 300:
         raise LlmError(f"API AI gagal ({response.status_code}): {response.text}")
 
-    body = response.json()
-    choices = body.get("choices") or []
-    choice = choices[0] if choices else {}
-    message = choice.get("message") or {}
+    try:
+        body = response.json()
+
+    except ValueError as exc:
+        print(
+            "[AI DEBUG]",
+            "Status:", response.status_code,
+            "Content-Type:", response.headers.get("content-type"),
+            "Response length:", len(response.content),
+            "Starts with SSE:", response.text.lstrip().startswith("data:"),
+            flush=True,
+        )
+
+        raise LlmError(
+            "AI Gateway mengembalikan respons JSON yang tidak valid."
+        ) from exc
+
+    if not isinstance(body, dict):
+        raise LlmError("Format respons AI Gateway tidak sesuai.")
+
+    choices = body.get("choices") if isinstance(body, dict) else None
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+        raise LlmError("Respons router AI tidak memuat hasil model.")
+    choice = choices[0]
+    message = choice.get("message")
+    if not isinstance(message, dict):
+        raise LlmError("Respons router AI tidak memuat pesan model.")
     json_text = _content_to_json_text(message.get("content"))
     if not json_text:
         raise LlmError(
@@ -201,7 +226,9 @@ async def detect(
     except json.JSONDecodeError as exc:
         raise LlmError(f"JSON dari AI tidak valid: {exc}") from exc
 
-    raw_items = parsed.get("items") or []
+    if not isinstance(parsed, dict) or not isinstance(parsed.get("items"), list):
+        raise LlmError("Hasil model tidak memuat daftar makanan.")
+    raw_items = parsed["items"]
     items = [
         _parse_item(item)
         for item in raw_items
