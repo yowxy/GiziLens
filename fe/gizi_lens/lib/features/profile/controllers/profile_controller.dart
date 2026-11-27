@@ -11,9 +11,12 @@ class ProfileController extends ChangeNotifier {
   int _activeNavIndex = 3;
   int _monthlyScansUsed = 0;
 
+  bool _isSaving = false;
+
   OfficerAccountModel get account => UserSessionService.instance.account;
   int get activeNavIndex => _activeNavIndex;
   int get monthlyScansUsed => _monthlyScansUsed;
+  bool get isSaving => _isSaving;
   bool get notificationsEnabled => NotificationService.instance.enabled;
   bool get hasUnreadNotifications => NotificationService.instance.hasUnread;
 
@@ -24,12 +27,12 @@ class ProfileController extends ChangeNotifier {
     // navigates directly to Profile without going through Dashboard first
     // (e.g. after app kill → relaunch → auto-login → tap Profile tab).
     Future.microtask(() {
-      _loadProfile();
+      loadProfile();
       _loadMonthlyUsage();
     });
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> loadProfile() async {
     await UserSessionService.instance.initializeFromFirebase();
     notifyListeners();
   }
@@ -86,13 +89,20 @@ class ProfileController extends ChangeNotifier {
     String? region,
     String? officerId,
   }) async {
-    return await UserSessionService.instance.updateProfile(
-      fullName: fullName,
-      role: role,
-      unit: unit,
-      region: region,
-      officerId: officerId,
-    );
+    _isSaving = true;
+    notifyListeners();
+    try {
+      return await UserSessionService.instance.updateProfile(
+        fullName: fullName,
+        role: role,
+        unit: unit,
+        region: region,
+        officerId: officerId,
+      );
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
   }
 
   /// Compatibility alias for updating officer name.
