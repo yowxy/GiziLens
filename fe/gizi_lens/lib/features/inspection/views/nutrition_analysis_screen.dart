@@ -19,6 +19,7 @@ class NutritionAnalysisScreen extends StatefulWidget {
 
 class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
   late final NutritionAnalysisController _controller;
+  final GlobalKey _recommendationKey = GlobalKey();
 
   @override
   void initState() {
@@ -46,6 +47,22 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
       } catch (_) {
         context.go(RouteNames.auditConfirmation);
       }
+    }
+  }
+
+  /// The existing "Lihat Rekomendasi Menu" CTA loads the LLM suggestion and
+  /// reveals it on this screen instead of jumping straight to the audit step.
+  Future<void> _handleRecommendation() async {
+    await _controller.loadRecommendation();
+    if (!mounted) return;
+
+    final cardContext = _recommendationKey.currentContext;
+    if (cardContext != null && cardContext.mounted) {
+      await Scrollable.ensureVisible(
+        cardContext,
+        duration: const Duration(milliseconds: 350),
+        alignment: 0.05,
+      );
     }
   }
 
@@ -227,6 +244,12 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                         ],
                       ),
                     ),
+                    if (_controller.hasRecommendation ||
+                        _controller.isLoadingRecommendation ||
+                        _controller.recommendationError != null) ...[
+                      const SizedBox(height: 20),
+                      _buildRecommendationCard(),
+                    ],
                   ],
                 ),
               ),
@@ -253,7 +276,12 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _controller.isLoading ? null : _handleContinue,
+                      onPressed: (_controller.isLoading ||
+                              _controller.isLoadingRecommendation)
+                          ? null
+                          : (_controller.hasRecommendation
+                              ? _handleContinue
+                              : _handleRecommendation),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryDeep,
                         foregroundColor: Colors.white,
@@ -265,7 +293,8 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (_controller.isLoading) ...[
+                          if (_controller.isLoading ||
+                              _controller.isLoadingRecommendation) ...[
                             const SizedBox(
                               width: 20,
                               height: 20,
@@ -277,7 +306,11 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                           ] else ...[
                             Flexible(
                               child: Text(
-                                AppStrings.btnViewRecommendations,
+                                _controller.recommendationError != null
+                                    ? AppStrings.btnRetryRecommendation
+                                    : (_controller.hasRecommendation
+                                        ? AppStrings.btnContinueToAudit
+                                        : AppStrings.btnViewRecommendations),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTypography.titleMedium.copyWith(
@@ -298,6 +331,27 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
                       ),
                     ),
                   ),
+                  if (_controller.recommendationError != null &&
+                      !_controller.isLoadingRecommendation) ...[
+                    const SizedBox(height: 4),
+                    TextButton(
+                      onPressed:
+                          _controller.isLoading ? null : _handleContinue,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                      ),
+                      child: Text(
+                        AppStrings.btnContinueWithoutRecommendation,
+                        style: AppTypography.bodySmall.copyWith(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
@@ -342,6 +396,195 @@ class _NutritionAnalysisScreenState extends State<NutritionAnalysisScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildRecommendationCard() {
+    final recommendation = _controller.recommendation;
+    final error = _controller.recommendationError;
+
+    return Container(
+      key: _recommendationKey,
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE2ECE0), width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A0F261E),
+            blurRadius: 14,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.auto_awesome_rounded,
+                size: 19,
+                color: AppColors.primaryDeep,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppStrings.recommendationTitle,
+                  style: AppTypography.titleLarge.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_controller.isLoadingRecommendation)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppStrings.recommendationLoading,
+                    style: AppTypography.bodySmall.copyWith(
+                      fontSize: 12.5,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else if (error != null)
+            Text(
+              error,
+              style: AppTypography.bodySmall.copyWith(
+                fontSize: 12.5,
+                height: 1.45,
+                color: AppColors.statTidakSesuaiRed,
+              ),
+            )
+          else if (recommendation != null) ...[
+            if (recommendation.summary.isNotEmpty)
+              Text(
+                recommendation.summary,
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            for (final item in recommendation.items) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF6FAF4),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2ECE0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: AppTypography.titleSmall.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE7F0E8),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            item.category,
+                            style: AppTypography.captionBold.copyWith(
+                              fontSize: 10.5,
+                              color: AppColors.primaryDeep,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (item.portion.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Porsi: ${item.portion}',
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 11.5,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (item.reason.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.reason,
+                        style: AppTypography.caption.copyWith(
+                          fontSize: 11.5,
+                          height: 1.4,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+            if (recommendation.tips.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              for (final tip in recommendation.tips)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(top: 3),
+                        child: Icon(
+                          Icons.check_circle_outline_rounded,
+                          size: 13,
+                          color: AppColors.primaryDeep,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          tip,
+                          style: AppTypography.caption.copyWith(
+                            fontSize: 11.5,
+                            height: 1.4,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+        ],
       ),
     );
   }

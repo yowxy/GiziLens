@@ -23,44 +23,32 @@ void main() {
     test('Initial states and masking are correct', () {
       expect(controller.secondsRemaining, equals(48));
       expect(controller.canResend, isFalse);
-      expect(controller.isOtpComplete, isFalse);
+      expect(controller.isVerified, isFalse);
       expect(controller.maskedEmail, equals('nurulan***@gmail.com'));
       expect(controller.maskedPhone, contains('****'));
     });
 
-    test('updateOtp updates current code and checks completeness', () {
-      controller.updateOtp('123');
-      expect(controller.currentOtp, equals('123'));
-      expect(controller.isOtpComplete, isFalse);
-
-      controller.updateOtp('123456');
-      expect(controller.currentOtp, equals('123456'));
-      expect(controller.isOtpComplete, isTrue);
+    test('Controller never exposes an OTP code', () {
+      // Verification is link-based: there must be no generated code to leak.
+      expect(controller.errorMessage, isNull);
+      expect(controller.isLoading, isFalse);
     });
 
-    test('verifyOtp requires 6 digits', () async {
-      controller.updateOtp('123');
-      final fail = await controller.verifyOtp();
-      expect(fail, isFalse);
-      expect(controller.errorMessage, isNotNull);
-
-      controller.updateOtp('123456');
-      final pass = await controller.verifyOtp();
-      expect(pass, isTrue);
-    });
-
-    test('Random OTP is generated and autoFillOtp populates currentOtp', () {
-      expect(controller.generatedOtp.length, equals(6));
-      expect(int.tryParse(controller.generatedOtp), isNotNull);
-
-      controller.autoFillOtp();
-      expect(controller.currentOtp, equals(controller.generatedOtp));
-      expect(controller.isOtpComplete, isTrue);
+    test('Forgot-password mode does not poll email verification', () {
+      final forgot = OtpController(
+        email: 'nurulanggraini@gmail.com',
+        isForgotPassword: true,
+      );
+      expect(forgot.isVerified, isFalse);
+      expect(forgot.secondsRemaining, equals(48));
+      forgot.dispose();
     });
   });
 
   group('OtpVerificationScreen & Dialog Widget Tests', () {
-    testWidgets('Renders all visual components from otp.png accurately', (tester) async {
+    testWidgets('Shows email instructions without any OTP code', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: OtpVerificationScreen(
@@ -82,8 +70,12 @@ void main() {
       expect(find.text('+62 812-****-789'), findsOneWidget);
       expect(find.text(AppStrings.btnUbah), findsOneWidget);
 
-      // Verify OTP label & resend info
-      expect(find.text(AppStrings.enterOtpLabel), findsOneWidget);
+      // No code input and no generated code anywhere on screen
+      expect(find.byType(TextField), findsNothing);
+      expect(find.text('Isi Otomatis'), findsNothing);
+      expect(find.textContaining('KODE OTP'), findsNothing);
+
+      // Verify resend info
       expect(find.text(AppStrings.haventReceivedCode), findsOneWidget);
       expect(find.text(AppStrings.smsHelp), findsOneWidget);
 
@@ -93,7 +85,26 @@ void main() {
       expect(find.text(AppStrings.termsOfServiceMBG), findsOneWidget);
     });
 
-    testWidgets('OtpVerificationDialog renders matching Background+Border verifikasi.png', (tester) async {
+    testWidgets('Forgot-password mode offers the reset page instead', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: OtpVerificationScreen(
+            initialEmail: 'nurulag***@gmail.com',
+            isForgotPassword: true,
+          ),
+        ),
+      );
+
+      expect(find.text('Reset Kata Sandi'), findsOneWidget);
+      expect(find.text('Buka Halaman Reset'), findsOneWidget);
+      expect(find.text(AppStrings.btnVerifikasi), findsNothing);
+    });
+
+    testWidgets('OtpVerificationDialog renders matching Background+Border verifikasi.png', (
+      tester,
+    ) async {
       bool nextClicked = false;
 
       await tester.pumpWidget(

@@ -9,10 +9,10 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../controllers/otp_controller.dart';
 import 'widgets/auth_footer.dart';
-import 'widgets/otp_code_input.dart';
 import 'widgets/otp_verification_dialog.dart';
 
-/// OTP verification screen for confirming email or phone token.
+/// Email verification screen. No code is generated or displayed on the
+/// device — verification happens through the link Firebase emails.
 class OtpVerificationScreen extends StatefulWidget {
   final String? initialEmail;
   final String? initialPhone;
@@ -31,6 +31,7 @@ class OtpVerificationScreen extends StatefulWidget {
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   late final OtpController _controller;
+  bool _successDialogShown = false;
 
   @override
   void initState() {
@@ -60,43 +61,39 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _showVerificationSuccessDialog();
   }
 
-  Future<void> _handleVerifyOtp() async {
-    FocusScope.of(context).unfocus();
-
-    final success = await _controller.verifyOtp();
+  Future<void> _handleManualVerify() async {
+    final success = await _controller.checkVerification();
     if (success && mounted) {
       _showVerificationSuccessDialog();
     }
   }
 
+  void _goToResetPassword() {
+    context.go(
+      RouteNames.resetPassword,
+      extra: {'email': widget.initialEmail},
+    );
+  }
+
   Future<void> _showVerificationSuccessDialog() async {
+    if (_successDialogShown) return;
+    _successDialogShown = true;
+
     await OtpVerificationDialog.show(
       context,
-      subtitle: widget.isForgotPassword
-          ? 'Identitas email berhasil diverifikasi.\nLanjutkan untuk membuat kata sandi baru.'
-          : null,
-      onNext: () {
-        if (widget.isForgotPassword) {
-          context.go(
-            RouteNames.resetPassword,
-            extra: {'email': widget.initialEmail},
-          );
-          return;
-        }
-        context.go(RouteNames.completeProfile);
-      },
+      onNext: () => context.go(RouteNames.completeProfile),
     );
   }
 
   Future<void> _handleResend() async {
-    final success = await _controller.resendOtp();
+    final success = await _controller.resendEmail();
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             widget.isForgotPassword
-                ? 'Tautan reset kata sandi baru telah dikirimkan ke ${_controller.email}. Periksa inbox / spam email Anda.'
-                : 'Kode OTP acak baru (${_controller.generatedOtp}) telah dibuat & tautan verifikasi dikirimkan ke ${_controller.email}.',
+                ? 'Tautan reset kata sandi baru telah dikirim ke ${_controller.email}. Periksa inbox / spam email Anda.'
+                : 'Tautan verifikasi baru telah dikirim ke ${_controller.email}. Periksa inbox / spam email Anda.',
             style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.primaryDeep,
@@ -121,7 +118,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
-  void _showSmsHelpDialog() {
+  void _showEmailHelpDialog() {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -148,10 +145,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               const SizedBox(height: 18),
               Row(
                 children: [
-                  const Icon(Icons.sms_outlined, color: AppColors.primaryDeep),
+                  const Icon(
+                    Icons.mark_email_read_outlined,
+                    color: AppColors.primaryDeep,
+                  ),
                   const SizedBox(width: 8),
                   Text(
-                    'Bantuan Pengiriman SMS OTP',
+                    'Bantuan Email Verifikasi',
                     style: AppTypography.titleLarge.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -161,7 +161,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Pastikan pulsa reguler Anda mencukupi untuk menerima SMS dari gateway BGN. Jika SMS belum masuk dalam 2 menit, periksa folder spam atau minta bantuan supervisor SPPG Anda.',
+                'Email bisa memakan waktu sampai 2 menit. Jika belum masuk, periksa folder Spam, Promosi, atau Semua Email. Pastikan juga alamat email yang terdaftar sudah benar, lalu gunakan tombol Kirim Ulang Email.',
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -281,7 +281,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      AppStrings.otpTitle,
+                      widget.isForgotPassword
+                          ? 'Reset Kata Sandi'
+                          : AppStrings.otpTitle,
                       style: AppTypography.h1.copyWith(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -291,7 +293,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      AppStrings.otpSubtitle,
+                      widget.isForgotPassword
+                          ? 'Kami telah mengirim tautan reset kata sandi ke email Anda. Buka email tersebut untuk melanjutkan.'
+                          : AppStrings.otpSubtitle,
                       style: AppTypography.bodyMedium.copyWith(
                         fontSize: 13,
                         height: 1.45,
@@ -381,13 +385,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Text(
-                                  _controller.maskedPhone,
-                                  style: AppTypography.caption.copyWith(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                if (!widget.isForgotPassword)
+                                  Text(
+                                    _controller.maskedPhone,
+                                    style: AppTypography.caption.copyWith(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -429,10 +434,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ],
                       ),
                     ),
-                    // Official Generated OTP Card
+                    // Email instruction card — no code is ever shown on device
                     Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(top: 18, bottom: 24),
+                      margin: const EdgeInsets.only(top: 18, bottom: 8),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
@@ -458,165 +463,78 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         children: [
                           Row(
                             children: [
-                              Image.asset(
-                                AppAssets.logoGiziLens,
-                                height: 22,
-                                fit: BoxFit.contain,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'KODE OTP RESMI GIZILENS',
-                                  style: AppTypography.caption.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 11.5,
-                                    color: const Color(0xFF144638),
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFDCFCE7),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: const Color(0xFF86EFAC),
-                                    width: 0.8,
-                                  ),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.accentCheckGreen,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Aktif',
-                                      style: AppTypography.badge.copyWith(
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFF15803D),
-                                      ),
-                                    ),
-                                  ],
+                                child: const Icon(
+                                  Icons.mark_email_unread_outlined,
+                                  size: 20,
+                                  color: Color(0xFF15803D),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  widget.isForgotPassword
+                                      ? 'Buka email reset kata sandi'
+                                      : 'Buka email verifikasi',
+                                  style: AppTypography.titleSmall.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                    color: const Color(0xFF144638),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Kode Keamanan 6 Digit (Acak):',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTypography.caption.copyWith(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 11.5,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _controller.generatedOtp,
-                                      style: AppTypography.h1.copyWith(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 3.5,
-                                        color: const Color(0xFF144638),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  _controller.autoFillOtp();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryDeep,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                icon: const Icon(
-                                  Icons.bolt_rounded,
-                                  size: 16,
-                                  color: Color(0xFFFDE047),
-                                ),
-                                label: const Text(
-                                  'Isi Otomatis',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          Text(
+                            widget.isForgotPassword
+                                ? 'Tautan reset kata sandi telah dikirim ke '
+                                    '${_controller.maskedEmail}. Buka email '
+                                    'tersebut, klik tautan reset, lalu kembali '
+                                    'ke aplikasi.'
+                                : 'Tautan verifikasi telah dikirim ke '
+                                    '${_controller.maskedEmail}. Buka email '
+                                    'tersebut dan klik tautan verifikasi.',
+                            style: AppTypography.bodySmall.copyWith(
+                              fontSize: 12.5,
+                              height: 1.45,
+                              color: const Color(0xFF144638),
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.info_outline_rounded,
-                                size: 13,
-                                color: Color(0xFF15803D),
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  'Kode baru otomatis di-generate secara acak setiap Anda menekan Kirim Ulang. Atau klik tautan verifikasi pada email Anda.',
-                                  style: AppTypography.caption.copyWith(
-                                    fontSize: 11,
-                                    color: const Color(0xFF15803D),
-                                    height: 1.35,
+                          if (!widget.isForgotPassword) ...[
+                            const SizedBox(height: 10),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 13,
+                                  color: Color(0xFF15803D),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    'Halaman ini lanjut otomatis setelah email '
+                                    'Anda terverifikasi. Tidak ada kode yang '
+                                    'perlu diketik.',
+                                    style: AppTypography.caption.copyWith(
+                                      fontSize: 11,
+                                      color: const Color(0xFF15803D),
+                                      height: 1.35,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
-                    ),
-                    Center(
-                      child: Text(
-                        AppStrings.enterOtpLabel,
-                        style: AppTypography.titleMedium.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    OtpCodeInput(
-                      length: 6,
-                      code: _controller.currentOtp,
-                      onChanged: _controller.updateOtp,
-                      onCompleted: (_) => _handleVerifyOtp(),
                     ),
                     if (_controller.errorMessage != null) ...[
                       const SizedBox(height: 12),
@@ -642,8 +560,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         const Icon(
                           Icons.access_time_rounded,
@@ -684,7 +603,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: _showSmsHelpDialog,
+                          onTap: _showEmailHelpDialog,
                           child: Text(
                             AppStrings.smsHelp,
                             style: AppTypography.titleSmall.copyWith(
@@ -698,10 +617,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 32),
                     AppButton(
-                      text: AppStrings.btnVerifikasi,
-                      backgroundColor: _controller.isOtpComplete
-                          ? AppColors.primaryDeep
-                          : AppColors.buttonAuth,
+                      text: widget.isForgotPassword
+                          ? 'Buka Halaman Reset'
+                          : AppStrings.btnVerifikasi,
+                      backgroundColor: AppColors.primaryDeep,
                       height: 52,
                       borderRadius: 14,
                       isLoading: _controller.isLoading,
@@ -715,7 +634,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         color: Colors.white,
                         size: 18,
                       ),
-                      onPressed: _handleVerifyOtp,
+                      onPressed: widget.isForgotPassword
+                          ? _goToResetPassword
+                          : _handleManualVerify,
                     ),
                     const SizedBox(height: 32),
                     const AuthFooter(),

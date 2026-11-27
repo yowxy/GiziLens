@@ -199,15 +199,6 @@ class FirestoreService {
     }
   }
 
-  /// OTP verification is handled by Firebase Authentication. Kept as a no-op
-  /// so existing controllers keep compiling.
-  Future<void> saveOtpVerification({
-    required String email,
-    required String otp,
-  }) async {
-    debugPrint('OTP diverifikasi oleh Firebase Auth untuk $email');
-  }
-
   // ==========================================
   // AUDIT INSPECTIONS
   // ==========================================

@@ -182,6 +182,21 @@ class BackendApiService {
   }
 
   // ---------------------------------------------------------------------
+  // Menu recommendations
+  // ---------------------------------------------------------------------
+
+  Future<Map<String, dynamic>?> requestMenuRecommendation(
+    Map<String, dynamic> payload,
+  ) {
+    return _send(
+      'POST',
+      '/recommendations/menu',
+      body: payload,
+      timeout: const Duration(seconds: 60),
+    );
+  }
+
+  // ---------------------------------------------------------------------
   // Plans & transactions
   // ---------------------------------------------------------------------
 

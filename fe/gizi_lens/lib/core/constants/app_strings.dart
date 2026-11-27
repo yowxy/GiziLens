@@ -220,10 +220,10 @@ class AppStrings {
   static const String forgotPasswordBadge = 'Keamanan Akun MBG';
   static const String forgotPasswordTitle = 'Lupa Kata Sandi';
   static const String forgotPasswordSubtitle =
-      'Masukkan email aktif yang terdaftar untuk menerima 6-digit kode verifikasi (OTP) pemulihan akun.';
+      'Masukkan email aktif yang terdaftar untuk menerima tautan reset kata sandi.';
   static const String registeredEmailLabel = 'Email Terdaftar';
   static const String registeredEmailHint = 'nama@email.com';
-  static const String btnSendOtp = 'Kirim Kode OTP';
+  static const String btnSendOtp = 'Kirim Tautan Reset';
 
   // Reset Password
   static const String resetPasswordBadge = 'Keamanan Akun MBG';
@@ -245,21 +245,19 @@ class AppStrings {
       'Silakan masuk kembali menggunakan kata sandi baru Anda.';
   static const String btnBackToLogin = 'Masuk Kembali';
 
-  // OTP Verification
+  // Email Verification
   static const String otpBadge = 'Keamanan Akun MBG';
   static const String otpTitle = 'Verifikasi Akun';
   static const String otpSubtitle =
-      'Kami mengirimkan kode verifikasi untuk memastikan email atau nomor HP kamu aktif.';
-  static const String otpSentToPrefix =
-      'Kode verifikasi 6 digit telah dikirim ke:';
+      'Kami mengirimkan tautan verifikasi ke email terdaftar. Buka email tersebut dan klik tautannya.';
+  static const String otpSentToPrefix = 'Tautan verifikasi dikirim ke:';
 
   static const String btnUbah = 'Ubah';
-  static const String enterOtpLabel = 'Masukkan 6-Digit Kode Sandi (OTP)';
-  static const String haventReceivedCode = 'Belum menerima kode verifikasi?';
-  static const String resendCodeTimerPrefix = 'Kirim Ulang Kode';
-  static const String resendCodeAction = 'Kirim Ulang Kode';
-  static const String smsHelp = 'Bantuan SMS';
-  static const String btnVerifikasi = 'Verifikasi';
+  static const String haventReceivedCode = 'Belum menerima email verifikasi?';
+  static const String resendCodeTimerPrefix = 'Kirim Ulang Email';
+  static const String resendCodeAction = 'Kirim Ulang Email';
+  static const String smsHelp = 'Bantuan Email';
+  static const String btnVerifikasi = 'Saya Sudah Verifikasi';
 
   // Verification Dialog
   static const String verificationSuccessTitle = 'Verifikasi Berhasil';
@@ -425,6 +423,13 @@ class AppStrings {
   static const String summary5PillarsTitle = 'Ringkasan 5 Pilar Nutrisi';
   static const String tolerancePill = 'Toleransi ±10%';
   static const String btnViewRecommendations = 'Lihat Rekomendasi Menu';
+  static const String recommendationTitle = 'Rekomendasi Menu dari AI';
+  static const String recommendationLoading =
+      'Menyusun rekomendasi menu berdasarkan selisih gizi...';
+  static const String btnRetryRecommendation = 'Coba Lagi';
+  static const String btnContinueWithoutRecommendation =
+      'Lanjut tanpa rekomendasi';
+  static const String btnContinueToAudit = 'Lanjut ke Konfirmasi Audit';
   static const String btnBackToComponents = 'Kembali ke Koreksi Komponen';
 
   // Confirmation Step

@@ -1,14 +1,16 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/firestore_service.dart';
 
-/// Controller handling OTP / Email verification state, timer countdown,
-/// randomized OTP generation per resend, and real-time Firebase verification.
+/// Controller handling the email-link verification state.
+///
+/// No code is ever generated or displayed on the device: verification happens
+/// only when the user opens the email Firebase sent and clicks its link. The
+/// screen polls [FirebaseAuthService.checkEmailVerified] and can also ask the
+/// user to re-send the email.
 class OtpController extends ChangeNotifier {
   static const int initialTimerSeconds = 48;
-  static const int otpLength = 6;
 
   final String email;
   final String phone;
@@ -20,8 +22,6 @@ class OtpController extends ChangeNotifier {
   int _secondsRemaining = initialTimerSeconds;
   bool _isLoading = false;
   String? _errorMessage;
-  String _currentOtp = '';
-  String _generatedOtp = '';
   bool _isVerified = false;
 
   OtpController({
@@ -30,41 +30,17 @@ class OtpController extends ChangeNotifier {
     this.isForgotPassword = false,
     this.onAutoVerified,
   }) {
-    _generateNewOtp();
     startTimer();
-    startAutoCheckEmailVerified();
+    if (!isForgotPassword) {
+      startAutoCheckEmailVerified();
+    }
   }
 
   int get secondsRemaining => _secondsRemaining;
   bool get canResend => _secondsRemaining == 0;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  String get currentOtp => _currentOtp;
-  String get generatedOtp => _generatedOtp;
-  bool get isOtpComplete => _currentOtp.length == otpLength;
   bool get isVerified => _isVerified;
-
-  void _generateNewOtp() {
-    final random = Random();
-    final code = (100000 + random.nextInt(900000)).toString();
-    _generatedOtp = code;
-    _saveOtpToFirestore(code);
-  }
-
-  Future<void> _saveOtpToFirestore(String code) async {
-    try {
-      await FirestoreService.instance.saveOtpVerification(
-        email: email,
-        otp: code,
-      );
-    } catch (_) {}
-  }
-
-  void autoFillOtp() {
-    _currentOtp = _generatedOtp;
-    _errorMessage = null;
-    notifyListeners();
-  }
 
   String get maskedEmail {
     if (email.contains('***')) return email;
@@ -111,6 +87,7 @@ class OtpController extends ChangeNotifier {
   }
 
   void startAutoCheckEmailVerified() {
+    if (isForgotPassword) return;
     _autoCheckTimer?.cancel();
     _autoCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) async {
       if (_isVerified) {
@@ -131,14 +108,8 @@ class OtpController extends ChangeNotifier {
     });
   }
 
-  void updateOtp(String code) {
-    _currentOtp = code;
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  /// Send or resend official Firebase verification email with a fresh random OTP code
-  Future<bool> resendOtp() async {
+  /// Send or resend the official Firebase email (verification or reset link).
+  Future<bool> resendEmail() async {
     if (!canResend) return false;
 
     _isLoading = true;
@@ -146,10 +117,7 @@ class OtpController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _generateNewOtp(); // Generate a brand new random OTP code
       if (isForgotPassword) {
-        // In the recovery flow the real credential is the reset link, so
-        // resending must trigger a fresh official reset email.
         await FirebaseAuthService.instance.sendPasswordResetEmail(email);
       } else {
         await FirebaseAuthService.instance.sendEmailVerification();
@@ -177,14 +145,13 @@ class OtpController extends ChangeNotifier {
     } catch (_) {}
   }
 
-  /// Verify registration by checking Firebase email verification link or entered OTP code
-  Future<bool> verifyOtp() async {
+  /// Check whether the user already clicked the verification link.
+  Future<bool> checkVerification() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      // 1. Check if user has clicked the official Firebase email verification link
       final isEmailVerified = await FirebaseAuthService.instance
           .checkEmailVerified();
       if (isEmailVerified) {
@@ -195,31 +162,10 @@ class OtpController extends ChangeNotifier {
         return true;
       }
 
-      // 2. If user enters the 6-digit code or clicks verify
-      if (_currentOtp.length == otpLength) {
-        final matches =
-            _currentOtp == _generatedOtp ||
-            _currentOtp == '123456' ||
-            _generatedOtp.isEmpty;
-
-        if (matches) {
-          _isVerified = true;
-          await _markUserVerified();
-          _isLoading = false;
-          notifyListeners();
-          return true;
-        } else {
-          _isLoading = false;
-          _errorMessage =
-              'Kode OTP tidak cocok. Masukkan kode 6 digit yang dikirimkan atau gunakan tombol Isi Otomatis.';
-          notifyListeners();
-          return false;
-        }
-      }
-
       _isLoading = false;
       _errorMessage =
-          'Silakan masukkan 6 digit kode OTP atau klik tautan verifikasi pada email Anda.';
+          'Email Anda belum terverifikasi. Buka email dari GiziLens dan klik '
+          'tautan verifikasi, lalu coba lagi.';
       notifyListeners();
       return false;
     } catch (e) {
