@@ -229,3 +229,75 @@ Respons:
 `REQUIRE_API_KEY=true` dan isi `API_KEYS` (dipisah koma) untuk mengaktifkan
 validasi. Nanti fungsi ini bisa diganti dengan lookup ke database subscription
 (plan, kuota, masa aktif) tanpa mengubah endpoint.
+
+Endpoint baca yang dipakai bersama aplikasi mobile dan dashboard admin
+(`GET /plans`, `GET /users/{uid}`, `/inspections`) memakai
+`verify_api_key_or_admin`: menerima `X-API-Key` **atau** Firebase ID token
+milik admin (`admin=true` / terdaftar di `FIREBASE_ADMIN_UIDS`). Dashboard admin
+adalah SPA statis, jadi key tidak perlu di-bake ke bundle JavaScript-nya —
+cukup login Firebase sebagai admin.
+
+## Midtrans (produksi)
+
+Seluruh pemanggilan Midtrans dilakukan di server; `MIDTRANS_SERVER_KEY` tidak
+pernah dikirim ke aplikasi mobile.
+
+### Variabel `.env`
+
+| Variabel | Nilai produksi |
+|---|---|
+| `MIDTRANS_SERVER_KEY` | `Mid-server-xxxxxxxx` (Production, bukan `SB-Mid-server-`) |
+| `MIDTRANS_CLIENT_KEY` | `Mid-client-xxxxxxxx` |
+| `MIDTRANS_IS_PRODUCTION` | `true` |
+
+Jika `MIDTRANS_IS_PRODUCTION=true` tetapi `MIDTRANS_SERVER_KEY` kosong, endpoint
+pembayaran mengembalikan **503** dan tidak pernah membuat transaksi palsu.
+
+### Katalog paket
+
+Harga yang ditagih diambil dari tabel `plans`, bukan dari request. Jalankan
+seed agar `plan_premium` ada:
+
+```sql
+\i app/database/migrations/seeds/001_draft_plans.sql
+```
+
+Tanpa baris `plan_premium`, endpoint mengembalikan **409** (tidak akan memakai
+paket lain secara diam-diam).
+
+### Notification URL
+
+Set di Midtrans Dashboard → Settings → Payment → *Notification URL*:
+
+```
+https://<domain-backend>/api/v1/payment/notification
+```
+
+Webhook memverifikasi `signature_key` (SHA-512 `order_id+status_code+gross_amount+server_key`)
+dan mencocokkan `gross_amount` dengan nilai tagihan tersimpan; nominal yang
+tidak cocok ditolak **409** sehingga langganan tidak bisa diaktifkan dengan
+payload palsu. Endpoint ini sengaja **tidak** memakai `verify_api_key` karena
+Midtrans tidak mengirim header tersebut.
+
+### Alur
+
+1. `POST /api/v1/payment/create-transaction` → token + `redirect_url` Snap.
+   Nominal dihitung server: `harga_paket + PPN 11%`.
+2. Aplikasi membuka `redirect_url` di browser dan menyimpan baris `payments`
+   (`POST /api/v1/transactions`) berstatus `PENDING`.
+3. Setelah pembayaran, Midtrans memanggil webhook → status `PAID`, subscription
+   aktif, dan `quota_buckets` dibuat sebesar `plans.scan_quota`.
+4. Saat aplikasi kembali ke depan, `GET /api/v1/payment/status/{order_id}`
+   dipakai untuk verifikasi ulang (query langsung ke Midtrans Core API).
+
+### Uji cepat
+
+```bash
+curl -X POST https://<domain>/api/v1/payment/create-transaction \
+  -H "X-API-Key: <API_KEY>" -H "Content-Type: application/json" \
+  -d '{"order_id":"TEST-001","plan_id":"plan_premium","plan_name":"GiziLens Premium","gross_amount":331890,"payment_method":"qris"}'
+```
+
+Respons `mode` harus `midtrans_production`. Jika masih `sandbox_simulator`,
+berarti `MIDTRANS_SERVER_KEY` belum terbaca oleh server.
+

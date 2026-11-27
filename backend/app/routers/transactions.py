@@ -152,7 +152,22 @@ def _resolve_organization(
     return org
 
 
-def _resolve_plan(db: Session, plan_id: str | None, plan_name: str | None) -> Plan:
+PPN_RATE = 0.11
+
+
+def invoice_total(plan: Plan) -> int:
+    """Amount actually charged by Midtrans: plan price + PPN 11%."""
+    price = int(plan.price)
+    return price + round(price * PPN_RATE)
+
+
+def _resolve_plan(
+    db: Session,
+    plan_id: str | None,
+    plan_name: str | None,
+    *,
+    strict: bool = False,
+) -> Plan:
     if plan_id:
         plan = db.scalar(select(Plan).where(Plan.code == plan_id))
         if plan is not None:
@@ -167,6 +182,14 @@ def _resolve_plan(db: Session, plan_id: str | None, plan_name: str | None) -> Pl
         plan = db.scalar(select(Plan).where(Plan.name == plan_name))
         if plan is not None:
             return plan
+    if strict:
+        # Never fall back to a different plan: charging the wrong price would
+        # make the Midtrans notification amount mismatch the invoice.
+        raise HTTPException(
+            status_code=409,
+            detail=f"Paket langganan '{plan_id or plan_name}' tidak ditemukan pada katalog.",
+        )
+
     plan = (
         db.scalar(select(Plan).where(Plan.code == "plan_premium"))
         or db.scalar(select(Plan).where(Plan.is_active.is_(True)).order_by(Plan.price))
@@ -282,9 +305,9 @@ def create_transaction(
     if existing is not None:
         return serialize_payment(existing)
 
-    plan = _resolve_plan(db, payload.plan_id, payload.plan_name)
+    plan = _resolve_plan(db, payload.plan_id, payload.plan_name, strict=True)
     org = _resolve_organization(db, payload.user_uid, payload.sppg_unit)
-    gross = plan.price
+    gross = invoice_total(plan)
     status_sql = "PENDING"
     
     payment = Payment(

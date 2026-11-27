@@ -21,7 +21,7 @@ from app.database.models import (
     Subscription,
 )
 from app.database.session import get_db
-from app.dependencies import verify_api_key, require_admin
+from app.dependencies import require_admin, verify_api_key, verify_api_key_or_admin
 from app.schemas_api import UserListOut, UserOut, UserStatusPatch, UserUpsert
 
 router = APIRouter(
@@ -150,7 +150,7 @@ def list_users(
     )
 
 
-@router.get("/{uid}", response_model=UserOut, dependencies=[Depends(verify_api_key)])
+@router.get("/{uid}", response_model=UserOut, dependencies=[Depends(verify_api_key_or_admin)])
 def get_user(uid: str, db: Session = Depends(get_db)) -> UserOut:
     member = db.scalar(
         select(OrganizationMember)

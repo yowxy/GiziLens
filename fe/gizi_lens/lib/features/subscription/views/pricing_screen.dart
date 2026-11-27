@@ -541,7 +541,7 @@ class _PricingScreenState extends State<PricingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Enkripsi SSL 256-bit & Midtrans Sandbox',
+                  'Enkripsi SSL 256-bit & Midtrans',
                   style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -550,7 +550,7 @@ class _PricingScreenState extends State<PricingScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Simulasi pembayaran aman terproteksi. Data audit SPPG tersimpan sesuai standar kerahasiaan BGN.',
+                  'Pembayaran diproses Midtrans (berlisensi BI) dengan 3D Secure. Data audit SPPG tersimpan sesuai standar kerahasiaan BGN.',
                   style: AppTypography.caption.copyWith(
                     color: AppColors.textSecondary,
                     fontSize: 11,

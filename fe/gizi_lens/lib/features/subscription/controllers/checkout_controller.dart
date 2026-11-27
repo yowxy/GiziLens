@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/services/backend_api_service.dart';
 import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/user_session_service.dart';
@@ -155,13 +155,18 @@ class CheckoutController extends ChangeNotifier {
         return true;
       }
 
+      if (kReleaseMode) {
+        _errorMessage =
+            'Pembayaran belum terverifikasi oleh Midtrans. Selesaikan pembayaran lalu coba lagi.';
+        return false;
+      }
+
       final settled = await MidtransSandboxService.instance
           .simulatePaymentSettlement(order);
       if (_isDisposed) return false;
 
       await _completeSettlement(settled);
-      return true;
-    } catch (e) {
+      return true;    } catch (e) {
       if (!_isDisposed) {
         _errorMessage = 'Pembayaran Midtrans gagal: $e';
       }
@@ -178,13 +183,8 @@ class CheckoutController extends ChangeNotifier {
     _currentOrder = order.copyWith(status: PaymentStatus.settlement);
     _isSuccess = true;
 
-    try {
-      await BackendApiService.instance.updateTransactionStatus(
-        order.orderId,
-        'settlement',
-      );
-    } catch (_) {}
-
+    // The backend webhook / status check already marked the payment as PAID and
+    // activated the subscription; the app only mirrors the entitlement locally.
     await UserSessionService.instance.upgradeSubscription(
       planName: plan.name,
     );

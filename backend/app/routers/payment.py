@@ -15,10 +15,12 @@ from app.config import get_settings
 from app.database.models import Payment
 from app.database.session import get_db
 from app.dependencies import verify_api_key
-from app.routers.transactions import sync_payment_status
+from app.routers.transactions import _resolve_plan, invoice_total, sync_payment_status
 from app.schemas import MidtransTransactionRequest, MidtransTransactionResponse
 
 router = APIRouter(prefix="/payment", tags=["payment"])
+
+PPN_RATE = 0.11
 
 ENABLED_PAYMENTS_MAP: dict[str, list[str]] = {
     "qris": ["gopay", "shopeepay", "other_qris"],
@@ -63,13 +65,26 @@ def _verify_midtrans_signature(
 @router.post("/create-transaction", response_model=MidtransTransactionResponse)
 async def create_midtrans_transaction(
     payload: MidtransTransactionRequest,
+    db: Session = Depends(get_db),
     _api_key: str | None = Depends(verify_api_key),
 ) -> MidtransTransactionResponse:
     settings = get_settings()
     server_key = settings.midtrans_server_key.strip()
     client_key = settings.midtrans_client_key.strip() or None
 
+    # The amount is derived from the plan catalog, never from the client, so a
+    # tampered request cannot buy a subscription at an arbitrary price.
+    plan = _resolve_plan(db, payload.plan_id, payload.plan_name, strict=True)
+    plan_price = int(plan.price)
+    tax_amount = round(plan_price * PPN_RATE)
+    gross_amount = invoice_total(plan)
+
     if not server_key:
+        if settings.midtrans_is_production:
+            raise HTTPException(
+                status_code=503,
+                detail="MIDTRANS_SERVER_KEY belum dikonfigurasi pada server produksi.",
+            )
         return MidtransTransactionResponse(
             mode="sandbox_simulator",
             order_id=payload.order_id,
@@ -95,20 +110,28 @@ async def create_midtrans_transaction(
     body: dict[str, Any] = {
         "transaction_details": {
             "order_id": payload.order_id,
-            "gross_amount": payload.gross_amount,
+            "gross_amount": gross_amount,
         },
         "item_details": [
             {
-                "id": payload.plan_id[:50],
-                "price": payload.gross_amount,
+                "id": plan.code[:50],
+                "price": plan_price,
                 "quantity": 1,
-                "name": payload.plan_name[:50],
-            }
+                "name": plan.name[:50],
+            },
+            {
+                "id": "ppn_11",
+                "price": tax_amount,
+                "quantity": 1,
+                "name": "PPN 11%",
+            },
         ],
         "customer_details": {
             "first_name": first_name[:50],
             "email": payload.customer_email,
         },
+        # Snap link expires after 24 hours; the app recreates the order anyway.
+        "expiry": {"unit": "hours", "duration": 24},
     }
     if enabled_payments:
         body["enabled_payments"] = enabled_payments
@@ -159,6 +182,11 @@ async def check_midtrans_status(
     settings = get_settings()
     server_key = settings.midtrans_server_key.strip()
     if not server_key:
+        if settings.midtrans_is_production:
+            raise HTTPException(
+                status_code=503,
+                detail="MIDTRANS_SERVER_KEY belum dikonfigurasi pada server produksi.",
+            )
         payment = db.scalar(select(Payment).where(Payment.order_id == order_id))
         local_status = "settlement" if payment and payment.status == "PAID" else "pending"
         return {
@@ -250,6 +278,22 @@ async def midtrans_webhook_notification(
     payment = db.scalar(select(Payment).where(Payment.order_id == order_id))
     if payment is None:
         raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan.")
+
+    # Reject notifications whose amount differs from the recorded invoice so a
+    # forged or mismatched payload can never unlock a subscription.
+    try:
+        notified_amount = int(round(float(gross_amount)))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="gross_amount tidak valid.") from exc
+    if notified_amount != int(payment.gross_amount):
+        raise HTTPException(
+            status_code=409,
+            detail="Nominal notifikasi tidak sesuai dengan tagihan.",
+        )
+
+    payment.gateway_environment = (
+        "PRODUCTION" if settings.midtrans_is_production else "SANDBOX"
+    )
 
     tx_status = str(payload.get("transaction_status", "pending"))
     fraud_status = str(payload.get("fraud_status", ""))

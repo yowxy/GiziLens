@@ -7,13 +7,13 @@ from sqlalchemy.orm import Session
 
 from app.database.models import Plan
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import verify_api_key_or_admin
 from app.schemas_api import PlanListOut, PlanOut
 
 router = APIRouter(
     prefix="/plans",
     tags=["plans"],
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key_or_admin)],
 )
 
 BILLING_MONTHS = {"MONTHLY": 1, "QUARTERLY": 3, "ANNUAL": 12}

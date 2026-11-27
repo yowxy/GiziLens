@@ -282,7 +282,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Midtrans Payment Gateway (Sandbox)',
+                  'Midtrans Payment Gateway • Enkripsi SSL',
                   style: AppTypography.caption.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 11,
@@ -319,6 +319,62 @@ class _CheckoutScreenState extends State<CheckoutScreen>
 
   Widget _buildSandboxBanner(PaymentOrderModel? order) {
     final isLiveApi = order?.isLiveSandboxApi ?? false;
+    final isProduction = order?.isProductionGateway ?? false;
+
+    if (isProduction) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F6ED),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFBCE3C6), width: 1.2),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E6C45).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.verified_user_rounded,
+                color: Color(0xFF1E6C45),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'PEMBAYARAN AMAN VIA MIDTRANS',
+                    style: AppTypography.captionBold.copyWith(
+                      color: const Color(0xFF1E6C45),
+                      fontSize: 11,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Transaksi diproses oleh Midtrans (berlisensi BI). Saldo akan terpotong sesuai tagihan setelah Anda menyelesaikan pembayaran.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: const Color(0xFF2F5A43),
+                      fontSize: 11.5,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -582,7 +638,7 @@ class _CheckoutScreenState extends State<CheckoutScreen>
         ),
         const SizedBox(height: 4),
         Text(
-          'Dukungan kanal pembayaran resmi Midtrans Snap Sandbox.',
+          'Kanal pembayaran resmi Midtrans Snap.',
           style: AppTypography.bodySmall.copyWith(
             color: AppColors.textSecondary,
             fontSize: 12,
@@ -602,6 +658,9 @@ class _CheckoutScreenState extends State<CheckoutScreen>
   }
 
   Widget _buildDynamicPaymentInstruction(PaymentOrderModel order) {
+    if (order.isLiveSandboxApi) {
+      return _buildSnapRedirectInstruction(order);
+    }
     switch (order.selectedMethod.type) {
       case PaymentMethodType.qris:
         return _buildQrisInstruction(order);
@@ -610,6 +669,65 @@ class _CheckoutScreenState extends State<CheckoutScreen>
       case PaymentMethodType.creditCard:
         return _buildCreditCardInstruction(order);
     }
+  }
+
+  /// Live Snap flow: the real payment page is hosted by Midtrans, so the app
+  /// must never show a locally generated QR / virtual account number.
+  Widget _buildSnapRedirectInstruction(PaymentOrderModel order) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE2ECE0)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F6ED),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.lock_rounded,
+              color: Color(0xFF1E6C45),
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text(
+            order.selectedMethod.name,
+            style: AppTypography.titleMedium.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Tekan "Bayar Sekarang" untuk membuka halaman pembayaran Midtrans. '
+            'Setelah selesai, kembali ke aplikasi — status pembayaran diverifikasi otomatis.',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Order ID: ${order.orderId}',
+            style: AppTypography.caption.copyWith(
+              color: AppColors.textMuted,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildQrisInstruction(PaymentOrderModel order) {

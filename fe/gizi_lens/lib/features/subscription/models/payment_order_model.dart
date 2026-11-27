@@ -102,6 +102,7 @@ class PaymentOrderModel {
   final String? redirectUrl;
   final String? snapToken;
   final bool isLiveSandboxApi;
+  final bool isProductionGateway;
   final String? officerName;
   final String? sppgUnit;
 
@@ -121,6 +122,7 @@ class PaymentOrderModel {
     this.redirectUrl,
     this.snapToken,
     this.isLiveSandboxApi = false,
+    this.isProductionGateway = false,
     this.officerName,
     this.sppgUnit,
   });
@@ -176,6 +178,7 @@ class PaymentOrderModel {
           'https://app.sandbox.midtrans.com/snap/v2/vtweb/$orderId',
       snapToken: snapToken,
       isLiveSandboxApi: isLiveSandboxApi,
+      isProductionGateway: false,
       officerName: officerName,
       sppgUnit: sppgUnit,
     );
@@ -188,6 +191,7 @@ class PaymentOrderModel {
     String? redirectUrl,
     String? snapToken,
     bool? isLiveSandboxApi,
+    bool? isProductionGateway,
   }) {
     return PaymentOrderModel(
       orderId: orderId,
@@ -205,6 +209,7 @@ class PaymentOrderModel {
       redirectUrl: redirectUrl ?? this.redirectUrl,
       snapToken: snapToken ?? this.snapToken,
       isLiveSandboxApi: isLiveSandboxApi ?? this.isLiveSandboxApi,
+      isProductionGateway: isProductionGateway ?? this.isProductionGateway,
       officerName: officerName,
       sppgUnit: sppgUnit,
     );

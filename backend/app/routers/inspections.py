@@ -33,7 +33,7 @@ from app.database.models import (
     ScanImage,
 )
 from app.database.session import get_db
-from app.dependencies import verify_api_key
+from app.dependencies import verify_api_key_or_admin
 from app.schemas_api import (
     BoundingBoxIn,
     ComponentIn,
@@ -50,7 +50,7 @@ from app.schemas_api import (
 router = APIRouter(
     prefix="/inspections",
     tags=["inspections"],
-    dependencies=[Depends(verify_api_key)],
+    dependencies=[Depends(verify_api_key_or_admin)],
 )
 
 METRIC_NAMES = ["Kalori", "Protein", "Lemak", "Karbohidrat", "Serat"]
