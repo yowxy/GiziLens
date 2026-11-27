@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,25 @@ import 'widgets/step_progress_app_bar.dart';
 class ScanOmprengScreen extends StatefulWidget {
   const ScanOmprengScreen({super.key});
 
+  /// Computes an unconstrained preview [Size] matching `CameraPreview`'s exact
+  /// aspect ratio so `FittedBox(fit: BoxFit.cover)` never squishes or stretches
+  /// the camera texture inside the 1:1 viewfinder.
+  static Size computeCameraPreviewBoxSize(
+    Size? previewSize,
+    DeviceOrientation orientation,
+  ) {
+    final ratio = (previewSize != null &&
+            previewSize.width > 0 &&
+            previewSize.height > 0)
+        ? previewSize.width / previewSize.height
+        : 4 / 3;
+    final isLandscape = orientation == DeviceOrientation.landscapeLeft ||
+        orientation == DeviceOrientation.landscapeRight;
+    final displayAspect = isLandscape ? ratio : (1 / ratio);
+    const baseHeight = 1000.0;
+    return Size(baseHeight * displayAspect, baseHeight);
+  }
+
   @override
   State<ScanOmprengScreen> createState() => _ScanOmprengScreenState();
 }
@@ -27,8 +47,10 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   late Future<void> _initialization;
   bool _isCapturing = false;
   double _currentZoom = 1.0;
+  double _minZoom = 1.0;
   double _maxZoom = 1.0;
   double _zoomAtGestureStart = 1.0;
+  static const double _defaultRectilinearZoom = 1.4;
   DateTime _lastFrameAnalysis = DateTime.fromMillisecondsSinceEpoch(0);
   static const _frameAnalysisInterval = Duration(milliseconds: 400);
 
@@ -58,10 +80,29 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     await camera.initialize();
     if (!mounted) return;
     try {
+      await camera.lockCaptureOrientation(DeviceOrientation.portraitUp);
+    } catch (_) {}
+    var deviceMinZoom = 1.0;
+    try {
+      deviceMinZoom = await camera.getMinZoomLevel();
+    } catch (_) {}
+    try {
       _maxZoom = await camera.getMaxZoomLevel();
     } catch (_) {
       _maxZoom = 1.0;
     }
+    // Never drop below 1.0x so multi-cam devices stay off the ultra-wide lens.
+    _minZoom = math.max(1.0, deviceMinZoom);
+    if (_maxZoom < _minZoom) _maxZoom = _minZoom;
+    final initialZoom =
+        _defaultRectilinearZoom.clamp(_minZoom, _maxZoom).toDouble();
+    _currentZoom = initialZoom;
+    try {
+      await camera.setZoomLevel(initialZoom);
+    } catch (_) {
+      _currentZoom = _minZoom;
+    }
+    if (mounted) setState(() {});
     await camera.startImageStream(_onCameraFrame);
   }
 
@@ -94,7 +135,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     final camera = _cameraController;
     if (camera == null || !camera.value.isInitialized) return;
     final next = (_zoomAtGestureStart * details.scale)
-        .clamp(1.0, _maxZoom)
+        .clamp(_minZoom, _maxZoom)
         .toDouble();
     if ((next - _currentZoom).abs() < 0.02) return;
     setState(() => _currentZoom = next);
@@ -103,12 +144,26 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     } catch (_) {}
   }
 
-  Future<void> _resetZoom() async {
+  Future<void> _cycleZoomPreset() async {
     final camera = _cameraController;
     if (camera == null || !camera.value.isInitialized) return;
-    setState(() => _currentZoom = 1.0);
+    final presets = <double>{
+      _minZoom,
+      _defaultRectilinearZoom.clamp(_minZoom, _maxZoom).toDouble(),
+      2.0.clamp(_minZoom, _maxZoom).toDouble(),
+    }.toList()..sort();
+    if (presets.isEmpty) return;
+
+    var next = presets.first;
+    for (final preset in presets) {
+      if (preset > _currentZoom + 0.05) {
+        next = preset;
+        break;
+      }
+    }
+    setState(() => _currentZoom = next);
     try {
-      await camera.setZoomLevel(1.0);
+      await camera.setZoomLevel(next);
     } catch (_) {}
   }
 
@@ -377,7 +432,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                                   ),
                                 ),
                               ),
-                              if (_currentZoom > 1.01)
+                              if (_maxZoom > _minZoom + 0.05 || _currentZoom > 1.01)
                                 Positioned(
                                   top: 12,
                                   right: 12,
@@ -523,46 +578,31 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     );
   }
 
-  /// Renders the live camera feed so it always covers the square viewfinder
-  /// without stretching the image. The scale is uniform (aspect ratio is
-  /// preserved); any overflow is simply clipped, which keeps a flat tray from
-  /// looking bowed or "cembung".
+  /// Renders the live camera feed with uniform cover scaling so the image is
+  /// never squished or stretched into 1:1 ("cembung"). `FittedBox` gives
+  /// `CameraPreview` unconstrained dimensions matching its native ratio, and
+  /// `ClipRect` crops any overflow cleanly.
   Widget _buildCameraPreview(CameraController camera) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final boxWidth = constraints.maxWidth;
-        final boxHeight = constraints.maxHeight;
-        final ratio = camera.value.aspectRatio;
+    final boxSize = ScanOmprengScreen.computeCameraPreviewBoxSize(
+      camera.value.previewSize,
+      camera.value.deviceOrientation,
+    );
 
-        // `CameraPreview` lays the feed out with a `1 / aspectRatio` box while
-        // the app is locked to portrait. Using exactly the same ratio here keeps
-        // the preview in sync with its own aspect ratio, so it can never be
-        // letterboxed or stretched.
-        final displayAspect = ratio > 0 ? 1 / ratio : boxWidth / boxHeight;
-
-        var width = boxWidth;
-        var height = width / displayAspect;
-        if (height < boxHeight) {
-          height = boxHeight;
-          width = height * displayAspect;
-        }
-
-        return ClipRect(
-          child: Center(
-            child: SizedBox(
-              width: width,
-              height: height,
-              child: CameraPreview(camera),
-            ),
-          ),
-        );
-      },
+    return ClipRect(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: boxSize.width,
+          height: boxSize.height,
+          child: CameraPreview(camera),
+        ),
+      ),
     );
   }
 
   Widget _buildZoomBadge() {
     return GestureDetector(
-      onTap: _resetZoom,
+      onTap: _cycleZoomPreset,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(

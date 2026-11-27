@@ -5,7 +5,7 @@ enum BillingCycle {
   annual,
 }
 
-/// Model representing a subscription bundling package in GiziLens SPPG.
+/// Model representing the single GiziLens Premium subscription plan.
 class PricingPlanModel {
   final String id;
   final String name;
@@ -31,11 +31,11 @@ class PricingPlanModel {
     required this.billedPrice,
     this.originalPrice,
     required this.billingPeriod,
-    this.isPopular = false,
+    this.isPopular = true,
     this.badgeText,
     this.bundleHighlights = const [],
     required this.features,
-    this.ctaLabel = 'Pilih Paket Ini',
+    this.ctaLabel = 'Aktifkan GiziLens Premium',
     required this.icon,
     required this.primaryColor,
     required this.accentColor,
@@ -46,72 +46,75 @@ class PricingPlanModel {
     return (((originalPrice! - billedPrice) / originalPrice!) * 100).round();
   }
 
+  static PricingPlanModel get defaultPlan => defaultPlans.first;
+
+  factory PricingPlanModel.fromApiJson(Map<String, dynamic> json) {
+    final fallback = defaultPlan;
+    final rawFeatures = json['features'];
+    final features = rawFeatures is List && rawFeatures.isNotEmpty
+        ? rawFeatures.map((e) => e.toString()).toList()
+        : fallback.features;
+    final rawHighlights = json['bundleHighlights'];
+    final highlights = rawHighlights is List && rawHighlights.isNotEmpty
+        ? rawHighlights.map((e) => e.toString()).toList()
+        : fallback.bundleHighlights;
+
+    return PricingPlanModel(
+      id: (json['id'] as String?)?.trim().isNotEmpty == true
+          ? json['id'] as String
+          : fallback.id,
+      name: (json['name'] as String?)?.trim().isNotEmpty == true
+          ? json['name'] as String
+          : fallback.name,
+      tagline: (json['tagline'] as String?)?.trim().isNotEmpty == true
+          ? json['tagline'] as String
+          : fallback.tagline,
+      monthlyEquivalentPrice:
+          (json['monthlyEquivalentPrice'] as num?)?.toInt() ??
+          fallback.monthlyEquivalentPrice,
+      billedPrice:
+          (json['billedPrice'] as num?)?.toInt() ?? fallback.billedPrice,
+      originalPrice:
+          (json['originalPrice'] as num?)?.toInt() ?? fallback.originalPrice,
+      billingPeriod: (json['billingPeriod'] as String?)?.trim().isNotEmpty == true
+          ? json['billingPeriod'] as String
+          : fallback.billingPeriod,
+      isPopular: json['isPopular'] as bool? ?? true,
+      badgeText: (json['badgeText'] as String?) ?? fallback.badgeText,
+      bundleHighlights: highlights,
+      features: features,
+      ctaLabel: (json['ctaLabel'] as String?) ?? fallback.ctaLabel,
+      icon: Icons.workspace_premium_rounded,
+      primaryColor: fallback.primaryColor,
+      accentColor: fallback.accentColor,
+    );
+  }
+
   static const List<PricingPlanModel> defaultPlans = [
     PricingPlanModel(
-      id: 'plan_starter',
-      name: 'Paket Mandiri',
-      tagline: 'Ideal untuk Ahli Gizi & Auditor SPPG Lapangan Mandiri',
+      id: 'plan_premium',
+      name: 'GiziLens Premium',
+      tagline:
+          'Akses penuh audit gizi AI, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud',
       monthlyEquivalentPrice: 99000,
       billedPrice: 99000,
+      originalPrice: 149000,
       billingPeriod: 'per bulan',
-      isPopular: false,
-      icon: Icons.person_outline_rounded,
-      primaryColor: Color(0xFF1B4E41),
-      accentColor: Color(0xFF3FC2F2),
-      bundleHighlights: ['∞ Scan AI', 'Ekspor PDF', '1 Akun'],
-      features: [
-        'Scan Ompreng AI tanpa batasan kuota harian/bulanan',
-        'Deteksi 5 Pilar Nutrisi (Pokok, Hewani, Nabati, Sayur, Buah)',
-        'Standar Toleransi Deviasi AKG Kemenkes & Juknis BGN 2024',
-        'Ekspor Ringkasan Hasil Pemeriksaan (Format PDF Standar)',
-        'Penyimpanan Riwayat Audit 30 Hari Terakhir',
-      ],
-    ),
-    PricingPlanModel(
-      id: 'plan_pro',
-      name: 'Paket SPPG Pro',
-      tagline: 'Paling direkomendasikan untuk Dapur Unit MBG & Sekolah',
-      monthlyEquivalentPrice: 83000,
-      billedPrice: 249000,
-      originalPrice: 297000,
-      billingPeriod: 'per 3 bulan (Rp 83rb/bln)',
       isPopular: true,
-      badgeText: '⭐ PALING POPULER',
+      badgeText: 'PAKET PREMIUM RESMI',
+      bundleHighlights: ['Unlimited Scan AI', 'Ekspor PDF & XLSX', 'Prioritas BGN'],
+      features: [
+        'Scan Ompreng AI tanpa batas kuota harian/bulanan',
+        'Ekspor laporan resmi PDF (Watermark + SHA-256) & Excel (XLSX)',
+        'Multi-demografis sasaran AKG (SD 1–3, SD 4–6, SMP, SMA)',
+        'Notifikasi otomatis & peringatan defisit porsi >15%',
+        'Sinkronisasi cloud terenkripsi & riwayat audit tanpa batas',
+        'Dukungan teknis prioritas tim BGN & SPPG',
+      ],
+      ctaLabel: 'Aktifkan GiziLens Premium',
       icon: Icons.workspace_premium_rounded,
       primaryColor: Color(0xFF0F3628),
       accentColor: Color(0xFFD6A24A),
-      bundleHighlights: ['∞ Scan AI', 'XLSX & PDF', 'Audit 1 Thn'],
-      features: [
-        'Semua fitur Paket Mandiri disertakan',
-        'Ekspor Otomatis Laporan Lengkap Excel (XLSX) & PDF Resmi',
-        'Multi-Demografis Sasaran (SD 1-3, SD 4-6, SMP, SMA)',
-        'Notifikasi Otomatis & Peringatan Defisit Porsi >15%',
-        'Prioritas Kecepatan AI Recognition (<1 detik per ompreng)',
-        'Penyimpanan Cloud Terenkripsi & Audit Trail 1 Tahun',
-      ],
-    ),
-    PricingPlanModel(
-      id: 'plan_enterprise',
-      name: 'Paket Sentral MBG',
-      tagline: 'Solusi Lengkap SPPG Sentral, Korwil & Koordinator Wilayah',
-      monthlyEquivalentPrice: 58000,
-      billedPrice: 699000,
-      originalPrice: 1188000,
-      billingPeriod: 'per tahun (Rp 58rb/bln)',
-      isPopular: false,
-      badgeText: '👑 TERLENGKAP - HEMAT 41%',
-      icon: Icons.domain_rounded,
-      primaryColor: Color(0xFF102A4A),
-      accentColor: Color(0xFF38BDF8),
-      bundleHighlights: ['5 Akun Auditor', 'Sync BGN', 'Helpdesk 24/7'],
-      features: [
-        'Semua fitur Paket SPPG Pro disertakan',
-        'Multi-Akun Petugas (Hingga 5 Akun Auditor dalam 1 Unit)',
-        'Sinkronisasi Real-time ke Portal Pusat Pengawasan BGN',
-        'Laporan Kepatuhan Mutu Terakreditasi Nasional',
-        'Dukungan Teknis & Helpdesk Prioritas 24/7 via WhatsApp',
-        'Sertifikat Kepatuhan Mutu Digital Berkode QR Resmi',
-      ],
     ),
   ];
 }

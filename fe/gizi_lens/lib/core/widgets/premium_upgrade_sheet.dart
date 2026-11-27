@@ -113,7 +113,7 @@ Future<void> showPremiumUpgradeSheet(BuildContext context) {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Lihat Pilihan Paket Bundling',
+                        'Lihat Paket Premium',
                         style: AppTypography.titleMedium.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,

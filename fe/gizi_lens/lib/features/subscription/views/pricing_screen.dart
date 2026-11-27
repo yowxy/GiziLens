@@ -21,13 +21,11 @@ class PricingScreen extends StatefulWidget {
 
 class _PricingScreenState extends State<PricingScreen> {
   late final PricingController _controller;
-  late final Map<String, GlobalKey> _cardKeys;
 
   @override
   void initState() {
     super.initState();
     _controller = PricingController();
-    _cardKeys = {for (final p in _controller.plans) p.id: GlobalKey()};
     if (widget.initialPlan != null) {
       _controller.selectPlan(widget.initialPlan!);
     }
@@ -43,20 +41,6 @@ class _PricingScreenState extends State<PricingScreen> {
 
   void _onControllerUpdate() {
     if (mounted) setState(() {});
-  }
-
-  void _selectAndScrollToPlan(int index) {
-    _controller.selectIndex(index);
-    final planId = _controller.plans[index].id;
-    final ctx = _cardKeys[planId]?.currentContext;
-    if (ctx != null) {
-      Scrollable.ensureVisible(
-        ctx,
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-        alignment: 0.1,
-      );
-    }
   }
 
   void _handleProceedToCheckout() {
@@ -93,7 +77,7 @@ class _PricingScreenState extends State<PricingScreen> {
                       children: [
                         // Hero Intro
                         _buildHeroIntro(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         // Active plan banner if already subscribed
                         if (UserSessionService.instance.account.isPremium) ...[
@@ -101,24 +85,15 @@ class _PricingScreenState extends State<PricingScreen> {
                           const SizedBox(height: 16),
                         ],
 
-                        // Tab Selection Pills
-                        _buildPlanTabs(),
+                        // Single Premium Package Card
+                        BundleCard(
+                          plan: selectedPlan,
+                          isSelected: true,
+                          onSelect: () => _controller.selectPlan(selectedPlan),
+                        ),
                         const SizedBox(height: 20),
 
-                        // Bundling Cards
-                        ..._controller.plans.map(
-                          (plan) => KeyedSubtree(
-                            key: _cardKeys[plan.id],
-                            child: BundleCard(
-                              plan: plan,
-                              isSelected: selectedPlan.id == plan.id,
-                              onSelect: () => _controller.selectPlan(plan),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Feature Comparison Matrix
+                        // Free vs Premium Comparison Matrix
                         _buildFeatureComparisonMatrix(),
                         const SizedBox(height: 24),
 
@@ -328,55 +303,6 @@ class _PricingScreenState extends State<PricingScreen> {
     );
   }
 
-  Widget _buildPlanTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: _controller.plans.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final plan = entry.value;
-          final isSelected = _controller.selectedPlan.id == plan.id;
-
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    plan.icon,
-                    size: 16,
-                    color: isSelected ? Colors.white : AppColors.primaryDeep,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(plan.name),
-                ],
-              ),
-              selected: isSelected,
-              onSelected: (_) => _selectAndScrollToPlan(idx),
-              selectedColor: AppColors.primaryForest,
-              backgroundColor: Colors.white,
-              labelStyle: AppTypography.titleSmall.copyWith(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 12.5,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: isSelected ? AppColors.primaryForest : const Color(0xFFD6DFD5),
-                ),
-              ),
-              showCheckmark: false,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   Widget _buildFeatureComparisonMatrix() {
     return Container(
       width: double.infinity,
@@ -395,7 +321,7 @@ class _PricingScreenState extends State<PricingScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Perbandingan Fitur Paket',
+                  'Perbandingan Free vs Premium',
                   style: AppTypography.titleMedium.copyWith(
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
@@ -410,12 +336,12 @@ class _PricingScreenState extends State<PricingScreen> {
           _buildMatrixHeader(),
           const Divider(height: 1, color: Color(0xFFE2ECE0)),
           const SizedBox(height: 6),
-          _buildMatrixRow('AI Scan Ompreng', 'Tak Terbatas', 'Tak Terbatas', 'Tak Terbatas'),
-          _buildMatrixRow('Akurasi Kalori 5 Pilar', '✓', '✓', '✓'),
-          _buildMatrixRow('Format Ekspor', 'PDF Standar', 'XLSX & PDF', 'XLSX & PDF API'),
-          _buildMatrixRow('Demografi Sasaran', 'Umum', 'SD-SMA Lengkap', 'Multi-Sentral'),
-          _buildMatrixRow('Masa Simpan Audit', '30 Hari', '1 Tahun', 'Tak Terbatas'),
-          _buildMatrixRow('Notifikasi Defisit >15%', 'Manual', 'Otomatis Push', 'Realtime Prioritas'),
+          _buildMatrixRow('Kuota AI Scan Ompreng', '10 / bulan', 'Tak Terbatas'),
+          _buildMatrixRow('Analisis 5 Pilar AKG', '✓', '✓'),
+          _buildMatrixRow('Ekspor Laporan PDF + SHA-256', 'Terbatas', 'Lengkap & Resmi'),
+          _buildMatrixRow('Demografi Sasaran AKG', 'Standar', 'SD – SMA Lengkap'),
+          _buildMatrixRow('Riwayat & Audit Cloud', '30 Hari', 'Tak Terbatas'),
+          _buildMatrixRow('Peringatan Defisit >15%', 'Manual', 'Otomatis Prioritas'),
         ],
       ),
     );
@@ -427,7 +353,7 @@ class _PricingScreenState extends State<PricingScreen> {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               'Fitur',
               style: AppTypography.captionBold.copyWith(
@@ -439,7 +365,7 @@ class _PricingScreenState extends State<PricingScreen> {
           Expanded(
             flex: 2,
             child: Text(
-              'Mandiri',
+              'Gratis',
               textAlign: TextAlign.center,
               style: AppTypography.captionBold.copyWith(
                 color: AppColors.textSecondary,
@@ -448,23 +374,12 @@ class _PricingScreenState extends State<PricingScreen> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Text(
-              'Pro',
+              'Premium',
               textAlign: TextAlign.center,
               style: AppTypography.captionBold.copyWith(
                 color: const Color(0xFF1E6C45),
-                fontSize: 11,
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Sentral',
-              textAlign: TextAlign.center,
-              style: AppTypography.captionBold.copyWith(
-                color: const Color(0xFF102A4A),
                 fontSize: 11,
               ),
             ),
@@ -474,13 +389,13 @@ class _PricingScreenState extends State<PricingScreen> {
     );
   }
 
-  Widget _buildMatrixRow(String feature, String starter, String pro, String enterprise) {
+  Widget _buildMatrixRow(String feature, String freeTier, String premiumTier) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               feature,
               style: AppTypography.bodySmall.copyWith(
@@ -493,7 +408,7 @@ class _PricingScreenState extends State<PricingScreen> {
           Expanded(
             flex: 2,
             child: Text(
-              starter,
+              freeTier,
               textAlign: TextAlign.center,
               style: AppTypography.caption.copyWith(
                 color: AppColors.textSecondary,
@@ -502,31 +417,20 @@ class _PricingScreenState extends State<PricingScreen> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 2),
+              padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F6ED),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                pro,
+                premiumTier,
                 textAlign: TextAlign.center,
                 style: AppTypography.captionBold.copyWith(
                   color: const Color(0xFF1E6C45),
                   fontSize: 11,
                 ),
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              enterprise,
-              textAlign: TextAlign.center,
-              style: AppTypography.caption.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: 11,
               ),
             ),
           ),

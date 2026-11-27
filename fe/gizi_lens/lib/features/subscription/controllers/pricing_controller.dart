@@ -1,51 +1,88 @@
 import 'package:flutter/material.dart';
+import '../../../../core/services/backend_api_service.dart';
 import '../models/pricing_plan_model.dart';
 
 class PricingController extends ChangeNotifier {
-  final List<PricingPlanModel> plans = PricingPlanModel.defaultPlans;
-
+  List<PricingPlanModel> _plans = List<PricingPlanModel>.from(
+    PricingPlanModel.defaultPlans,
+  );
   late PricingPlanModel _selectedPlan;
-  int _selectedTabIndex = 1; // Default to Paket SPPG Pro (index 1)
+  int _selectedTabIndex = 0;
+  bool _isLoading = false;
+  bool _disposed = false;
 
+  List<PricingPlanModel> get plans => List.unmodifiable(_plans);
   PricingPlanModel get selectedPlan => _selectedPlan;
   int get selectedTabIndex => _selectedTabIndex;
+  bool get isLoading => _isLoading;
 
   PricingController() {
-    _selectedPlan = plans[1]; // SPPG Pro
+    _selectedPlan = _plans.first;
+    loadPlans();
+  }
+
+  Future<void> loadPlans() async {
+    _isLoading = true;
+    _safeNotify();
+    try {
+      final remote = await BackendApiService.instance.fetchPlans();
+      if (_disposed) return;
+      if (remote.isNotEmpty) {
+        final singlePlan = PricingPlanModel.fromApiJson(remote.first);
+        _plans = [singlePlan];
+        _selectedPlan = singlePlan;
+        _selectedTabIndex = 0;
+      }
+    } catch (_) {
+      // Keep default single Premium plan when offline or in tests.
+    } finally {
+      _isLoading = false;
+      _safeNotify();
+    }
   }
 
   void selectPlan(PricingPlanModel plan) {
     if (_selectedPlan.id != plan.id) {
       _selectedPlan = plan;
-      final idx = plans.indexWhere((p) => p.id == plan.id);
+      final idx = _plans.indexWhere((p) => p.id == plan.id);
       if (idx != -1) _selectedTabIndex = idx;
-      notifyListeners();
+      _safeNotify();
     }
   }
 
   void selectIndex(int index) {
-    if (index >= 0 && index < plans.length) {
+    if (index >= 0 && index < _plans.length) {
       _selectedTabIndex = index;
-      _selectedPlan = plans[index];
-      notifyListeners();
+      _selectedPlan = _plans[index];
+      _safeNotify();
     }
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   static const List<Map<String, String>> faqs = [
     {
-      'question': 'Bagaimana mekanisme pembayaran via Midtrans Sandbox?',
+      'question': 'Bagaimana mekanisme pembayaran via Midtrans?',
       'answer':
-          'Pembayaran menggunakan simulasi Midtrans Sandbox resmi. Anda dapat menguji seluruh metode (QRIS, BCA/Mandiri/BRI Virtual Account, atau Kartu Kredit tes) secara instan tanpa memotong saldo riil.',
+          'Pembayaran diproses melalui Midtrans Payment Gateway resmi (QRIS, Virtual Account BCA/Mandiri/BRI/BNI, atau Kartu Kredit/Debit 3D Secure). Status langganan Premium aktif otomatis setelah pembayaran terkonfirmasi.',
     },
     {
       'question': 'Apakah laporan hasil audit terstandarisasi BGN & Kemenkes?',
       'answer':
-          'Ya, seluruh rekapitulasi gizi dan kepatuhan AKG yang dihasilkan langsung disesuaikan dengan Kepmenkes RI No. 28/2019 dan Petunjuk Teknis Program MBG BGN 2024.',
+          'Ya, seluruh rekapitulasi gizi dan kepatuhan AKG yang dihasilkan langsung disesuaikan dengan Kepmenkes RI No. 28/2019 dan Petunjuk Teknis Program MBG BGN 2024, dilengkapi watermark dan hash SHA-256.',
     },
     {
-      'question': 'Apakah paket langganan dapat dipindahtangankan ke unit SPPG lain?',
+      'question': 'Apakah paket GiziLens Premium terikat dengan unit SPPG?',
       'answer':
-          'Lisensi paket terikat dengan akun dan unit operasional terdaftar. Anda dapat memperbarui unit operasional melalui menu Edit Profil Petugas.',
+          'Lisensi Premium terikat dengan akun dan unit operasional terdaftar. Anda dapat memperbarui informasi unit operasional kapan saja melalui menu Edit Profil Petugas.',
     },
   ];
 }

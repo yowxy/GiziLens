@@ -1,20 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+
+import '../../../core/services/backend_api_service.dart';
 import '../models/payment_order_model.dart';
 import '../models/pricing_plan_model.dart';
 
-/// Service managing Midtrans Payment Gateway interactions in Sandbox Mode.
+/// Service managing Midtrans Payment Gateway interactions.
 ///
-/// Designed with dual operational modes:
-/// 1. Live Midtrans Sandbox Snap API: When a real Sandbox `MIDTRANS_SERVER_KEY`
-///    (from Midtrans Sandbox dashboard) is configured in `.env`, creates an
-///    authentic Snap transaction token & redirect URL via `app.sandbox.midtrans.com`.
-/// 2. Interactive Sandbox Simulator: When running offline, in tests, or with
-///    placeholder credentials, simulates QRIS, Virtual Account, and Credit Card
-///    flows deterministically without charging real funds.
+/// Resolution order when creating an order:
+/// 1. Backend Midtrans Snap gateway (`/api/v1/payment/create-transaction`),
+///    keeping `MIDTRANS_SERVER_KEY` safely on the server.
+/// 2. Direct Midtrans Sandbox Snap API if `MIDTRANS_SERVER_KEY` is configured
+///    in client `.env` (supports both `SB-Mid-server-*` and `Mid-server-*`).
+/// 3. Deterministic Midtrans Sandbox Simulator for offline demos & widget tests.
 class MidtransSandboxService {
   MidtransSandboxService._();
   static final MidtransSandboxService instance = MidtransSandboxService._();
@@ -23,7 +25,8 @@ class MidtransSandboxService {
   static const String _placeholderServerKey = 'SB-Mid-server-GiziLens2026';
   static const String sandboxSnapApiUrl =
       'https://app.sandbox.midtrans.com/snap/v1/transactions';
-  static const String sandboxCoreApiBase = 'https://api.sandbox.midtrans.com/v2';
+  static const String sandboxCoreApiBase =
+      'https://api.sandbox.midtrans.com/v2';
 
   String get clientKey {
     try {
@@ -46,10 +49,27 @@ class MidtransSandboxService {
   }
 
   bool get hasLiveSandboxKey =>
-      serverKey != _placeholderServerKey && serverKey.startsWith('SB-Mid-server-');
+      serverKey != _placeholderServerKey &&
+      (serverKey.startsWith('SB-Mid-server-') ||
+          serverKey.startsWith('Mid-server-'));
 
   static const String sandboxSnapUrl =
       'https://app.sandbox.midtrans.com/snap/v2/vtweb/';
+
+  /// Maps GiziLens [PaymentMethodOption] to Midtrans Snap `enabled_payments`.
+  static List<String> enabledPaymentsFor(PaymentMethodOption method) {
+    return switch (method.type) {
+      PaymentMethodType.qris => ['gopay', 'shopeepay', 'other_qris'],
+      PaymentMethodType.bankTransfer => switch (method.bankCode) {
+          'mandiri' => ['echannel'],
+          'bca' => ['bca_va'],
+          'bri' => ['bri_va'],
+          'bni' => ['bni_va'],
+          _ => ['bca_va'],
+        },
+      PaymentMethodType.creditCard => ['credit_card'],
+    };
+  }
 
   /// Initialize an order using the selected plan and payment method.
   Future<PaymentOrderModel> createOrder({
@@ -59,25 +79,58 @@ class MidtransSandboxService {
     required String officerEmail,
     required String sppgUnit,
   }) async {
+    final safeName = officerName.trim().isEmpty || officerName == '-'
+        ? 'Petugas SPPG'
+        : officerName.trim();
+    final safeEmail = officerEmail.trim().isEmpty
+        ? 'petugas.sppg@gizilens.id'
+        : officerEmail.trim();
+
     final baseOrder = PaymentOrderModel.create(
       planId: plan.id,
       planName: plan.name,
       planPrice: plan.billedPrice,
       method: method,
-      officerName: officerName,
+      officerName: safeName,
       sppgUnit: sppgUnit,
     );
 
+    // 1. Prefer backend Midtrans Snap gateway so server credentials stay private.
+    try {
+      final backendResp =
+          await BackendApiService.instance.createMidtransTransaction({
+        'order_id': baseOrder.orderId,
+        'plan_id': plan.id,
+        'plan_name': plan.name,
+        'gross_amount': baseOrder.totalAmount,
+        'customer_name': safeName,
+        'customer_email': safeEmail,
+        'payment_method': method.id,
+      });
+      if (backendResp != null) {
+        final mode = (backendResp['mode'] as String? ?? '').toLowerCase();
+        final snapToken = backendResp['snap_token'] as String?;
+        final redirectUrl = backendResp['redirect_url'] as String?;
+        final isLiveBackend = mode.startsWith('midtrans_');
+        if (isLiveBackend &&
+            ((snapToken != null && snapToken.isNotEmpty) ||
+                (redirectUrl != null && redirectUrl.isNotEmpty))) {
+          return baseOrder.copyWith(
+            snapToken: snapToken,
+            redirectUrl: redirectUrl ?? baseOrder.redirectUrl,
+            isLiveSandboxApi: true,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Backend Midtrans endpoint fallback: $e');
+    }
+
+    // 2. Fallback to direct Midtrans Sandbox Snap API if configured in client .env.
     if (hasLiveSandboxKey) {
       try {
         final auth = base64Encode(utf8.encode('$serverKey:'));
-        final enabledPayments = switch (method.type) {
-          PaymentMethodType.qris => ['gopay', 'shopeepay', 'other_qris'],
-          PaymentMethodType.bankTransfer => [
-              if (method.bankCode != null) '${method.bankCode}_va' else 'bca_va',
-            ],
-          PaymentMethodType.creditCard => ['credit_card'],
-        };
+        final enabledPayments = enabledPaymentsFor(method);
 
         final response = await http
             .post(
@@ -114,16 +167,16 @@ class MidtransSandboxService {
                     },
                 ],
                 'customer_details': {
-                  'first_name': officerName.trim().isEmpty || officerName == '-'
-                      ? 'Petugas SPPG'
-                      : officerName,
-                  'email': officerEmail,
+                  'first_name': safeName,
+                  'email': safeEmail,
                   'billing_address': {
-                    'first_name': officerName,
+                    'first_name': safeName,
                     'address': sppgUnit,
                   },
                 },
                 'enabled_payments': enabledPayments,
+                if (method.type == PaymentMethodType.creditCard)
+                  'credit_card': {'secure': true},
               }),
             )
             .timeout(const Duration(seconds: 12));
@@ -149,7 +202,7 @@ class MidtransSandboxService {
       }
     }
 
-    // Simulator mode: brief handshake delay for realistic loading UX
+    // 3. Simulator mode: brief handshake delay for offline/test UX.
     await Future.delayed(const Duration(milliseconds: 300));
 
     debugPrint(
@@ -159,11 +212,25 @@ class MidtransSandboxService {
     return baseOrder;
   }
 
-  /// Queries real Midtrans Sandbox status API when `isLiveSandboxApi` is active.
+  /// Queries Midtrans transaction status via backend first, then direct Sandbox Core API.
   Future<PaymentStatus> checkTransactionStatus(PaymentOrderModel order) async {
+    try {
+      final backendResp =
+          await BackendApiService.instance.checkMidtransStatus(order.orderId);
+      if (backendResp != null) {
+        final mode = (backendResp['mode'] as String? ?? '').toLowerCase();
+        final txStatus =
+            (backendResp['transaction_status'] as String? ?? '').toLowerCase();
+        if (mode.startsWith('midtrans_') || txStatus == 'settlement') {
+          return _parseMidtransStatus(txStatus);
+        }
+      }
+    } catch (_) {}
+
     if (!order.isLiveSandboxApi || !hasLiveSandboxKey) {
       return order.status;
     }
+
     try {
       final auth = base64Encode(utf8.encode('$serverKey:'));
       final response = await http.get(
@@ -175,16 +242,21 @@ class MidtransSandboxService {
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final txStatus = (data['transaction_status'] as String? ?? '').toLowerCase();
-        return switch (txStatus) {
-          'settlement' || 'capture' => PaymentStatus.settlement,
-          'expire' => PaymentStatus.expired,
-          'deny' || 'cancel' || 'failure' => PaymentStatus.failed,
-          _ => PaymentStatus.pending,
-        };
+        final txStatus =
+            (data['transaction_status'] as String? ?? '').toLowerCase();
+        return _parseMidtransStatus(txStatus);
       }
     } catch (_) {}
     return order.status;
+  }
+
+  static PaymentStatus _parseMidtransStatus(String txStatus) {
+    return switch (txStatus) {
+      'settlement' || 'capture' => PaymentStatus.settlement,
+      'expire' => PaymentStatus.expired,
+      'deny' || 'cancel' || 'failure' => PaymentStatus.failed,
+      _ => PaymentStatus.pending,
+    };
   }
 
   /// Simulates payment completion / settlement in Midtrans Sandbox.
@@ -204,7 +276,7 @@ class MidtransSandboxService {
     return settledOrder;
   }
 
-  /// Currency formatting helper (e.g. Rp 249.000)
+  /// Currency formatting helper (e.g. Rp 99.000)
   static String formatRupiah(int amount) {
     final str = amount.toString();
     final buffer = StringBuffer();

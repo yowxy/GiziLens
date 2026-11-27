@@ -71,6 +71,13 @@ class UserSessionService extends ChangeNotifier {
 
         final finalInitials = _computeInitials(finalName);
 
+        final resolvedIsPremium = fsIsPremium ?? _account.isPremium;
+        final resolvedPlan = resolvedIsPremium &&
+                fsSubscriptionPlan != null &&
+                fsSubscriptionPlan.trim().isNotEmpty
+            ? fsSubscriptionPlan.trim()
+            : (resolvedIsPremium ? _account.subscriptionPlan : 'GiziLens Free');
+
         _account = _account.copyWith(
           fullName: finalName,
           initials: finalInitials.isNotEmpty ? finalInitials : _account.initials,
@@ -78,10 +85,8 @@ class UserSessionService extends ChangeNotifier {
           unitOperational: (fsUnit != null && fsUnit.trim().isNotEmpty) ? fsUnit.trim() : _account.unitOperational,
           unitRegion: (fsRegion != null && fsRegion.trim().isNotEmpty) ? fsRegion.trim() : _account.unitRegion,
           officerId: (fsOfficerId != null && fsOfficerId.trim().isNotEmpty) ? fsOfficerId.trim() : _account.officerId,
-          subscriptionPlan: (fsSubscriptionPlan != null && fsSubscriptionPlan.trim().isNotEmpty)
-              ? fsSubscriptionPlan.trim()
-              : _account.subscriptionPlan,
-          isPremium: fsIsPremium ?? _account.isPremium,
+          subscriptionPlan: resolvedPlan,
+          isPremium: resolvedIsPremium,
         );
         notifyListeners();
       }

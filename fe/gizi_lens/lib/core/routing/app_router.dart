@@ -610,7 +610,7 @@ class AppRouter {
         pageBuilder: (context, state) {
           final plan = state.extra is PricingPlanModel
               ? state.extra as PricingPlanModel
-              : PricingPlanModel.defaultPlans[1];
+              : PricingPlanModel.defaultPlan;
           return CustomTransitionPage(
             key: state.pageKey,
             child: CheckoutScreen(plan: plan),
