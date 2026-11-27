@@ -7,7 +7,10 @@ import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from app.config import get_settings
-from app.dependencies import verify_api_key
+from app.dependencies import get_current_user, verify_api_key
+from app.database.session import get_db
+from app.services import detection_quota
+from sqlalchemy.orm import Session
 from app.schemas import DetectionResponse
 from app.services import llm_detector
 
@@ -42,7 +45,13 @@ def _check_upload(content: bytes, content_type: str | None) -> str:
     if content_type and content_type.startswith("image/"):
         return content_type
     raise HTTPException(status_code=415, detail="File harus berupa gambar.")
-
+@router.get("/quota")
+def get_detection_quota(
+    user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    _api_key: str | None = Depends(verify_api_key),
+) -> dict:
+    return detection_quota.quota_for_user(db, user)
 
 @router.post("", response_model=DetectionResponse)
 async def detect_food(
@@ -55,55 +64,91 @@ async def detect_food(
     target_carbohydrate: float = Form(87.0),
     target_fiber: float = Form(8.0),
     _api_key: str | None = Depends(verify_api_key),
+    user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> DetectionResponse:
+
     settings = get_settings()
     started = time.perf_counter()
 
     content = await image.read()
-    mime_type = _check_upload(content, image.content_type)
+    mime_type = _check_upload(
+        content,
+        image.content_type,
+    )
 
     selected = engine.strip().lower()
+
     if selected == "auto":
         selected = settings.detection_engine.lower()
 
+    if selected != "llm":
+        raise HTTPException(
+            status_code=400,
+            detail="Gunakan engine 'llm' atau 'auto'.",
+        )
+
+    usage_id = detection_quota.reserve(
+        db,
+        user,
+        settings.llm_timeout_seconds,
+    )
+
+    consumed = False
+
     try:
-        if selected == "llm":
-            result = await llm_detector.detect(
-                settings=settings,
-                image_bytes=content,
-                mime_type=mime_type,
-                target_group=target_group,
-                calories=target_calories,
-                protein=target_protein,
-                fat=target_fat,
-                carbohydrate=target_carbohydrate,
-                fiber=target_fiber,
-            )
-        elif selected == "onnx":
-            raise HTTPException(
-                status_code=400,
-                detail="Engine 'onnx' dinonaktifkan. Gunakan 'llm' atau 'auto'.",
-            )
-        else:
-            raise HTTPException(
-                status_code=400,
-                detail="Engine harus 'llm' atau 'auto'.",
-            )
+        result = await llm_detector.detect(
+            settings=settings,
+            image_bytes=content,
+            mime_type=mime_type,
+            target_group=target_group,
+            calories=target_calories,
+            protein=target_protein,
+            fat=target_fat,
+            carbohydrate=target_carbohydrate,
+            fiber=target_fiber,
+        )
+
+        result.processing_ms = int(
+            (time.perf_counter() - started) * 1000
+        )
+
+        consumed = any(
+            item.name.strip()
+            for item in result.items
+        )
+
+        return result
+
     except httpx.TimeoutException as exc:
         raise HTTPException(
-            status_code=504, detail="Layanan AI terlalu lama merespons. Coba lagi."
+            status_code=504,
+            detail="Layanan AI terlalu lama merespons. Coba lagi.",
         ) from exc
+
     except (httpx.UnsupportedProtocol, httpx.InvalidURL) as exc:
         raise HTTPException(
             status_code=502,
-            detail="Periksa SUMOPOD_API_BASE_URL di server. Gunakan URL lengkap dengan http:// atau https://.",
+            detail="Periksa SUMOPOD_API_BASE_URL di server.",
         ) from exc
+
     except httpx.RequestError as exc:
         raise HTTPException(
-            status_code=502, detail="Server gagal terhubung ke layanan AI. Coba lagi."
+            status_code=502,
+            detail="Server gagal terhubung ke layanan AI. Coba lagi.",
         ) from exc
-    except llm_detector.LlmError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    result.processing_ms = int((time.perf_counter() - started) * 1000)
-    return result
+    except llm_detector.LlmError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc),
+        ) from exc
+
+    finally:
+        db.rollback()
+
+        detection_quota.finish(
+            db,
+            usage_id,
+            success=consumed,
+        )

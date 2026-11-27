@@ -72,12 +72,20 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     unawaited(_loadQuota());
   }
 
-  Future<void> _loadQuota() async {
-    final quota = await ScanQuotaService.instance.load();
-    if (!mounted) return;
-    setState(() => _quota = quota);
-    if (quota.isExhausted) _showQuotaExhaustedSheet(quota);
-  }
+    Future<void> _loadQuota({
+      bool showExhausted = true,
+    }) async {
+      final quota =
+          await ScanQuotaService.instance.load();
+
+      if (!mounted) return;
+
+      setState(() => _quota = quota);
+
+      if (showExhausted && quota.isExhausted) {
+        _showQuotaExhaustedSheet(quota);
+      }
+    }
 
   void _showQuotaExhaustedSheet(ScanQuota quota) {
     if (!mounted || _quotaSheetShown) return;
@@ -371,13 +379,27 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
       if (camera.value.isStreamingImages) {
         await camera.stopImageStream();
       }
+      
       final photo = await camera.takePicture();
-      final success = await _controller.capturePhoto(photo);
+
+      final success =
+          await _controller.capturePhoto(photo);
+
+      if (mounted) {
+        await _loadQuota(
+          showExhausted: false,
+        );
+      }
+
       if (success && mounted) {
         try {
-          context.push(RouteNames.componentDetection);
+          context.push(
+            RouteNames.componentDetection,
+          );
         } catch (_) {
-          context.go(RouteNames.componentDetection);
+          context.go(
+            RouteNames.componentDetection,
+          );
         }
       }
     } catch (error) {
@@ -440,12 +462,24 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
 
     setState(() => _isCapturing = true);
     try {
-      final success = await _controller.capturePhoto(picked);
+            final success =
+          await _controller.capturePhoto(picked);
+
+      if (mounted) {
+        await _loadQuota(
+          showExhausted: false,
+        );
+      }
+
       if (success && mounted) {
         try {
-          context.push(RouteNames.componentDetection);
+          context.push(
+            RouteNames.componentDetection,
+          );
         } catch (_) {
-          context.go(RouteNames.componentDetection);
+          context.go(
+            RouteNames.componentDetection,
+          );
         }
       }
     } catch (error) {

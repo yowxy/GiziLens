@@ -10,6 +10,7 @@ class SubscriptionPlanCard extends StatelessWidget {
   final bool isPremium;
   final int scansUsed;
   final int monthlyQuota;
+  final bool quotaAvailable;
   final VoidCallback onUpgradeTap;
 
   const SubscriptionPlanCard({
@@ -18,16 +19,25 @@ class SubscriptionPlanCard extends StatelessWidget {
     this.isPremium = false,
     required this.scansUsed,
     required this.monthlyQuota,
+    this.quotaAvailable = true,
     required this.onUpgradeTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final safeQuota = monthlyQuota > 0 ? monthlyQuota : 1;
-    final used = scansUsed.clamp(0, safeQuota).toInt();
+    final safeQuota =
+        monthlyQuota > 0 ? monthlyQuota : 1;
+
+    final used =
+        scansUsed.clamp(0, safeQuota).toInt();
+
     final remaining = safeQuota - used;
-    final progress = used / safeQuota;
-    final percent = (progress * 100).round();
+
+    final progress =
+        quotaAvailable ? used / safeQuota : 0.0;
+
+    final percent =
+        (progress * 100).round();
 
     return Container(
       width: double.infinity,
@@ -148,8 +158,13 @@ class SubscriptionPlanCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                AppStrings.planQuotaUsage(scansUsed, monthlyQuota),
+                            Text(
+                quotaAvailable
+                    ? AppStrings.planQuotaUsage(
+                        scansUsed,
+                        monthlyQuota,
+                      )
+                    : 'Kuota belum tersedia',
                 style: AppTypography.titleSmall.copyWith(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -180,7 +195,11 @@ class SubscriptionPlanCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  AppStrings.planQuotaRemaining(remaining),
+                  quotaAvailable
+                      ? AppStrings.planQuotaRemaining(
+                          remaining,
+                        )
+                      : 'Coba lagi saat online',
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,

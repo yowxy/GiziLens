@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import '../../features/inspection/models/target_akg_model.dart';
+import 'firebase_auth_service.dart';
 
 /// A single food item returned by the GiziLens detection backend.
 class ApiFoodItem {
@@ -72,6 +73,39 @@ class DetectionApiService {
     return '';
   }
 
+  Future<String?> _idToken() async {
+    final user = FirebaseAuthService.instance.currentUser;
+
+    return user == null ? null : await user.getIdToken();
+  }
+
+  Future<Map<String, dynamic>> fetchQuota() async {
+    final token = await _idToken();
+
+    if (token == null || token.isEmpty) {
+      throw const DetectionApiException(
+        'Login diperlukan untuk melihat kuota.',
+      );
+    }
+
+    final response = await http
+        .get(
+          Uri.parse('$_baseUrl/api/v1/detect/quota'),
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+            if (_apiKey.isNotEmpty) 'X-API-Key': _apiKey,
+          },
+        )
+        .timeout(const Duration(seconds: 12));
+
+    if (response.statusCode != 200) {
+      throw DetectionApiException(_errorMessage(response));
+    }
+
+    return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
   Future<DetectionApiResult> analyzeImage(
     Uint8List imageBytes, {
     required TargetAkgModel target,
@@ -82,9 +116,15 @@ class DetectionApiService {
       Uri.parse('$_baseUrl/api/v1/detect'),
     );
 
-    if (_apiKey.isNotEmpty) {
-      request.headers['X-API-Key'] = _apiKey;
-    }
+        if (_apiKey.isNotEmpty) {
+          request.headers['X-API-Key'] = _apiKey;
+        }
+
+        final token = await _idToken();
+
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
 
     request.fields
       ..['engine'] = engine

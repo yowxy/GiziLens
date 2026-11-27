@@ -454,10 +454,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : AppStrings.planFreeName,
                       isPremium: _controller.account.isPremium,
                       scansUsed: _controller.monthlyScansUsed,
-                      monthlyQuota: _controller.account.isPremium
-                          ? ProfileController.premiumScanQuota
-                          : ProfileController.monthlyScanQuota,
-                      onUpgradeTap: () => context.push(RouteNames.pricing),
+                      monthlyQuota: _controller.monthlyQuota,
+                      quotaAvailable: _controller.quotaAvailable,
+                      onUpgradeTap: () => context.push(
+                        RouteNames.pricing,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     ProfileMenuSection(
