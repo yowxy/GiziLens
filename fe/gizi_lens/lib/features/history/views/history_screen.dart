@@ -199,9 +199,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               } catch (_) {}
             } else if (index == 1) {
               try {
-                context.push(RouteNames.scanOmpreng);
+                context.push(RouteNames.menuInspection);
               } catch (_) {
-                context.go(RouteNames.scanOmpreng);
+                context.go(RouteNames.menuInspection);
               }
             } else if (index == 3) {
               try {
