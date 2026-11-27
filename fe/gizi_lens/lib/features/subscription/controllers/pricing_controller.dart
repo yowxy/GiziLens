@@ -70,6 +70,11 @@ class PricingController extends ChangeNotifier {
 
   static const List<Map<String, String>> faqs = [
     {
+      'question': 'Berapa harga dan kuota GiziLens Premium?',
+      'answer':
+          'Rp299.000 per bulan (belum termasuk PPN 11%) dengan kuota 500 scan ompreng AI, sekitar 16 scan per hari kalender atau ± Rp598 per scan. Harga ini mencakup biaya layanan AI, infrastruktur server, database, penyimpanan dokumentasi pemeriksaan, pemeliharaan sistem, dan pengembangan fitur berkelanjutan.',
+    },
+    {
       'question': 'Bagaimana mekanisme pembayaran via Midtrans?',
       'answer':
           'Pembayaran diproses melalui Midtrans Payment Gateway resmi (QRIS, Virtual Account BCA/Mandiri/BRI/BNI, atau Kartu Kredit/Debit 3D Secure). Status langganan Premium aktif otomatis setelah pembayaran terkonfirmasi.',

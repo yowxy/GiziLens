@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gizi_lens/core/services/pdf_report_service.dart';
+import 'package:gizi_lens/core/services/user_session_service.dart';
 import 'package:gizi_lens/features/history/views/history_detail_screen.dart';
 import 'package:gizi_lens/features/history/views/widgets/audit_export_action_footer.dart';
 import 'package:gizi_lens/features/history/views/widgets/pdf_export_success_dialog.dart';
@@ -191,6 +192,11 @@ void main() {
         tester.view.resetDevicePixelRatio();
       });
 
+      await UserSessionService.instance.upgradeSubscription(
+        planName: 'GiziLens Premium',
+      );
+      addTearDown(UserSessionService.instance.reset);
+
       var exported = false;
       await tester.pumpWidget(
         MaterialApp(
@@ -234,6 +240,46 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 350));
 
+      expect(find.byType(PdfExportSuccessDialog), findsNothing);
+    });
+
+    testWidgets('free accounts are offered Premium instead of exporting', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        UserSessionService.instance.reset();
+      });
+
+      var exported = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: HistoryDetailScreen(
+            item: _sampleInspection(),
+            onExportPdf: (item) async {
+              exported = true;
+              final hash = PdfReportService.instance.computeDataHash(item);
+              return PdfExportResult(
+                pdfBytes: Uint8List.fromList(utf8.encode(hash)),
+                fileName: 'Laporan_GiziLens_MBG-2026-001.pdf',
+                dataHash: hash,
+                pdfHash: hash,
+              );
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Export PDF'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+
+      expect(exported, isFalse);
+      expect(find.text('Ekspor PDF khusus Premium'), findsOneWidget);
       expect(find.byType(PdfExportSuccessDialog), findsNothing);
     });
   });

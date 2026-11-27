@@ -216,7 +216,7 @@ void main() {
       expect(find.text('Protein Hewani & Nabati'), findsOneWidget);
       expect(find.text('Lemak Sehat'), findsOneWidget);
       expect(find.text('Karbohidrat Kompleks'), findsOneWidget);
-      expect(find.text(AppStrings.btnViewRecommendations), findsOneWidget);
+      expect(find.text(AppStrings.btnContinueToAudit), findsOneWidget);
       expect(find.text(AppStrings.btnBackToComponents), findsOneWidget);
     });
 

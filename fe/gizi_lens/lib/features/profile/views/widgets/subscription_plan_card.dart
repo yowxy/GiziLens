@@ -26,7 +26,7 @@ class SubscriptionPlanCard extends StatelessWidget {
     final safeQuota = monthlyQuota > 0 ? monthlyQuota : 1;
     final used = scansUsed.clamp(0, safeQuota).toInt();
     final remaining = safeQuota - used;
-    final progress = isPremium ? 1.0 : used / safeQuota;
+    final progress = used / safeQuota;
     final percent = (progress * 100).round();
 
     return Container(
@@ -149,9 +149,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                isPremium
-                    ? 'Unlimited ($scansUsed scan bulan ini)'
-                    : AppStrings.planQuotaUsage(scansUsed, monthlyQuota),
+                AppStrings.planQuotaUsage(scansUsed, monthlyQuota),
                 style: AppTypography.titleSmall.copyWith(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -165,9 +163,7 @@ class SubscriptionPlanCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  isPremium
-                      ? 'Kuota tak terbatas aktif'
-                      : AppStrings.planQuotaPercent(percent),
+                  AppStrings.planQuotaPercent(percent),
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     color: AppColors.textMuted,
@@ -184,9 +180,7 @@ class SubscriptionPlanCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  isPremium
-                      ? 'Unlimited'
-                      : AppStrings.planQuotaRemaining(remaining),
+                  AppStrings.planQuotaRemaining(remaining),
                   style: AppTypography.caption.copyWith(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -231,7 +225,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   isPremium
-                      ? 'Lisensi aktif • Scan AI & ekspor laporan tanpa batas.'
+                      ? 'Lisensi aktif • 500 scan AI/bulan & ekspor laporan resmi.'
                       : AppStrings.planRenewNote,
                   style: AppTypography.caption.copyWith(
                     fontSize: 11,
@@ -250,7 +244,7 @@ class SubscriptionPlanCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _ActiveBenefitChip(label: 'Unlimited Scan AI'),
+                _ActiveBenefitChip(label: '500 Scan AI / bulan'),
                 _ActiveBenefitChip(label: 'Ekspor PDF & XLSX'),
                 _ActiveBenefitChip(label: 'Prioritas BGN'),
               ],

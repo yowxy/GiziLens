@@ -31,9 +31,10 @@ void main() {
       final premium = PricingPlanModel.defaultPlan;
       expect(premium.id, equals('plan_premium'));
       expect(premium.name, equals('GiziLens Premium'));
-      expect(premium.billedPrice, equals(99000));
+      expect(premium.billedPrice, equals(299000));
       expect(premium.isPopular, isTrue);
-      expect(premium.savingsPercentage, greaterThan(0));
+      expect(premium.originalPrice, isNull);
+      expect(premium.savingsPercentage, equals(0));
     });
 
     test('PricingController defaults to single GiziLens Premium plan', () {
@@ -74,9 +75,9 @@ void main() {
       );
     });
 
-    test('createOrder calculates PPN 11% and admin fees correctly', () async {
-      final plan = PricingPlanModel.defaultPlan; // 99.000
-      final methodVa = PaymentMethodOption.availableMethods[1]; // BCA VA, fee 2.500
+    test('createOrder calculates PPN 11% with waived admin fee', () async {
+      final plan = PricingPlanModel.defaultPlan; // Rp299.000
+      final methodVa = PaymentMethodOption.availableMethods[1]; // BCA VA, fee 0
 
       final order = await MidtransSandboxService.instance.createOrder(
         plan: plan,
@@ -86,13 +87,13 @@ void main() {
         sppgUnit: 'SPPG Cibinong Sentral 02',
       );
 
-      final expectedTax = (99000 * 0.11).round();
-      final expectedTotal = 99000 + expectedTax + 2500;
+      final expectedTax = (plan.billedPrice * 0.11).round();
+      final expectedTotal = plan.billedPrice + expectedTax;
 
       expect(order.planId, equals('plan_premium'));
-      expect(order.planPrice, equals(99000));
+      expect(order.planPrice, equals(plan.billedPrice));
       expect(order.taxAmount, equals(expectedTax));
-      expect(order.adminFee, equals(2500));
+      expect(order.adminFee, equals(0));
       expect(order.totalAmount, equals(expectedTotal));
       expect(order.status, equals(PaymentStatus.pending));
       expect(order.vaNumber, isNotNull);
@@ -131,7 +132,7 @@ void main() {
       controller.selectMethod(bcaVa);
       await Future<void>.delayed(const Duration(milliseconds: 350));
       expect(controller.selectedMethod.id, equals('bca_va'));
-      expect(controller.currentOrder?.adminFee, equals(2500));
+      expect(controller.currentOrder?.adminFee, equals(0));
 
       // Process payment
       final success = await controller.processPayment();
@@ -212,7 +213,7 @@ void main() {
               planName: 'GiziLens Premium',
               isPremium: true,
               scansUsed: 12,
-              monthlyQuota: 10,
+              monthlyQuota: 500,
               onUpgradeTap: () {},
             ),
           ),
@@ -221,8 +222,9 @@ void main() {
 
       expect(find.text('GiziLens Premium'), findsOneWidget);
       expect(find.text('PREMIUM AKTIF'), findsOneWidget);
-      expect(find.text('Unlimited'), findsOneWidget);
-      expect(find.text('Unlimited Scan AI'), findsOneWidget);
+      expect(find.text('12 dari 500 scan'), findsOneWidget);
+      expect(find.text('488 scan tersisa'), findsOneWidget);
+      expect(find.text('500 Scan AI / bulan'), findsOneWidget);
       expect(find.text('Kelola Paket Langganan'), findsNothing);
       expect(find.text(AppStrings.btnUpgradePremium), findsNothing);
     });

@@ -49,11 +49,11 @@ async def detect_food(
     image: UploadFile = File(...),
     engine: str = Form("auto"),
     target_group: str = Form("SD Kelas 4 – 6 (10 – 12 Tahun)"),
-    target_calories: float = Form(633.75),
-    target_protein: float = Form(16.25),
-    target_fat: float = Form(21.125),
-    target_carbohydrate: float = Form(94.25),
-    target_fiber: float = Form(8.9375),
+    target_calories: float = Form(585.0),
+    target_protein: float = Form(15.0),
+    target_fat: float = Form(19.5),
+    target_carbohydrate: float = Form(87.0),
+    target_fiber: float = Form(8.0),
     _api_key: str | None = Depends(verify_api_key),
 ) -> DetectionResponse:
     settings = get_settings()

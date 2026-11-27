@@ -1,4 +1,5 @@
 -- Single active Premium subscription plan for GiziLens SPPG.
+-- Harga resmi: Rp299.000/bulan (belum termasuk PPN 11%) dengan kuota 500 scan.
 BEGIN;
 UPDATE plans
 SET is_active = false,
@@ -10,20 +11,23 @@ INSERT INTO plans (code, name, description, price, billing_cycle, quota_cycle,
 VALUES
 ('plan_premium',
  'GiziLens Premium',
- 'Akses penuh audit gizi AI, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud',
- 99000,
+ '500 scan ompreng AI per bulan, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud',
+ 299000,
  'MONTHLY',
  'MONTHLY',
- NULL,
+ 500,
  NULL,
  365,
- '["Scan Ompreng AI tanpa batas kuota", "Ekspor PDF resmi (Watermark + SHA-256) & XLSX", "Multi-demografis AKG (SD, SMP, SMA)", "Notifikasi defisit porsi >15%", "Prioritas dukungan teknis BGN"]'::jsonb,
+ '["Kuota 500 scan ompreng AI per bulan", "Ekspor PDF resmi (Watermark + SHA-256) & XLSX", "Multi-demografis AKG (SD, SMP, SMA)", "Notifikasi defisit porsi >15%", "Riwayat audit 12 bulan", "Prioritas dukungan teknis BGN"]'::jsonb,
  true)
 ON CONFLICT (code) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
   price = EXCLUDED.price,
   billing_cycle = EXCLUDED.billing_cycle,
+  quota_cycle = EXCLUDED.quota_cycle,
+  scan_quota = EXCLUDED.scan_quota,
+  history_retention_days = EXCLUDED.history_retention_days,
   features = EXCLUDED.features,
   is_active = true,
   updated_at = NOW();

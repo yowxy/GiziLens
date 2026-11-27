@@ -276,7 +276,7 @@ class MidtransSandboxService {
     return settledOrder;
   }
 
-  /// Currency formatting helper (e.g. Rp 99.000)
+  /// Currency formatting helper (e.g. Rp 149.000)
   static String formatRupiah(int amount) {
     final str = amount.toString();
     final buffer = StringBuffer();

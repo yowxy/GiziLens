@@ -5,11 +5,14 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/frame_quality_analyzer.dart';
+import '../../../../core/services/scan_quota_service.dart';
+import '../../../../core/services/user_session_service.dart';
 import '../controllers/scan_ompreng_controller.dart';
 import 'widgets/google_lens_hologram_scanner.dart';
 import 'widgets/scan_validation_card.dart';
@@ -53,6 +56,10 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
   static const double _defaultRectilinearZoom = 1.4;
   DateTime _lastFrameAnalysis = DateTime.fromMillisecondsSinceEpoch(0);
   static const _frameAnalysisInterval = Duration(milliseconds: 400);
+  ScanQuota? _quota;
+  bool _quotaSheetShown = false;
+
+  bool get _isQuotaExhausted => _quota?.isExhausted ?? false;
 
   @override
   void initState() {
@@ -61,6 +68,144 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
     _controller.addListener(_onControllerUpdate);
     _initialization = _initializeCamera();
     unawaited(_initializeModel());
+    unawaited(_loadQuota());
+  }
+
+  Future<void> _loadQuota() async {
+    final quota = await ScanQuotaService.instance.load();
+    if (!mounted) return;
+    setState(() => _quota = quota);
+    if (quota.isExhausted) _showQuotaExhaustedSheet(quota);
+  }
+
+  void _showQuotaExhaustedSheet(ScanQuota quota) {
+    if (!mounted || _quotaSheetShown) return;
+    _quotaSheetShown = true;
+
+    final isPremium = UserSessionService.instance.account.isPremium;
+    final reset = quota.periodEnd;
+    final resetLabel = '${reset.day}/${reset.month}/${reset.year}';
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.hourglass_disabled_rounded,
+                    color: Color(0xFFB3261E),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Kuota scan habis',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                isPremium
+                    ? 'Kuota ${quota.limit} scan bulan ini sudah terpakai semua. '
+                        'Kuota direset otomatis pada $resetLabel.'
+                    : 'Kuota gratis ${quota.limit} scan bulan ini sudah terpakai. '
+                        'Kuota direset otomatis pada $resetLabel. '
+                        'Upgrade ke Premium untuk ${ScanQuotaService.premiumMonthlyQuota} scan per bulan.',
+                style: AppTypography.bodySmall.copyWith(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 18),
+              if (!isPremium)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(sheetContext).pop();
+                      try {
+                        context.push(RouteNames.pricing);
+                      } catch (_) {
+                        context.go(RouteNames.pricing);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryDeep,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      'Lihat Paket Premium',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                  ),
+                ),
+              if (!isPremium) const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(sheetContext).pop(),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    'Nanti',
+                    style: AppTypography.titleMedium.copyWith(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).whenComplete(() => _quotaSheetShown = false);
   }
 
   Future<void> _initializeCamera() async {
@@ -207,6 +352,10 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
 
   Future<void> _handleShutterTap() async {
     if (_isCapturing || _controller.isAnalyzing) return;
+    if (_isQuotaExhausted) {
+      _showQuotaExhaustedSheet(_quota!);
+      return;
+    }
     setState(() => _isCapturing = true);
     CameraController? camera;
     try {
@@ -254,6 +403,62 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
       if (mounted) {
         setState(() => _isCapturing = false);
       }
+    }
+  }
+
+  /// Pick an existing ompreng photo from the gallery and run the same detection
+  /// pipeline as a live capture.
+  Future<void> _handlePickFromGallery() async {
+    if (_isCapturing || _controller.isAnalyzing) return;
+    if (_isQuotaExhausted) {
+      _showQuotaExhaustedSheet(_quota!);
+      return;
+    }
+
+    XFile? picked;
+    try {
+      picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 2000,
+        maxHeight: 2000,
+        imageQuality: 92,
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuka galeri: $error'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFB3261E),
+          ),
+        );
+      }
+      return;
+    }
+    if (picked == null || !mounted) return;
+
+    setState(() => _isCapturing = true);
+    try {
+      final success = await _controller.capturePhoto(picked);
+      if (success && mounted) {
+        try {
+          context.push(RouteNames.componentDetection);
+        } catch (_) {
+          context.go(RouteNames.componentDetection);
+        }
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memproses gambar: $error'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: const Color(0xFFB3261E),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCapturing = false);
     }
   }
 
@@ -483,16 +688,7 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
                     _buildShutterButton(),
                     _buildCircleIconButton(
                       icon: Icons.drive_folder_upload_rounded,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Pilih citra ompreng baki dari galeri...',
-                            ),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onTap: _handlePickFromGallery,
                     ),
                   ],
                 ),
@@ -543,7 +739,9 @@ class _ScanOmprengScreenState extends State<ScanOmprengScreen> {
 
   Widget _buildShutterButton() {
     return GestureDetector(
-      onTap: _isCapturing || _controller.isAnalyzing ? null : _handleShutterTap,
+      onTap: _isCapturing || _controller.isAnalyzing || _isQuotaExhausted
+          ? null
+          : _handleShutterTap,
       child: Container(
         width: 74,
         height: 74,

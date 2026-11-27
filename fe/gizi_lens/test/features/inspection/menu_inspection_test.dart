@@ -13,9 +13,9 @@ void main() {
   group('TargetAkgModel Unit Tests', () {
     test('Standard presets are properly configured with 4 demographics', () {
       expect(TargetAkgModel.standardPresets.length, equals(4));
-      expect(TargetAkgModel.standardPresets[0].calories, equals(450));
-      expect(TargetAkgModel.standardPresets[1].calories, equals(620));
-      expect(TargetAkgModel.standardPresets[1].formattedSummary, equals('620 kkal • Protein 18–22g'));
+      expect(TargetAkgModel.standardPresets[0].calories, equals(495));
+      expect(TargetAkgModel.standardPresets[1].calories, equals(585));
+      expect(TargetAkgModel.standardPresets[1].formattedSummary, equals('585 kkal • Protein 14–16g'));
     });
   });
 
@@ -142,7 +142,7 @@ void main() {
       expect(find.text(AppStrings.targetGroupLabel), findsOneWidget);
       expect(find.text(AppStrings.btnUbahAkg), findsOneWidget);
       expect(find.text('SD Kelas 4 – 6 (10 – 12 Tahun)'), findsOneWidget);
-      expect(find.text('620 kkal • Protein 18–22g'), findsOneWidget);
+      expect(find.text('585 kkal • Protein 14–16g'), findsOneWidget);
 
       // SPPG Unit
       expect(find.text(AppStrings.sppgUnitLabel), findsOneWidget);
@@ -195,7 +195,7 @@ void main() {
       // Verify modal closed and indicator updated
       expect(find.text('Pilih Kelompok Penerima Sasaran'), findsNothing);
       expect(find.text('SMA / SMK (16 – 18 Tahun)'), findsOneWidget);
-      expect(find.text('780 kkal • Protein 25–30g'), findsOneWidget);
+      expect(find.text('780 kkal • Protein 20–25g'), findsOneWidget);
     });
 
     testWidgets('Tapping help icon on StepProgressAppBar opens help modal', (tester) async {

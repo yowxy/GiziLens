@@ -134,8 +134,8 @@ class AppStrings {
   static const String premiumBadgeLabel = 'GIZILENS PREMIUM';
   static const String premiumTitle = 'Pemeriksaan Lebih Maksimal!';
   static const String premiumDescription =
-      'Nikmati fitur lengkap, riwayat pemeriksaan tanpa batas, dan laporan yang lebih praktis untuk mendukung monitoring MBG.';
-  static const String premiumFeatureUnlimited = 'Unlimited Scan';
+      'Nikmati 500 scan AI per bulan, riwayat pemeriksaan 12 bulan, dan laporan yang lebih praktis untuk mendukung monitoring MBG.';
+  static const String premiumFeatureUnlimited = '500 Scan/bulan';
   static const String premiumFeatureExport = 'Ekspor Otomatis';
   static const String premiumCta = 'Lihat Paket Premium';
 
@@ -143,8 +143,10 @@ class AppStrings {
   static const String premiumSheetTitle = 'GiziLens Premium';
   static const String premiumSheetSubtitle =
       'Buka seluruh kemampuan audit gizi untuk kebutuhan operasional SPPG.';
-  static const String premiumBenefitUnlimited = 'Scan & inspeksi tanpa batas';
-  static const String premiumBenefitHistory = 'Riwayat pemeriksaan tanpa batas';
+  static const String premiumBenefitUnlimited =
+      'Kuota 500 scan & inspeksi per bulan';
+  static const String premiumBenefitHistory =
+      'Riwayat pemeriksaan 12 bulan';
   static const String premiumBenefitExport = 'Ekspor laporan otomatis';
   static const String premiumBenefitPriority = 'Dukungan prioritas tim BGN';
   static const String btnClose = 'Tutup';
@@ -416,19 +418,10 @@ class AppStrings {
   static const String step4Of4 = 'Langkah 4 dari 4: Analisis Gizi';
   static const String targetAudienceTitle = 'Target Sasaran';
   static const String targetAgePill = 'Usia 15–18 Tahun';
-  static const String targetAkgDescription =
-      'SMA • Basis MBG Makan Siang (30–35% AKG):\n762.5 kkal, Protein 21–24.5 g, Lemak 22.5–27.1 g, Karbohidrat 105–122.5 g, Serat: target simulasi 10–12 g.';
   static const String targetNutritionDisclaimer =
       'Nilai nutrisi merupakan estimasi berbasis database bahan pangan & berat porsi terverifikasi. Bukan hasil uji laboratorium.';
   static const String summary5PillarsTitle = 'Ringkasan 5 Pilar Nutrisi';
   static const String tolerancePill = 'Toleransi ±10%';
-  static const String btnViewRecommendations = 'Lihat Rekomendasi Menu';
-  static const String recommendationTitle = 'Rekomendasi Menu dari AI';
-  static const String recommendationLoading =
-      'Menyusun rekomendasi menu berdasarkan selisih gizi...';
-  static const String btnRetryRecommendation = 'Coba Lagi';
-  static const String btnContinueWithoutRecommendation =
-      'Lanjut tanpa rekomendasi';
   static const String btnContinueToAudit = 'Lanjut ke Konfirmasi Audit';
   static const String btnBackToComponents = 'Kembali ke Koreksi Komponen';
 

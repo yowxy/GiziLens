@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/routing/route_names.dart';
 import '../../../core/services/pdf_report_service.dart';
+import '../../../core/services/user_session_service.dart';
 import 'widgets/annotated_scan_image.dart';
 import 'widgets/audit_export_action_footer.dart';
 import 'widgets/pdf_export_success_dialog.dart';
@@ -29,6 +30,13 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 
   Future<void> _handleExportPdf() async {
     if (_isExporting) return;
+
+    // PDF export is a Premium-only feature; free accounts get the upsell.
+    if (!UserSessionService.instance.account.isPremium) {
+      await _showPremiumOnlyDialog();
+      return;
+    }
+
     setState(() => _isExporting = true);
 
     try {
@@ -54,6 +62,87 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     } finally {
       if (mounted) {
         setState(() => _isExporting = false);
+      }
+    }
+  }
+
+  Future<void> _showPremiumOnlyDialog() async {
+    final goToPricing = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.workspace_premium_rounded,
+              color: Color(0xFFD6A24A),
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Ekspor PDF khusus Premium',
+                style: AppTypography.titleMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Akun gratis hanya dapat melihat hasil audit di aplikasi. '
+          'Aktifkan GiziLens Premium untuk mengekspor berita acara resmi '
+          'PDF (watermark + SHA-256) dan Excel.',
+          style: AppTypography.bodySmall.copyWith(
+            fontSize: 12.5,
+            height: 1.5,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(
+              'Nanti',
+              style: AppTypography.titleSmall.copyWith(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryDeep,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              'Lihat Paket',
+              style: AppTypography.titleSmall.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (goToPricing == true && mounted) {
+      try {
+        context.push(RouteNames.pricing);
+      } catch (_) {
+        context.go(RouteNames.pricing);
       }
     }
   }

@@ -39,7 +39,7 @@ class PaymentMethodOption {
       type: PaymentMethodType.bankTransfer,
       iconAssetOrName: 'bca',
       bankCode: 'bca',
-      fee: 2500,
+      fee: 0,
     ),
     PaymentMethodOption(
       id: 'mandiri_va',
@@ -48,7 +48,7 @@ class PaymentMethodOption {
       type: PaymentMethodType.bankTransfer,
       iconAssetOrName: 'mandiri',
       bankCode: 'mandiri',
-      fee: 2500,
+      fee: 0,
     ),
     PaymentMethodOption(
       id: 'bri_va',
@@ -57,7 +57,7 @@ class PaymentMethodOption {
       type: PaymentMethodType.bankTransfer,
       iconAssetOrName: 'bri',
       bankCode: 'bri',
-      fee: 2500,
+      fee: 0,
     ),
     PaymentMethodOption(
       id: 'bni_va',
@@ -66,7 +66,7 @@ class PaymentMethodOption {
       type: PaymentMethodType.bankTransfer,
       iconAssetOrName: 'bni',
       bankCode: 'bni',
-      fee: 2500,
+      fee: 0,
     ),
     PaymentMethodOption(
       id: 'credit_card',

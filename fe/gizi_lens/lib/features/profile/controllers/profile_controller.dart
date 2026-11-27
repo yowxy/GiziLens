@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../../../core/services/firestore_service.dart';
+import '../../../../core/services/scan_quota_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../models/officer_account_model.dart';
 
 class ProfileController extends ChangeNotifier {
   /// Number of free inspection scans granted each calendar month.
-  static const int monthlyScanQuota = 10;
+  static const int monthlyScanQuota = ScanQuotaService.freeMonthlyQuota;
+
+  /// Scans included in the paid GiziLens Premium subscription per month.
+  static const int premiumScanQuota = ScanQuotaService.premiumMonthlyQuota;
 
   int _activeNavIndex = 3;
   int _monthlyScansUsed = 0;
@@ -40,25 +43,10 @@ class ProfileController extends ChangeNotifier {
   /// Counts inspections created since the first day of the current month so
   /// the subscription card can display live quota usage.
   Future<void> _loadMonthlyUsage() async {
-    try {
-      final inspections = await FirestoreService.instance.getInspections(
-        limit: 200,
-      );
-      final now = DateTime.now();
-      final monthStart = DateTime(now.year, now.month, 1);
-      final used = inspections.where((inspection) {
-        final created = DateTime.tryParse(
-          inspection['createdDateIso']?.toString() ?? '',
-        );
-        return created != null && !created.isBefore(monthStart);
-      }).length;
-
-      if (used != _monthlyScansUsed) {
-        _monthlyScansUsed = used;
-        notifyListeners();
-      }
-    } catch (_) {
-      // Quota display falls back to zero when the data source is unreachable.
+    final quota = await ScanQuotaService.instance.load();
+    if (quota.used != _monthlyScansUsed) {
+      _monthlyScansUsed = quota.used;
+      notifyListeners();
     }
   }
 

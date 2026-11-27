@@ -258,12 +258,34 @@ class _PricingScreenState extends State<PricingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Buka akses tak terbatas kuota AI scan ompreng, verifikasi AKG multi-demografis sekolah, dan ekspor laporan rekapitulasi audit otomatis.',
+            'Buka 500 scan ompreng AI per bulan, verifikasi AKG multi-demografis sekolah, dan ekspor laporan rekapitulasi audit otomatis.',
             style: AppTypography.bodySmall.copyWith(
               color: Colors.white.withValues(alpha: 0.85),
               fontSize: 12.5,
               height: 1.45,
             ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Icon(
+                Icons.savings_outlined,
+                color: AppColors.accentGold,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'Rp299.000/bulan untuk 500 scan — sekitar Rp10.000 per hari kalender.',
+                  style: AppTypography.caption.copyWith(
+                    color: AppColors.accentGold,
+                    fontSize: 11.5,
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -336,11 +358,11 @@ class _PricingScreenState extends State<PricingScreen> {
           _buildMatrixHeader(),
           const Divider(height: 1, color: Color(0xFFE2ECE0)),
           const SizedBox(height: 6),
-          _buildMatrixRow('Kuota AI Scan Ompreng', '10 / bulan', 'Tak Terbatas'),
+          _buildMatrixRow('Kuota AI Scan Ompreng', '10 / bulan', '500 / bulan'),
           _buildMatrixRow('Analisis 5 Pilar AKG', '✓', '✓'),
-          _buildMatrixRow('Ekspor Laporan PDF + SHA-256', 'Terbatas', 'Lengkap & Resmi'),
+          _buildMatrixRow('Ekspor Laporan PDF + SHA-256', 'Tidak tersedia', 'Lengkap & Resmi'),
           _buildMatrixRow('Demografi Sasaran AKG', 'Standar', 'SD – SMA Lengkap'),
-          _buildMatrixRow('Riwayat & Audit Cloud', '30 Hari', 'Tak Terbatas'),
+          _buildMatrixRow('Riwayat & Audit Cloud', '30 Hari', '12 Bulan'),
           _buildMatrixRow('Peringatan Defisit >15%', 'Manual', 'Otomatis Prioritas'),
         ],
       ),
