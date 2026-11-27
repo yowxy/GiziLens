@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 const List<Color> kBboxColors = [
@@ -17,6 +19,7 @@ class AnnotatedScanImage extends StatelessWidget {
     super.key,
     required this.imageUrl,
     required this.components,
+    this.imageBytes,
     this.height,
     this.width,
     this.showLabels = false,
@@ -24,6 +27,7 @@ class AnnotatedScanImage extends StatelessWidget {
   });
 
   final String? imageUrl;
+  final Uint8List? imageBytes;
   final List<Map<String, dynamic>> components;
   final double? height;
   final double? width;
@@ -42,7 +46,13 @@ class AnnotatedScanImage extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (imageUrl != null && imageUrl!.isNotEmpty)
+            if (imageBytes != null && imageBytes!.isNotEmpty)
+              Image.memory(
+                imageBytes!,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => _placeholder(),
+              )
+            else if (imageUrl != null && imageUrl!.isNotEmpty)
               Image.network(
                 imageUrl!,
                 fit: BoxFit.cover,

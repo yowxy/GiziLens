@@ -12,6 +12,7 @@ import '../../../../core/services/firestore_service.dart';
 import '../../../../core/services/inspection_session_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../../../../core/widgets/modal_card_dialog.dart';
+import '../../history/views/history_detail_screen.dart';
 import '../models/nutrition_analysis_model.dart';
 
 class AuditConfirmationScreen extends StatefulWidget {
@@ -30,86 +31,93 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
 
     final session = InspectionSessionService.instance;
     final officer = UserSessionService.instance.account;
+    final components = session.components;
+    final metrics = NutrientMetricModel.fromComponents(
+      components,
+      session.targetAkg,
+    );
+    final scannedAtIso = (session.scannedAt ?? DateTime.now()).toIso8601String();
+    final inspectionPayload = <String, dynamic>{
+      'batchCode': session.batchCode,
+      'schoolName': session.schoolDestination,
+      'targetGroup': session.targetAkg.groupName,
+      'session': AppStrings.targetGroupSession,
+      'totalNetWeight': '${session.totalNetWeight} gram',
+      'scannedAt': scannedAtIso,
+      'complianceStatus': metrics.every((metric) => metric.percentageOfTarget >= 85)
+          ? 'SESUAI'
+          : 'TIDAK SESUAI',
+      'isLocked': true,
+      'verifierRole': AppStrings.verifierRolePill,
+      'officerName': officer.fullName,
+      'officerId': officer.officerId,
+      'unitOperational': officer.unitOperational,
+      'detectionProvider': aiProviderName,
+      'detectionModel': aiModelName,
+      'targetAkg2019': {
+        'groupName': session.targetAkg.groupName,
+        'calories': session.targetAkg.lunchCalories,
+        'protein': session.targetAkg.lunchProtein,
+        'fat': session.targetAkg.lunchFat,
+        'carbohydrate': session.targetAkg.lunchCarbohydrate,
+        'fiber': session.targetAkg.lunchFiber,
+      },
+      'components': components
+          .map(
+            (item) => {
+              'id': item.id,
+              'name': item.name,
+              'gram': item.estimatedGram,
+              'compartmentNumber': item.compartmentNumber,
+              'category': item.category,
+              'confidencePercentage': item.confidencePercentage,
+              'isVerified': item.isVerified,
+              'nutrition': {
+                'calories': item.calories,
+                'protein': item.protein,
+                'fat': item.fat,
+                'carbohydrate': item.carbohydrate,
+                'fiber': item.fiber,
+              },
+              if (item.boundingBox != null)
+                'bbox': {
+                  'x': item.boundingBox!.left,
+                  'y': item.boundingBox!.top,
+                  'width': item.boundingBox!.width,
+                  'height': item.boundingBox!.height,
+                },
+            },
+          )
+          .toList(),
+      'imageBase64': session.capturedPhoto == null
+          ? null
+          : base64Encode(session.capturedPhoto!),
+      'nutrition': {
+        for (final metric in metrics)
+          metric.name: {
+            'currentValue': metric.currentValue,
+            'targetValue': metric.targetValue,
+            'unit': metric.unit,
+            'percentageOfTarget': metric.percentageOfTarget,
+            'statusLabel': metric.statusLabel,
+          },
+      },
+      'notes': session.notes,
+    };
 
     try {
-      final components = session.components;
-      final metrics = NutrientMetricModel.fromComponents(
-        components,
-        session.targetAkg,
-      );
-      await FirestoreService.instance.saveInspection({
-        'batchCode': session.batchCode,
-        'schoolName': session.schoolDestination,
-        'targetGroup': session.targetAkg.groupName,
-        'session': AppStrings.targetGroupSession,
-        'totalNetWeight': '${session.totalNetWeight} gram',
-        'scannedAt': session.scannedAt?.toIso8601String(),
-        'complianceStatus': metrics.every((metric) => metric.percentageOfTarget >= 85)
-            ? 'SESUAI'
-            : 'TIDAK SESUAI',
-        'isLocked': true,
-        'verifierRole': AppStrings.verifierRolePill,
-        'officerName': officer.fullName,
-        'officerId': officer.officerId,
-        'unitOperational': officer.unitOperational,
-        'detectionProvider': aiProviderName,
-        'detectionModel': aiModelName,
-        'targetAkg2019': {
-          'groupName': session.targetAkg.groupName,
-          'calories': session.targetAkg.lunchCalories,
-          'protein': session.targetAkg.lunchProtein,
-          'fat': session.targetAkg.lunchFat,
-          'carbohydrate': session.targetAkg.lunchCarbohydrate,
-          'fiber': session.targetAkg.lunchFiber,
-        },
-        'components': components
-            .map(
-              (item) => {
-                'id': item.id,
-                'name': item.name,
-                'gram': item.estimatedGram,
-                'compartmentNumber': item.compartmentNumber,
-                'category': item.category,
-                'confidencePercentage': item.confidencePercentage,
-                'isVerified': item.isVerified,
-                'nutrition': {
-                  'calories': item.calories,
-                  'protein': item.protein,
-                  'fat': item.fat,
-                  'carbohydrate': item.carbohydrate,
-                  'fiber': item.fiber,
-                },
-                if (item.boundingBox != null)
-                  'bbox': {
-                    'x': item.boundingBox!.left,
-                    'y': item.boundingBox!.top,
-                    'width': item.boundingBox!.width,
-                    'height': item.boundingBox!.height,
-                  },
-              },
-            )
-            .toList(),
-        'imageBase64': session.capturedPhoto == null
-            ? null
-            : base64Encode(session.capturedPhoto!),
-        'nutrition': {
-          for (final metric in metrics)
-            metric.name: {
-              'currentValue': metric.currentValue,
-              'targetValue': metric.targetValue,
-              'unit': metric.unit,
-              'percentageOfTarget': metric.percentageOfTarget,
-              'statusLabel': metric.statusLabel,
-            },
-        },
-        'notes': session.notes,
-      });
+      await FirestoreService.instance.saveInspection(inspectionPayload);
     } catch (e) {
       debugPrint('Firestore save error: $e');
     }
 
     if (!mounted) return;
     setState(() => _isSaving = false);
+
+    final detailItem = <String, dynamic>{
+      ...inspectionPayload,
+      if (session.capturedPhoto != null) 'imageBytes': session.capturedPhoto,
+    };
 
     ModalCardDialog.show(
       context: context,
@@ -138,6 +146,15 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
         onPrimaryPressed: () {
           Navigator.of(dialogCtx).pop();
           context.go(RouteNames.dashboard);
+        },
+        secondaryButtonText: 'Export Laporan PDF',
+        onSecondaryPressed: () {
+          Navigator.of(dialogCtx).pop();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => HistoryDetailScreen(item: detailItem),
+            ),
+          );
         },
       ),
     );

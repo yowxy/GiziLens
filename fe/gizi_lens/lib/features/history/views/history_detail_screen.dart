@@ -1,21 +1,96 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import '../../../core/routing/route_names.dart';
+import '../../../core/services/pdf_report_service.dart';
 import 'widgets/annotated_scan_image.dart';
+import 'widgets/audit_export_action_footer.dart';
+import 'widgets/pdf_export_success_dialog.dart';
 
-class HistoryDetailScreen extends StatelessWidget {
-  const HistoryDetailScreen({super.key, required this.item});
+class HistoryDetailScreen extends StatefulWidget {
+  const HistoryDetailScreen({
+    super.key,
+    required this.item,
+    this.onExportPdf,
+  });
 
   final Map<String, dynamic> item;
+  final Future<PdfExportResult> Function(Map<String, dynamic> item)? onExportPdf;
+
+  @override
+  State<HistoryDetailScreen> createState() => _HistoryDetailScreenState();
+}
+
+class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
+  bool _isExporting = false;
+
+  Future<void> _handleExportPdf() async {
+    if (_isExporting) return;
+    setState(() => _isExporting = true);
+
+    try {
+      final exporter =
+          widget.onExportPdf ?? PdfReportService.instance.exportAndShareReport;
+      await exporter(widget.item);
+      if (!mounted) return;
+
+      final batchCode = widget.item['batchCode'] as String? ?? 'MBG-AUDIT';
+      await PdfExportSuccessDialog.show(
+        context,
+        auditId: batchCode,
+        onBackToHome: _navigateToDashboard,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal membuat PDF: $e'),
+          backgroundColor: AppColors.statTidakSesuaiRed,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isExporting = false);
+      }
+    }
+  }
+
+  void _navigateToDashboard() {
+    try {
+      context.go(RouteNames.dashboard);
+    } catch (_) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
+
+  void _handleBackToHistory() {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    try {
+      context.go(RouteNames.history);
+    } catch (_) {}
+  }
 
   @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final batchCode = item['batchCode'] as String? ?? '-';
     final schoolName = item['schoolName'] as String? ?? '-';
-    final session = item['session'] as String? ?? '-';
+    final session = item['session'] as String? ?? 'Makan Siang';
     final targetGroup = item['targetGroup'] as String? ?? '-';
     final weight = item['totalNetWeight'] as String? ?? '-';
     final notes = item['notes'] as String? ?? '';
+    final officer = (item['officerName'] as String?)?.trim().isNotEmpty == true
+        ? item['officerName'] as String
+        : (item['userEmail'] as String? ?? '-');
+    final imageBytes = item['imageBytes'] is Uint8List
+        ? item['imageBytes'] as Uint8List
+        : null;
     final isSesuai =
         (item['complianceStatus'] as String? ?? '').toUpperCase() == 'SESUAI';
     final components = _mapList(item['components']);
@@ -48,10 +123,11 @@ class HistoryDetailScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
         children: [
           AnnotatedScanImage(
             imageUrl: item['imageUrl'] as String?,
+            imageBytes: imageBytes,
             components: components,
             height: 220,
             width: double.infinity,
@@ -100,11 +176,11 @@ class HistoryDetailScreen extends StatelessWidget {
                 ? _emptyText('Data nutrisi tidak tersedia.')
                 : Column(
                     children: [
-                      for (var i = 0; i < _nutritionOrder.length; i++)
+                      for (var i = 0; i < _nutritionSpecs.length; i++)
                         _nutritionBar(
-                          _nutritionOrder[i],
-                          _mapOrEmpty(nutrition[_nutritionOrder[i]]),
-                          isLast: i == _nutritionOrder.length - 1,
+                          _nutritionSpecs[i].label,
+                          _resolveMetric(nutrition, _nutritionSpecs[i].keys),
+                          isLast: i == _nutritionSpecs.length - 1,
                         ),
                     ],
                   ),
@@ -124,7 +200,7 @@ class HistoryDetailScreen extends StatelessWidget {
                     (item['scannedAt'] ?? item['createdDateIso']) as String?,
                   ),
                 ),
-                _infoRow('Petugas', item['userEmail'] as String? ?? '-'),
+                _infoRow('Petugas', officer),
               ],
             ),
           ),
@@ -154,16 +230,33 @@ class HistoryDetailScreen extends StatelessWidget {
           ],
         ],
       ),
+      bottomNavigationBar: AuditExportActionFooter(
+        isExporting: _isExporting,
+        onExportPdf: _handleExportPdf,
+        onBackToHistory: _handleBackToHistory,
+      ),
     );
   }
 
-  static const List<String> _nutritionOrder = [
-    'Kalori',
-    'Protein',
-    'Lemak',
-    'Karbohidrat',
-    'Serat',
+  static const List<({String label, List<String> keys})> _nutritionSpecs = [
+    (label: 'Kalori', keys: ['Kalori', 'Energi Total']),
+    (label: 'Protein', keys: ['Protein', 'Protein Hewani & Nabati']),
+    (label: 'Lemak', keys: ['Lemak', 'Lemak Sehat']),
+    (label: 'Karbohidrat', keys: ['Karbohidrat', 'Karbohidrat Kompleks']),
+    (label: 'Serat', keys: ['Serat']),
   ];
+
+  static Map<String, dynamic> _resolveMetric(
+    Map<String, dynamic> nutrition,
+    List<String> keys,
+  ) {
+    for (final key in keys) {
+      if (nutrition[key] is Map) {
+        return _mapOrEmpty(nutrition[key]);
+      }
+    }
+    return <String, dynamic>{};
+  }
 
   Widget _nutritionBar(
     String label,
