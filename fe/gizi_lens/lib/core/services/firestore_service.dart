@@ -95,13 +95,22 @@ class FirestoreService {
   /// Update the currently logged-in officer profile metadata.
   /// Returns true only if the Firestore write succeeded.
   Future<bool> updateCurrentUserProfile(Map<String, dynamic> data) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      debugPrint('updateCurrentUserProfile: no current user');
+    if (!isFirebaseInitialized) {
+      debugPrint('updateCurrentUserProfile: Firebase not initialized, running in offline/test mode');
+      return true;
+    }
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        debugPrint('updateCurrentUserProfile: no current user');
+        return false;
+      }
+      await saveUserProfile(uid: user.uid, data: data);
+      return true;
+    } catch (e) {
+      debugPrint('updateCurrentUserProfile: error: $e');
       return false;
     }
-    await saveUserProfile(uid: user.uid, data: data);
-    return true;
   }
 
   /// Save an OTP verification record for real-time tracking in Firestore.

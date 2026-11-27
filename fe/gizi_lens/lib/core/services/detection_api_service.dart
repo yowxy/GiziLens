@@ -55,10 +55,24 @@ class DetectionApiResult {
 ///
 /// All LLM / ONNX inference happens server-side; the app only uploads the photo.
 class DetectionApiService {
-  String get _baseUrl =>
-      (dotenv.env['BACKEND_BASE_URL'] ?? 'http://10.0.2.2:8000')
-          .replaceAll(RegExp(r'/+$'), '');
-  String get _apiKey => dotenv.env['BACKEND_API_KEY'] ?? '';
+  String get _baseUrl {
+    String? url;
+    try {
+      if (dotenv.isInitialized) {
+        url = dotenv.env['BACKEND_BASE_URL'];
+      }
+    } catch (_) {}
+    return (url ?? 'http://10.0.2.2:8000').replaceAll(RegExp(r'/+$'), '');
+  }
+
+  String get _apiKey {
+    try {
+      if (dotenv.isInitialized) {
+        return dotenv.env['BACKEND_API_KEY'] ?? '';
+      }
+    } catch (_) {}
+    return '';
+  }
 
   Future<DetectionApiResult> analyzeImage(
     Uint8List imageBytes, {

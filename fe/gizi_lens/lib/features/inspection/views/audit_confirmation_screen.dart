@@ -47,6 +47,9 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
             : 'TIDAK SESUAI',
         'isLocked': true,
         'verifierRole': AppStrings.verifierRolePill,
+        'officerName': officer.fullName,
+        'officerId': officer.officerId,
+        'unitOperational': officer.unitOperational,
         'detectionProvider': aiProviderName,
         'detectionModel': aiModelName,
         'targetAkg2019': {

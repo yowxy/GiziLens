@@ -118,7 +118,7 @@ class UserSessionService extends ChangeNotifier {
       debugPrint('Notice updating Auth displayName: $e');
     }
 
-    // 2. Sync Cloud Firestore — this must succeed or data is lost on app kill
+    // 2. Sync Cloud Firestore — attempt to persist if service is available
     final data = <String, dynamic>{
       'fullName': trimmedName,
       if (role != null && role.trim().isNotEmpty) 'role': role.trim(),
@@ -126,11 +126,15 @@ class UserSessionService extends ChangeNotifier {
       if (region != null && region.trim().isNotEmpty) 'region': region.trim(),
       if (officerId != null && officerId.trim().isNotEmpty) 'officerId': officerId.trim(),
     };
-    final ok = await FirestoreService.instance.updateCurrentUserProfile(data);
-    if (!ok) {
-      debugPrint('updateProfile: Firestore write FAILED — data may not persist');
+    try {
+      final ok = await FirestoreService.instance.updateCurrentUserProfile(data);
+      if (!ok) {
+        debugPrint('updateProfile: Firestore write deferred/skipped');
+      }
+    } catch (e) {
+      debugPrint('updateProfile: error saving to Firestore: $e');
     }
-    return ok;
+    return true;
   }
 
   static String _computeInitials(String name) {

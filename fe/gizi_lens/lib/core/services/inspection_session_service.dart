@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import '../constants/app_strings.dart';
 import '../../features/inspection/models/food_component_model.dart';
