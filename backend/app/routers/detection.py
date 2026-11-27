@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import time
 
+import httpx
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from app.config import get_settings
@@ -85,6 +86,19 @@ async def detect_food(
                 status_code=400,
                 detail="Engine harus 'llm', 'onnx', atau 'auto'.",
             )
+    except httpx.TimeoutException as exc:
+        raise HTTPException(
+            status_code=504, detail="Layanan AI terlalu lama merespons. Coba lagi."
+        ) from exc
+    except (httpx.UnsupportedProtocol, httpx.InvalidURL) as exc:
+        raise HTTPException(
+            status_code=502,
+            detail="Periksa SUMOPOD_API_BASE_URL di server. Gunakan URL lengkap dengan http:// atau https://.",
+        ) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(
+            status_code=502, detail="Server gagal terhubung ke layanan AI. Coba lagi."
+        ) from exc
     except llm_detector.LlmError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     except onnx_detector.OnnxError as exc:

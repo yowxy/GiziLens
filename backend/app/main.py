@@ -3,9 +3,19 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from app.config import get_settings
-from app.routers import detection, health, payment
+from app.config import BASE_DIR, get_settings
+from app.routers import (
+    dashboard,
+    detection,
+    health,
+    inspections,
+    payment,
+    plans,
+    transactions,
+    users,
+)
 
 
 def create_app() -> FastAPI:
@@ -24,6 +34,15 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(detection.router, prefix=settings.api_prefix)
     app.include_router(payment.router, prefix=settings.api_prefix)
+    app.include_router(dashboard.router, prefix=settings.api_prefix)
+    app.include_router(users.router, prefix=settings.api_prefix)
+    app.include_router(inspections.router, prefix=settings.api_prefix)
+    app.include_router(plans.router, prefix=settings.api_prefix)
+    app.include_router(transactions.router, prefix=settings.api_prefix)
+
+    media_dir = BASE_DIR / "storage"
+    media_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=media_dir), name="media")
 
     @app.get("/")
     def root() -> dict[str, str]:

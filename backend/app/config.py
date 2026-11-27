@@ -36,6 +36,14 @@ class Settings(BaseSettings):
     require_api_key: bool = False
     api_keys: str = ""
 
+    # ---- PostgreSQL (source of truth for app data; Firebase = auth only) ----
+    database_url: str = (
+        "postgresql+psycopg://postgres:postgres@localhost:5432/gizilens_dev"
+    )
+    db_echo: bool = False
+    db_pool_size: int = 5
+    db_connect_timeout: int = 5
+
     midtrans_server_key: str = ""
     midtrans_client_key: str = ""
     midtrans_is_production: bool = False
