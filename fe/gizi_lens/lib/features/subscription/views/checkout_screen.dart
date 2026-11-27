@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
 import '../../../core/routing/route_names.dart';
@@ -25,14 +26,17 @@ class CheckoutScreen extends StatefulWidget {
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+class _CheckoutScreenState extends State<CheckoutScreen>
+    with WidgetsBindingObserver {
   late final CheckoutController _controller;
   Timer? _countdownTimer;
   int _remainingSeconds = 15 * 60; // 15-minute Midtrans Snap payment window
+  bool _awaitingSnapReturn = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _controller = CheckoutController(plan: widget.plan);
     _controller.addListener(_onControllerUpdate);
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -45,10 +49,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _countdownTimer?.cancel();
     _controller.removeListener(_onControllerUpdate);
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _awaitingSnapReturn &&
+        !_controller.isSuccess &&
+        !_controller.isProcessingPayment) {
+      _awaitingSnapReturn = false;
+      _verifyMidtransPayment();
+    }
   }
 
   String get _formattedCountdown {
@@ -62,6 +78,40 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   Future<void> _handlePayNow() async {
+    final order = _controller.currentOrder;
+    if (order == null) return;
+
+    if (order.isLiveSandboxApi &&
+        order.redirectUrl != null &&
+        order.redirectUrl!.isNotEmpty) {
+      final uri = Uri.tryParse(order.redirectUrl!);
+      if (uri != null) {
+        _awaitingSnapReturn = true;
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (!mounted) return;
+        if (launched) {
+          setState(() {});
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                'Selesaikan pembayaran di Midtrans Snap, lalu kembali ke aplikasi untuk verifikasi otomatis.',
+              ),
+              backgroundColor: AppColors.primaryForest,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+          return;
+        }
+        _awaitingSnapReturn = false;
+      }
+    }
+
     final success = await _controller.processPayment();
     if (!mounted) return;
 
@@ -77,6 +127,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _verifyMidtransPayment() async {
+    final status = await _controller.verifyLiveMidtransPayment();
+    if (!mounted) return;
+
+    if (status == PaymentStatus.settlement && _controller.currentOrder != null) {
+      await PaymentSuccessDialog.show(context, _controller.currentOrder!);
+      return;
+    }
+
+    final msg = _controller.errorMessage ??
+        'Status Midtrans masih menunggu pembayaran (${status.name}).';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: status == PaymentStatus.pending
+            ? const Color(0xFFC98235)
+            : AppColors.statTidakSesuaiRed,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   void _copyToClipboard(String text, String label) {
@@ -958,7 +1031,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
             const SizedBox(width: 14),
             ElevatedButton(
-              onPressed: isProcessing ? null : _handlePayNow,
+              onPressed: isProcessing
+                  ? null
+                  : (order.isLiveSandboxApi && _awaitingSnapReturn
+                        ? _verifyMidtransPayment
+                        : _handlePayNow),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryForest,
                 disabledBackgroundColor: AppColors.primaryForest.withValues(alpha: 0.6),
@@ -984,7 +1061,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const Icon(Icons.flash_on_rounded, size: 18, color: AppColors.accentGold),
                         const SizedBox(width: 6),
                         Text(
-                          'Bayar Sekarang',
+                          order.isLiveSandboxApi
+                              ? (_awaitingSnapReturn
+                                    ? 'Verifikasi Midtrans'
+                                    : 'Bayar via Midtrans')
+                              : 'Bayar Sekarang',
                           style: AppTypography.button.copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,

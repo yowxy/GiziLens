@@ -202,4 +202,18 @@ class BackendApiService {
       body: {'status': status},
     );
   }
+
+  // ---------------------------------------------------------------------
+  // Midtrans Payment Gateway
+  // ---------------------------------------------------------------------
+
+  Future<Map<String, dynamic>?> createMidtransTransaction(
+    Map<String, dynamic> payload,
+  ) {
+    return _send('POST', '/payment/create-transaction', body: payload);
+  }
+
+  Future<Map<String, dynamic>?> checkMidtransStatus(String orderId) {
+    return _send('GET', '/payment/status/${Uri.encodeComponent(orderId)}');
+  }
 }

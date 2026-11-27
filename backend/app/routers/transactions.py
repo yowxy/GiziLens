@@ -167,10 +167,58 @@ def _resolve_plan(db: Session, plan_id: str | None, plan_name: str | None) -> Pl
         plan = db.scalar(select(Plan).where(Plan.name == plan_name))
         if plan is not None:
             return plan
-    plan = db.scalar(select(Plan).order_by(Plan.price))
-    if plan is None:
-        raise HTTPException(status_code=409, detail="Belum ada paket langganan di database.")
+    plan = (
+        db.scalar(select(Plan).where(Plan.code == "plan_premium"))
+        or db.scalar(select(Plan).where(Plan.is_active.is_(True)).order_by(Plan.price))
+        or db.scalar(select(Plan).order_by(Plan.price))
+    )
+    if plan is not None:
+        return plan
+
+    plan = Plan(
+        code="plan_premium",
+        name="GiziLens Premium",
+        description="Akses penuh audit gizi AI, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud",
+        price=99000,
+        billing_cycle="MONTHLY",
+        quota_cycle="MONTHLY",
+        scan_quota=None,
+        max_members=None,
+        history_retention_days=365,
+        features=[
+            "Scan Ompreng AI tanpa batas kuota",
+            "Ekspor laporan PDF resmi & XLSX",
+            "Multi-demografis AKG",
+        ],
+        is_active=True,
+    )
+    db.add(plan)
+    db.flush()
     return plan
+
+
+def sync_payment_status(
+    db: Session,
+    payment: Payment,
+    status_sql: str,
+    *,
+    gateway_transaction_id: str | None = None,
+    payment_method: str | None = None,
+) -> Payment:
+    """Update a Payment row and activate its Subscription when paid."""
+    now = datetime.now(timezone.utc)
+    payment.status = status_sql
+    payment.updated_at = now
+    if gateway_transaction_id:
+        payment.gateway_transaction_id = gateway_transaction_id
+    if payment_method and not payment.payment_method:
+        payment.payment_method = payment_method
+
+    if status_sql == "PAID":
+        payment.paid_at = payment.paid_at or now
+        if payment.subscription_id is None:
+            _activate(db, payment, payment.plan)
+    return payment
 
 
 def _entitlement(plan: Plan) -> dict:
@@ -274,13 +322,7 @@ def update_transaction_status(
         raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan.")
 
     status_sql = CLIENT_TO_SQL.get(payload.status, "PENDING")
-    payment.status = status_sql
-    payment.updated_at = datetime.now(timezone.utc)
-
-    if status_sql == "PAID":
-        payment.paid_at = payment.paid_at or datetime.now(timezone.utc)
-        if payment.subscription_id is None:
-            _activate(db, payment, payment.plan)
+    sync_payment_status(db, payment, status_sql)
 
     db.commit()
     db.refresh(payment)

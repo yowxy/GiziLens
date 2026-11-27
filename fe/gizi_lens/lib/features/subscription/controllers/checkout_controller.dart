@@ -15,6 +15,7 @@ class CheckoutController extends ChangeNotifier {
 
   late PaymentMethodOption _selectedMethod;
   PaymentOrderModel? _currentOrder;
+  Future<void>? _persistFuture;
   bool _isLoading = false;
   bool _isProcessingPayment = false;
   bool _isSuccess = false;
@@ -28,6 +29,7 @@ class CheckoutController extends ChangeNotifier {
   bool get isProcessingPayment => _isProcessingPayment;
   bool get isSuccess => _isSuccess;
   String? get errorMessage => _errorMessage;
+  bool get isLiveMidtransSnap => _currentOrder?.isLiveSandboxApi == true;
 
   CheckoutController({required this.plan}) {
     _selectedMethod = availableMethods.first; // Default QRIS
@@ -38,6 +40,14 @@ class CheckoutController extends ChangeNotifier {
     if (!_isDisposed) {
       notifyListeners();
     }
+  }
+
+  String _resolveCustomerEmail() {
+    try {
+      final email = FirebaseAuthService.instance.currentUser?.email?.trim();
+      if (email != null && email.isNotEmpty) return email;
+    } catch (_) {}
+    return 'petugas.sppg@gizilens.id';
   }
 
   void selectMethod(PaymentMethodOption method) {
@@ -55,16 +65,22 @@ class CheckoutController extends ChangeNotifier {
 
     try {
       final account = UserSessionService.instance.account;
+      final customerEmail = _resolveCustomerEmail();
       final order = await MidtransSandboxService.instance.createOrder(
         plan: plan,
         method: _selectedMethod,
         officerName: account.fullName,
-        officerEmail: 'petugas.sppg@gizilens.id',
+        officerEmail: customerEmail,
         sppgUnit: account.unitOperational,
       );
       if (_isDisposed || requestSeq != _orderRequestSeq) return;
       _currentOrder = order;
-      unawaited(_persistOrder(order, account.fullName, account.unitOperational));
+      _persistFuture = _persistOrder(
+        order,
+        account.fullName,
+        account.unitOperational,
+        customerEmail,
+      );
     } catch (e) {
       if (_isDisposed || requestSeq != _orderRequestSeq) return;
       _errorMessage = 'Gagal membuat tagihan pembayaran: $e';
@@ -76,39 +92,78 @@ class CheckoutController extends ChangeNotifier {
     }
   }
 
-  /// Processes Sandbox payment settlement.
-  Future<bool> processPayment() async {
-    if (_currentOrder == null) return false;
+  /// Verifies a live Midtrans Snap transaction status against Midtrans / Backend.
+  Future<PaymentStatus> verifyLiveMidtransPayment() async {
+    final order = _currentOrder;
+    if (order == null) return PaymentStatus.pending;
 
     _isProcessingPayment = true;
     _errorMessage = null;
     _safeNotify();
 
     try {
+      await _persistFuture;
+      final status =
+          await MidtransSandboxService.instance.checkTransactionStatus(order);
+      if (_isDisposed) return status;
+
+      if (status == PaymentStatus.settlement) {
+        await _completeSettlement(order);
+      } else if (status == PaymentStatus.expired ||
+          status == PaymentStatus.failed) {
+        _currentOrder = order.copyWith(status: status);
+        _errorMessage = status == PaymentStatus.expired
+            ? 'Transaksi Midtrans kedaluwarsa. Silakan buat ulang pesanan.'
+            : 'Pembayaran Midtrans ditolak atau dibatalkan.';
+      }
+      return status;
+    } catch (e) {
+      if (!_isDisposed) {
+        _errorMessage = 'Gagal memverifikasi status Midtrans: $e';
+      }
+      return PaymentStatus.pending;
+    } finally {
+      if (!_isDisposed) {
+        _isProcessingPayment = false;
+        _safeNotify();
+      }
+    }
+  }
+
+  /// Processes payment settlement (verifies live Midtrans if active, or simulates in Sandbox).
+  Future<bool> processPayment() async {
+    final order = _currentOrder;
+    if (order == null) return false;
+
+    _isProcessingPayment = true;
+    _errorMessage = null;
+    _safeNotify();
+
+    try {
+      await _persistFuture;
+
+      if (order.isLiveSandboxApi) {
+        final liveStatus =
+            await MidtransSandboxService.instance.checkTransactionStatus(order);
+        if (_isDisposed) return false;
+        if (liveStatus != PaymentStatus.settlement) {
+          _errorMessage =
+              'Pembayaran belum terselesaikan di Midtrans. Selesaikan di halaman Midtrans Snap lalu tekan Verifikasi.';
+          return false;
+        }
+        await _completeSettlement(order);
+        return true;
+      }
+
       final settled = await MidtransSandboxService.instance
-          .simulatePaymentSettlement(_currentOrder!);
-
+          .simulatePaymentSettlement(order);
       if (_isDisposed) return false;
-      _currentOrder = settled;
-      _isSuccess = true;
 
-      unawaited(
-        BackendApiService.instance.updateTransactionStatus(
-          settled.orderId,
-          'settlement',
-        ),
-      );
-
-      // Upgrade active user session subscription
-      await UserSessionService.instance.upgradeSubscription(
-        planName: plan.name,
-      );
-
-      _safeNotify();
+      await _completeSettlement(settled);
       return true;
     } catch (e) {
       if (!_isDisposed) {
-        _errorMessage = 'Simulasi pembayaran Midtrans gagal: $e';
+        _errorMessage = 'Pembayaran Midtrans gagal: $e';
       }
       return false;
     } finally {
@@ -119,33 +174,53 @@ class CheckoutController extends ChangeNotifier {
     }
   }
 
+  Future<void> _completeSettlement(PaymentOrderModel order) async {
+    _currentOrder = order.copyWith(status: PaymentStatus.settlement);
+    _isSuccess = true;
+
+    try {
+      await BackendApiService.instance.updateTransactionStatus(
+        order.orderId,
+        'settlement',
+      );
+    } catch (_) {}
+
+    await UserSessionService.instance.upgradeSubscription(
+      planName: plan.name,
+    );
+    _safeNotify();
+  }
+
   Future<void> _persistOrder(
     PaymentOrderModel order,
     String officerName,
     String sppgUnit,
+    String customerEmail,
   ) async {
-    final uid = FirebaseAuthService.instance.currentUser?.uid;
-    await BackendApiService.instance.createTransaction({
-      'orderId': order.orderId,
-      'planId': plan.id,
-      'planName': plan.name,
-      'planPrice': order.planPrice,
-      'adminFee': order.adminFee,
-      'taxAmount': order.taxAmount,
-      'totalAmount': order.totalAmount,
-      'selectedMethod': {
-        'id': _selectedMethod.id,
-        'name': _selectedMethod.name,
-        'type': _selectedMethod.type.name,
-        'bankCode': _selectedMethod.bankCode,
-        'fee': _selectedMethod.fee,
-      },
-      'status': 'pending',
-      'officerName': officerName,
-      'sppgUnit': sppgUnit,
-      'customerEmail': 'petugas.sppg@gizilens.id',
-      'userUid': ?uid,
-    });
+    try {
+      final uid = FirebaseAuthService.instance.currentUser?.uid;
+      await BackendApiService.instance.createTransaction({
+        'orderId': order.orderId,
+        'planId': plan.id,
+        'planName': plan.name,
+        'planPrice': order.planPrice,
+        'adminFee': order.adminFee,
+        'taxAmount': order.taxAmount,
+        'totalAmount': order.totalAmount,
+        'selectedMethod': {
+          'id': _selectedMethod.id,
+          'name': _selectedMethod.name,
+          'type': _selectedMethod.type.name,
+          'bankCode': _selectedMethod.bankCode,
+          'fee': _selectedMethod.fee,
+        },
+        'status': 'pending',
+        'officerName': officerName,
+        'sppgUnit': sppgUnit,
+        'customerEmail': customerEmail,
+        'userUid': ?uid,
+      });
+    } catch (_) {}
   }
 
   @override

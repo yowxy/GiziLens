@@ -62,3 +62,4 @@ class MidtransTransactionResponse(BaseModel):
     snap_token: str | None = None
     redirect_url: str
     status: str = "pending"
+    client_key: str | None = None

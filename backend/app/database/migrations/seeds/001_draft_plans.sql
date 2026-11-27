@@ -1,15 +1,30 @@
--- Optional: existing Flutter prices, not approved for production.
--- Quotas are intentionally NULL (unset, NOT unlimited).
--- All rows stay inactive until quota, member limit and retention are approved.
+-- Single active Premium subscription plan for GiziLens SPPG.
 BEGIN;
+UPDATE plans
+SET is_active = false,
+    updated_at = NOW()
+WHERE code <> 'plan_premium';
+
 INSERT INTO plans (code, name, description, price, billing_cycle, quota_cycle,
                    scan_quota, max_members, history_retention_days, features, is_active)
 VALUES
-('plan_starter','Paket Mandiri','Draft dari pricing Flutter',99000,'MONTHLY','MONTHLY',
- NULL,1,30,'["Ekspor PDF"]'::jsonb,false),
-('plan_pro','Paket SPPG Pro','Draft dari pricing Flutter',249000,'QUARTERLY','MONTHLY',
- NULL,NULL,365,'["Ekspor PDF dan XLSX","Notifikasi"]'::jsonb,false),
-('plan_enterprise','Paket Sentral MBG','Draft dari pricing Flutter',699000,'ANNUAL','MONTHLY',
- NULL,5,365,'["Multi akun","Ekspor PDF dan XLSX"]'::jsonb,false)
-ON CONFLICT (code) DO NOTHING;
+('plan_premium',
+ 'GiziLens Premium',
+ 'Akses penuh audit gizi AI, ekspor laporan PDF resmi, dan sinkronisasi SPPG Cloud',
+ 99000,
+ 'MONTHLY',
+ 'MONTHLY',
+ NULL,
+ NULL,
+ 365,
+ '["Scan Ompreng AI tanpa batas kuota", "Ekspor PDF resmi (Watermark + SHA-256) & XLSX", "Multi-demografis AKG (SD, SMP, SMA)", "Notifikasi defisit porsi >15%", "Prioritas dukungan teknis BGN"]'::jsonb,
+ true)
+ON CONFLICT (code) DO UPDATE SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  price = EXCLUDED.price,
+  billing_cycle = EXCLUDED.billing_cycle,
+  features = EXCLUDED.features,
+  is_active = true,
+  updated_at = NOW();
 COMMIT;

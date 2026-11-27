@@ -87,7 +87,7 @@ def serialize_member(member: OrganizationMember, plans: dict[uuid.UUID, str]) ->
         region=region,
         officer_id=None,
         is_verified=member.status == "ACTIVE",
-        subscription_plan=plan_code or "plan_starter",
+        subscription_plan=plan_code or "GiziLens Free",
         is_premium=plan_code is not None,
         notifications_enabled=True,
     )

@@ -24,34 +24,24 @@ void main() {
   });
 
   group('PricingPlanModel & PricingController Tests', () {
-    test('Default pricing plans have valid values', () {
+    test('Only a single GiziLens Premium plan is configured', () {
       final plans = PricingPlanModel.defaultPlans;
-      expect(plans.length, equals(3));
+      expect(plans.length, equals(1));
 
-      final starter = plans[0];
-      final pro = plans[1];
-      final enterprise = plans[2];
-
-      expect(starter.billedPrice, equals(99000));
-      expect(pro.billedPrice, equals(249000));
-      expect(enterprise.billedPrice, equals(699000));
-
-      expect(pro.isPopular, isTrue);
-      expect(pro.savingsPercentage, greaterThan(0));
+      final premium = PricingPlanModel.defaultPlan;
+      expect(premium.id, equals('plan_premium'));
+      expect(premium.name, equals('GiziLens Premium'));
+      expect(premium.billedPrice, equals(99000));
+      expect(premium.isPopular, isTrue);
+      expect(premium.savingsPercentage, greaterThan(0));
     });
 
-    test('PricingController defaults to Paket SPPG Pro', () {
+    test('PricingController defaults to single GiziLens Premium plan', () {
       final controller = PricingController();
-      expect(controller.selectedPlan.id, equals('plan_pro'));
-      expect(controller.selectedTabIndex, equals(1));
-
-      controller.selectIndex(0);
-      expect(controller.selectedPlan.id, equals('plan_starter'));
+      expect(controller.plans.length, equals(1));
+      expect(controller.selectedPlan.id, equals('plan_premium'));
+      expect(controller.selectedPlan.name, equals('GiziLens Premium'));
       expect(controller.selectedTabIndex, equals(0));
-
-      controller.selectPlan(controller.plans[2]);
-      expect(controller.selectedPlan.id, equals('plan_enterprise'));
-      expect(controller.selectedTabIndex, equals(2));
 
       controller.dispose();
     });
@@ -64,8 +54,28 @@ void main() {
       expect(MidtransSandboxService.formatRupiah(0), equals('Rp 0'));
     });
 
+    test('enabledPaymentsFor maps Midtrans Snap channels accurately', () {
+      final methods = PaymentMethodOption.availableMethods;
+      expect(
+        MidtransSandboxService.enabledPaymentsFor(methods[0]),
+        equals(['gopay', 'shopeepay', 'other_qris']),
+      );
+      expect(
+        MidtransSandboxService.enabledPaymentsFor(methods[1]),
+        equals(['bca_va']),
+      );
+      expect(
+        MidtransSandboxService.enabledPaymentsFor(methods[2]),
+        equals(['echannel']),
+      );
+      expect(
+        MidtransSandboxService.enabledPaymentsFor(methods[5]),
+        equals(['credit_card']),
+      );
+    });
+
     test('createOrder calculates PPN 11% and admin fees correctly', () async {
-      final plan = PricingPlanModel.defaultPlans[1]; // 249.000
+      final plan = PricingPlanModel.defaultPlan; // 99.000
       final methodVa = PaymentMethodOption.availableMethods[1]; // BCA VA, fee 2.500
 
       final order = await MidtransSandboxService.instance.createOrder(
@@ -76,10 +86,11 @@ void main() {
         sppgUnit: 'SPPG Cibinong Sentral 02',
       );
 
-      final expectedTax = (249000 * 0.11).round();
-      final expectedTotal = 249000 + expectedTax + 2500;
+      final expectedTax = (99000 * 0.11).round();
+      final expectedTotal = 99000 + expectedTax + 2500;
 
-      expect(order.planPrice, equals(249000));
+      expect(order.planId, equals('plan_premium'));
+      expect(order.planPrice, equals(99000));
       expect(order.taxAmount, equals(expectedTax));
       expect(order.adminFee, equals(2500));
       expect(order.totalAmount, equals(expectedTotal));
@@ -89,7 +100,7 @@ void main() {
     });
 
     test('simulatePaymentSettlement upgrades order status to settlement', () async {
-      final plan = PricingPlanModel.defaultPlans[0];
+      final plan = PricingPlanModel.defaultPlan;
       final method = PaymentMethodOption.availableMethods[0]; // QRIS, fee 0
 
       final initialOrder = await MidtransSandboxService.instance.createOrder(
@@ -107,7 +118,7 @@ void main() {
     });
 
     test('CheckoutController full flow simulates settlement and upgrades session', () async {
-      final plan = PricingPlanModel.defaultPlans[1];
+      final plan = PricingPlanModel.defaultPlan;
       final controller = CheckoutController(plan: plan);
 
       // Wait for initial order generation (createOrder has a 300ms delay)
@@ -130,14 +141,17 @@ void main() {
 
       // Verify UserSessionService subscription is updated
       expect(UserSessionService.instance.account.isPremium, isTrue);
-      expect(UserSessionService.instance.account.subscriptionPlan, equals(plan.name));
+      expect(
+        UserSessionService.instance.account.subscriptionPlan,
+        equals('GiziLens Premium'),
+      );
 
       controller.dispose();
     });
   });
 
   group('Widget Tests: PricingScreen & CheckoutScreen', () {
-    testWidgets('PricingScreen renders bundle plans and comparison table', (tester) async {
+    testWidgets('PricingScreen renders single Premium plan and Free vs Premium comparison', (tester) async {
       await tester.binding.setSurfaceSize(const Size(430, 932));
 
       await tester.pumpWidget(
@@ -148,17 +162,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Paket Langganan SPPG'), findsOneWidget);
-      expect(find.text('Paket Mandiri'), findsWidgets);
-      expect(find.text('Paket SPPG Pro'), findsWidgets);
-      expect(find.text('Paket Sentral MBG'), findsWidgets);
-      expect(find.byType(BundleCard), findsNWidgets(3));
+      expect(find.text('GiziLens Premium'), findsWidgets);
+      expect(find.text('Perbandingan Free vs Premium'), findsOneWidget);
+      expect(find.byType(BundleCard), findsOneWidget);
       expect(find.text('Lanjutkan'), findsOneWidget);
     });
 
     testWidgets('CheckoutScreen renders Sandbox banner and payment methods', (tester) async {
       await tester.binding.setSurfaceSize(const Size(430, 932));
 
-      final plan = PricingPlanModel.defaultPlans[1];
+      final plan = PricingPlanModel.defaultPlan;
 
       await tester.pumpWidget(
         MaterialApp(
@@ -186,10 +199,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byType(BundleCard), findsNWidgets(3));
-      expect(find.text('Mandiri'), findsOneWidget);
-      expect(find.text('Pro'), findsOneWidget);
-      expect(find.text('Sentral'), findsOneWidget);
+      expect(find.byType(BundleCard), findsOneWidget);
+      expect(find.text('Gratis'), findsOneWidget);
+      expect(find.text('Premium'), findsOneWidget);
     });
 
     testWidgets('SubscriptionPlanCard hides manage/upgrade button when premium is active', (tester) async {
@@ -197,7 +209,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SubscriptionPlanCard(
-              planName: 'Paket SPPG Pro',
+              planName: 'GiziLens Premium',
               isPremium: true,
               scansUsed: 12,
               monthlyQuota: 10,
@@ -207,7 +219,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Paket SPPG Pro'), findsOneWidget);
+      expect(find.text('GiziLens Premium'), findsOneWidget);
       expect(find.text('PREMIUM AKTIF'), findsOneWidget);
       expect(find.text('Unlimited'), findsOneWidget);
       expect(find.text('Unlimited Scan AI'), findsOneWidget);
@@ -223,7 +235,7 @@ void main() {
       });
 
       await UserSessionService.instance.upgradeSubscription(
-        planName: 'Paket SPPG Pro',
+        planName: 'GiziLens Premium',
       );
 
       await tester.pumpWidget(
@@ -236,7 +248,7 @@ void main() {
       expect(find.byType(PremiumBannerCard), findsNothing);
       expect(find.text(AppStrings.premiumCta), findsNothing);
       expect(find.text('Kelola Paket Langganan'), findsNothing);
-      expect(find.text('Paket SPPG Pro'), findsOneWidget);
+      expect(find.text('GiziLens Premium'), findsOneWidget);
       expect(find.text('${AppStrings.heroActionBadge} • PRO'), findsOneWidget);
     });
   });
