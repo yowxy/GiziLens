@@ -20,6 +20,7 @@ class AnnotatedScanImage extends StatelessWidget {
     required this.imageUrl,
     required this.components,
     this.imageBytes,
+    this.aspectRatio,
     this.height,
     this.width,
     this.showLabels = false,
@@ -28,6 +29,10 @@ class AnnotatedScanImage extends StatelessWidget {
 
   final String? imageUrl;
   final Uint8List? imageBytes;
+
+  /// Width / height of the photo. When set, the widget keeps that ratio so the
+  /// bounding boxes stay aligned with the image instead of being cropped.
+  final double? aspectRatio;
   final List<Map<String, dynamic>> components;
   final double? height;
   final double? width;
@@ -37,42 +42,51 @@ class AnnotatedScanImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final boxes = _boxes();
+    final content = Stack(
+      fit: StackFit.expand,
+      children: [
+        if (imageBytes != null && imageBytes!.isNotEmpty)
+          Image.memory(
+            imageBytes!,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _placeholder(),
+          )
+        else if (imageUrl != null && imageUrl!.isNotEmpty)
+          Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return _placeholder(loading: true);
+            },
+            errorBuilder: (context, error, stackTrace) => _placeholder(),
+          )
+        else
+          _placeholder(),
+        if (boxes.isNotEmpty)
+          CustomPaint(
+            painter: _BoundingBoxPainter(
+              boxes: boxes,
+              showLabels: showLabels,
+            ),
+          ),
+      ],
+    );
+
+    final ratio = aspectRatio;
+    if (ratio != null && ratio > 0) {
+      return ClipRRect(
+        borderRadius: borderRadius,
+        child: AspectRatio(aspectRatio: ratio, child: content),
+      );
+    }
 
     return ClipRRect(
       borderRadius: borderRadius,
       child: SizedBox(
         height: height,
         width: width,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (imageBytes != null && imageBytes!.isNotEmpty)
-              Image.memory(
-                imageBytes!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _placeholder(),
-              )
-            else if (imageUrl != null && imageUrl!.isNotEmpty)
-              Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return _placeholder(loading: true);
-                },
-                errorBuilder: (context, error, stackTrace) => _placeholder(),
-              )
-            else
-              _placeholder(),
-            if (boxes.isNotEmpty)
-              CustomPaint(
-                painter: _BoundingBoxPainter(
-                  boxes: boxes,
-                  showLabels: showLabels,
-                ),
-              ),
-          ],
-        ),
+        child: content,
       ),
     );
   }

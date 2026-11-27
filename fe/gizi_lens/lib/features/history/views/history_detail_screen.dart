@@ -91,6 +91,12 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     final imageBytes = item['imageBytes'] is Uint8List
         ? item['imageBytes'] as Uint8List
         : null;
+    final imageWidth = (item['imageWidth'] as num?)?.toDouble();
+    final imageHeight = (item['imageHeight'] as num?)?.toDouble();
+    final aspectRatio =
+        (imageWidth != null && imageHeight != null && imageHeight > 0)
+            ? imageWidth / imageHeight
+            : (item['imageAspectRatio'] as num?)?.toDouble();
     final isSesuai =
         (item['complianceStatus'] as String? ?? '').toUpperCase() == 'SESUAI';
     final components = _mapList(item['components']);
@@ -129,6 +135,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
             imageUrl: item['imageUrl'] as String?,
             imageBytes: imageBytes,
             components: components,
+            aspectRatio: aspectRatio,
             height: 220,
             width: double.infinity,
             showLabels: true,

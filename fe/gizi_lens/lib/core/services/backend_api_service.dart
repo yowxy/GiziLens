@@ -58,6 +58,7 @@ class BackendApiService {
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? query,
+    Duration timeout = const Duration(seconds: 12),
   }) async {
     try {
       final uri = _uri(path, query);
@@ -66,18 +67,16 @@ class BackendApiService {
         case 'POST':
           response = await http
               .post(uri, headers: _headers, body: jsonEncode(body ?? const {}))
-              .timeout(const Duration(seconds: 12));
+              .timeout(timeout);
           break;
         case 'PATCH':
           response = await http
               .patch(uri, headers: _headers, body: jsonEncode(body ?? const {}))
-              .timeout(const Duration(seconds: 12));
+              .timeout(timeout);
           break;
         default:
           response =
-              await http.get(uri, headers: _headers).timeout(
-            const Duration(seconds: 12),
-          );
+              await http.get(uri, headers: _headers).timeout(timeout);
       }
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -121,7 +120,14 @@ class BackendApiService {
   Future<Map<String, dynamic>?> createInspection(
     Map<String, dynamic> payload,
   ) {
-    return _send('POST', '/inspections', body: payload);
+    // The payload carries a base64 photo, so allow a much longer upload window
+    // than the regular JSON calls.
+    return _send(
+      'POST',
+      '/inspections',
+      body: payload,
+      timeout: const Duration(seconds: 90),
+    );
   }
 
   Future<List<Map<String, dynamic>>?> fetchInspections({

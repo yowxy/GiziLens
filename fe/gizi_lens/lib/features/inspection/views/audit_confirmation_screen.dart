@@ -117,6 +117,7 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
     final detailItem = <String, dynamic>{
       ...inspectionPayload,
       if (session.capturedPhoto != null) 'imageBytes': session.capturedPhoto,
+      'imageAspectRatio': session.capturedPhotoAspectRatio,
     };
 
     ModalCardDialog.show(
