@@ -38,6 +38,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     _controller = OtpController(
       email: widget.initialEmail ?? '-',
       phone: widget.initialPhone ?? '-',
+      isForgotPassword: widget.isForgotPassword,
       onAutoVerified: _handleAutoVerified,
     );
     _controller.addListener(_onControllerUpdate);
@@ -71,9 +72,15 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Future<void> _showVerificationSuccessDialog() async {
     await OtpVerificationDialog.show(
       context,
+      subtitle: widget.isForgotPassword
+          ? 'Identitas email berhasil diverifikasi.\nLanjutkan untuk membuat kata sandi baru.'
+          : null,
       onNext: () {
         if (widget.isForgotPassword) {
-          context.go(RouteNames.login);
+          context.go(
+            RouteNames.resetPassword,
+            extra: {'email': widget.initialEmail},
+          );
           return;
         }
         context.go(RouteNames.completeProfile);
@@ -87,13 +94,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Kode OTP acak baru (${_controller.generatedOtp}) telah dibuat & tautan verifikasi dikirimkan ke ${_controller.email}.',
+            widget.isForgotPassword
+                ? 'Tautan reset kata sandi baru telah dikirimkan ke ${_controller.email}. Periksa inbox / spam email Anda.'
+                : 'Kode OTP acak baru (${_controller.generatedOtp}) telah dibuat & tautan verifikasi dikirimkan ke ${_controller.email}.',
             style: AppTypography.bodySmall.copyWith(color: Colors.white),
           ),
           backgroundColor: AppColors.primaryDeep,
           duration: const Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     } else if (!success && _controller.errorMessage != null && mounted) {
@@ -102,7 +113,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           content: Text(_controller.errorMessage!),
           backgroundColor: AppColors.statTidakSesuaiRed,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
@@ -212,7 +225,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             size: 24,
                           ),
                           padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                          constraints: const BoxConstraints(
+                            minWidth: 40,
+                            minHeight: 40,
+                          ),
                           onPressed: () {
                             if (context.canPop()) {
                               context.pop();
@@ -231,7 +247,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.portalBadgeBg,
                         borderRadius: BorderRadius.circular(20),
@@ -417,10 +436,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFF0FDF4),
-                            Color(0xFFE8F7ED),
-                          ],
+                          colors: [Color(0xFFF0FDF4), Color(0xFFE8F7ED)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -460,11 +476,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFDCFCE7),
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0xFF86EFAC), width: 0.8),
+                                  border: Border.all(
+                                    color: const Color(0xFF86EFAC),
+                                    width: 0.8,
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -530,7 +552,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryDeep,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),

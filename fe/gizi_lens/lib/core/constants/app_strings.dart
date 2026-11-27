@@ -225,6 +225,26 @@ class AppStrings {
   static const String registeredEmailHint = 'nama@email.com';
   static const String btnSendOtp = 'Kirim Kode OTP';
 
+  // Reset Password
+  static const String resetPasswordBadge = 'Keamanan Akun MBG';
+  static const String resetPasswordTitle = 'Buat Kata Sandi Baru';
+  static const String resetPasswordSubtitle =
+      'Buka email reset dari GiziLens, salin tautan reset, lalu tempel di kolom kode reset untuk membuat kata sandi baru.';
+  static const String resetCodeLabel = 'Kode / Tautan Reset';
+  static const String resetCodeHint = 'Tempel tautan reset dari email';
+  static const String resetCodeHelper =
+      'Gunakan tautan terbaru dari email. Tautan hanya dapat dipakai satu kali.';
+  static const String newPasswordLabel = 'Kata Sandi Baru';
+  static const String newPasswordHint = 'Buat kata sandi baru';
+  static const String newPasswordHelper =
+      'Minimal 8 karakter, kombinasi huruf & angka';
+  static const String btnPasteClipboard = 'Tempel';
+  static const String btnSavePassword = 'Simpan Kata Sandi';
+  static const String resetPasswordSuccessTitle = 'Kata Sandi Berhasil Diubah';
+  static const String resetPasswordSuccessSubtitle =
+      'Silakan masuk kembali menggunakan kata sandi baru Anda.';
+  static const String btnBackToLogin = 'Masuk Kembali';
+
   // OTP Verification
   static const String otpBadge = 'Keamanan Akun MBG';
   static const String otpTitle = 'Verifikasi Akun';
@@ -376,7 +396,7 @@ class AppStrings {
       'Stabilkan posisi & tekan tombol shutter';
   static const String photoReadyTitle = 'Foto siap dianalisis AI';
   static const String photoReadySubtitle =
-      'Memproses segmentasi kompartemen...';
+      'Pencahayaan, fokus, dan posisi kamera sudah sesuai.';
   static const String positionCameraPrompt =
       'Posisikan kamera tegak lurus (90°) di atas ompreng';
 

@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import '../../../../core/services/backend_api_service.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/services/user_session_service.dart';
 import '../models/payment_order_model.dart';
 import '../models/pricing_plan_model.dart';
@@ -60,6 +64,7 @@ class CheckoutController extends ChangeNotifier {
       );
       if (_isDisposed || requestSeq != _orderRequestSeq) return;
       _currentOrder = order;
+      unawaited(_persistOrder(order, account.fullName, account.unitOperational));
     } catch (e) {
       if (_isDisposed || requestSeq != _orderRequestSeq) return;
       _errorMessage = 'Gagal membuat tagihan pembayaran: $e';
@@ -87,6 +92,13 @@ class CheckoutController extends ChangeNotifier {
       _currentOrder = settled;
       _isSuccess = true;
 
+      unawaited(
+        BackendApiService.instance.updateTransactionStatus(
+          settled.orderId,
+          'settlement',
+        ),
+      );
+
       // Upgrade active user session subscription
       await UserSessionService.instance.upgradeSubscription(
         planName: plan.name,
@@ -105,6 +117,35 @@ class CheckoutController extends ChangeNotifier {
         _safeNotify();
       }
     }
+  }
+
+  Future<void> _persistOrder(
+    PaymentOrderModel order,
+    String officerName,
+    String sppgUnit,
+  ) async {
+    final uid = FirebaseAuthService.instance.currentUser?.uid;
+    await BackendApiService.instance.createTransaction({
+      'orderId': order.orderId,
+      'planId': plan.id,
+      'planName': plan.name,
+      'planPrice': order.planPrice,
+      'adminFee': order.adminFee,
+      'taxAmount': order.taxAmount,
+      'totalAmount': order.totalAmount,
+      'selectedMethod': {
+        'id': _selectedMethod.id,
+        'name': _selectedMethod.name,
+        'type': _selectedMethod.type.name,
+        'bankCode': _selectedMethod.bankCode,
+        'fee': _selectedMethod.fee,
+      },
+      'status': 'pending',
+      'officerName': officerName,
+      'sppgUnit': sppgUnit,
+      'customerEmail': 'petugas.sppg@gizilens.id',
+      'userUid': ?uid,
+    });
   }
 
   @override

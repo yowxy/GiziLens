@@ -12,6 +12,7 @@ class OtpController extends ChangeNotifier {
 
   final String email;
   final String phone;
+  final bool isForgotPassword;
   final VoidCallback? onAutoVerified;
 
   Timer? _timer;
@@ -26,6 +27,7 @@ class OtpController extends ChangeNotifier {
   OtpController({
     this.email = '-',
     this.phone = '-',
+    this.isForgotPassword = false,
     this.onAutoVerified,
   }) {
     _generateNewOtp();
@@ -116,7 +118,8 @@ class OtpController extends ChangeNotifier {
         return;
       }
       try {
-        final isVerified = await FirebaseAuthService.instance.checkEmailVerified();
+        final isVerified = await FirebaseAuthService.instance
+            .checkEmailVerified();
         if (isVerified) {
           timer.cancel();
           _isVerified = true;
@@ -144,7 +147,13 @@ class OtpController extends ChangeNotifier {
 
     try {
       _generateNewOtp(); // Generate a brand new random OTP code
-      await FirebaseAuthService.instance.sendEmailVerification();
+      if (isForgotPassword) {
+        // In the recovery flow the real credential is the reset link, so
+        // resending must trigger a fresh official reset email.
+        await FirebaseAuthService.instance.sendPasswordResetEmail(email);
+      } else {
+        await FirebaseAuthService.instance.sendEmailVerification();
+      }
       _isLoading = false;
       startTimer();
       notifyListeners();
@@ -176,7 +185,8 @@ class OtpController extends ChangeNotifier {
 
     try {
       // 1. Check if user has clicked the official Firebase email verification link
-      final isEmailVerified = await FirebaseAuthService.instance.checkEmailVerified();
+      final isEmailVerified = await FirebaseAuthService.instance
+          .checkEmailVerified();
       if (isEmailVerified) {
         _isVerified = true;
         await _markUserVerified();
@@ -187,7 +197,8 @@ class OtpController extends ChangeNotifier {
 
       // 2. If user enters the 6-digit code or clicks verify
       if (_currentOtp.length == otpLength) {
-        final matches = _currentOtp == _generatedOtp ||
+        final matches =
+            _currentOtp == _generatedOtp ||
             _currentOtp == '123456' ||
             _generatedOtp.isEmpty;
 
@@ -199,14 +210,16 @@ class OtpController extends ChangeNotifier {
           return true;
         } else {
           _isLoading = false;
-          _errorMessage = 'Kode OTP tidak cocok. Masukkan kode 6 digit yang dikirimkan atau gunakan tombol Isi Otomatis.';
+          _errorMessage =
+              'Kode OTP tidak cocok. Masukkan kode 6 digit yang dikirimkan atau gunakan tombol Isi Otomatis.';
           notifyListeners();
           return false;
         }
       }
 
       _isLoading = false;
-      _errorMessage = 'Silakan masukkan 6 digit kode OTP atau klik tautan verifikasi pada email Anda.';
+      _errorMessage =
+          'Silakan masukkan 6 digit kode OTP atau klik tautan verifikasi pada email Anda.';
       notifyListeners();
       return false;
     } catch (e) {

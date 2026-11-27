@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -77,9 +79,19 @@ class _AuditConfirmationScreenState extends State<AuditConfirmationScreen> {
                   'carbohydrate': item.carbohydrate,
                   'fiber': item.fiber,
                 },
+                if (item.boundingBox != null)
+                  'bbox': {
+                    'x': item.boundingBox!.left,
+                    'y': item.boundingBox!.top,
+                    'width': item.boundingBox!.width,
+                    'height': item.boundingBox!.height,
+                  },
               },
             )
             .toList(),
+        'imageBase64': session.capturedPhoto == null
+            ? null
+            : base64Encode(session.capturedPhoto!),
         'nutrition': {
           for (final metric in metrics)
             metric.name: {

@@ -11,6 +11,7 @@ class HistoryController extends ChangeNotifier {
 
   List<Map<String, dynamic>> _inspections = [];
   bool _isLoading = false;
+  bool _disposed = false;
 
   HistoryFilterModel get filter => _filter;
   bool get hasNotification => NotificationService.instance.hasUnread;
@@ -72,7 +73,7 @@ class HistoryController extends ChangeNotifier {
 
   Future<void> loadInspections() async {
     _isLoading = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       _inspections = await FirestoreService.instance.getInspections();
@@ -81,8 +82,21 @@ class HistoryController extends ChangeNotifier {
       _inspections = [];
     } finally {
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
     }
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    searchController.removeListener(_onSearchChanged);
+    NotificationService.instance.removeListener(_onNotificationsChanged);
+    searchController.dispose();
+    super.dispose();
   }
 
   void _onNotificationsChanged() {
@@ -115,14 +129,5 @@ class HistoryController extends ChangeNotifier {
     searchController.clear();
     _filter = _filter.copyWith(searchQuery: '');
     notifyListeners();
-  }
-
-
-  @override
-  void dispose() {
-    searchController.removeListener(_onSearchChanged);
-    NotificationService.instance.removeListener(_onNotificationsChanged);
-    searchController.dispose();
-    super.dispose();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_typography.dart';
+import 'widgets/annotated_scan_image.dart';
 
 class HistoryDetailScreen extends StatelessWidget {
   const HistoryDetailScreen({super.key, required this.item});
@@ -15,9 +16,10 @@ class HistoryDetailScreen extends StatelessWidget {
     final targetGroup = item['targetGroup'] as String? ?? '-';
     final weight = item['totalNetWeight'] as String? ?? '-';
     final notes = item['notes'] as String? ?? '';
-    final isSesuai = (item['complianceStatus'] as String? ?? '').toUpperCase() == 'SESUAI';
+    final isSesuai =
+        (item['complianceStatus'] as String? ?? '').toUpperCase() == 'SESUAI';
     final components = _mapList(item['components']);
-    final nutrition = item['nutrition'] is Map ? Map<String, dynamic>.from(item['nutrition'] as Map) : <String, dynamic>{};
+    final nutrition = _mapOrEmpty(item['nutrition']);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundSplash,
@@ -25,77 +27,327 @@ class HistoryDetailScreen extends StatelessWidget {
         backgroundColor: AppColors.headerDarkGreen,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          batchCode,
-          style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Detail Pemeriksaan',
+              style: AppTypography.titleMedium.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              batchCode,
+              style: AppTypography.bodySmall.copyWith(
+                color: const Color(0xFFA5BFB6),
+                fontSize: 11.5,
+              ),
+            ),
+          ],
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         children: [
+          AnnotatedScanImage(
+            imageUrl: item['imageUrl'] as String?,
+            components: components,
+            height: 220,
+            width: double.infinity,
+            showLabels: true,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _statusPill(isSesuai),
+              const Spacer(),
+              const Icon(
+                Icons.photo_camera_outlined,
+                size: 14,
+                color: AppColors.textMuted,
+              ),
+              const SizedBox(width: 4),
+              const Text(
+                'Hasil scan AI',
+                style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Menu Gizi Seimbang',
+            style: AppTypography.h1.copyWith(
+              fontSize: 21,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$schoolName • $session',
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+              fontSize: 12.5,
+            ),
+          ),
+          const SizedBox(height: 18),
+          _sectionTitle('Ringkasan 5 Pilar Nutrisi'),
+          const SizedBox(height: 8),
+          _card(
+            child: nutrition.isEmpty
+                ? _emptyText('Data nutrisi tidak tersedia.')
+                : Column(
+                    children: [
+                      for (var i = 0; i < _nutritionOrder.length; i++)
+                        _nutritionBar(
+                          _nutritionOrder[i],
+                          _mapOrEmpty(nutrition[_nutritionOrder[i]]),
+                          isLast: i == _nutritionOrder.length - 1,
+                        ),
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 18),
+          _sectionTitle('Informasi Pemeriksaan'),
+          const SizedBox(height: 8),
           _card(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isSesuai ? const Color(0xFFDCFCE7) : const Color(0xFFFFE4E6),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    isSesuai ? 'SESUAI AKG' : 'TIDAK SESUAI',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: isSesuai ? const Color(0xFF15803D) : const Color(0xFFE11D48),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
                 _infoRow('Sekolah / Tujuan', schoolName),
-                _infoRow('Sesi', session),
                 _infoRow('Kelompok Sasaran', targetGroup),
                 _infoRow('Total Bobot Bersih', weight),
-                _infoRow('Waktu Pemeriksaan', _formatDate((item['scannedAt'] ?? item['createdDateIso']) as String?)),
+                _infoRow(
+                  'Waktu Pemeriksaan',
+                  _formatDate(
+                    (item['scannedAt'] ?? item['createdDateIso']) as String?,
+                  ),
+                ),
                 _infoRow('Petugas', item['userEmail'] as String? ?? '-'),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           _sectionTitle('Komponen Terdeteksi (${components.length})'),
           const SizedBox(height: 8),
           if (components.isEmpty)
             _emptyText('Tidak ada komponen yang tercatat.')
           else
-            ...components.map(_componentCard),
-          const SizedBox(height: 16),
-          _sectionTitle('Nutrisi vs Target AKG'),
-          const SizedBox(height: 8),
-          if (nutrition.isEmpty)
-            _emptyText('Data nutrisi tidak tersedia.')
-          else
-            _card(
-              child: Column(
-                children: nutrition.entries
-                    .map((entry) => _nutritionRow(entry.key, _mapOrEmpty(entry.value)))
-                    .toList(),
-              ),
+            ...List.generate(
+              components.length,
+              (index) => _componentCard(components[index], index),
             ),
           if (notes.trim().isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 6),
             _sectionTitle('Catatan'),
             const SizedBox(height: 8),
             _card(
               child: Text(
                 notes,
-                style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary, height: 1.5),
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
               ),
             ),
           ],
         ],
       ),
     );
+  }
+
+  static const List<String> _nutritionOrder = [
+    'Kalori',
+    'Protein',
+    'Lemak',
+    'Karbohidrat',
+    'Serat',
+  ];
+
+  Widget _nutritionBar(
+    String label,
+    Map<String, dynamic> metric, {
+    required bool isLast,
+  }) {
+    final current = _toDouble(metric['currentValue']);
+    final target = _toDouble(metric['targetValue']);
+    final unit = metric['unit']?.toString() ?? '';
+    final rawPercentage = _toDouble(metric['percentageOfTarget']);
+    final percentage = rawPercentage > 0
+        ? rawPercentage
+        : (target > 0 ? (current / target * 100) : 0.0);
+    final ratio = (percentage / 100).clamp(0.0, 1.0).toDouble();
+    final color = _barColor(percentage.toDouble());
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+              Text(
+                '${_formatNumber(current)} / ${_formatNumber(target)} $unit',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                  fontSize: 11.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '${percentage.round()}%',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: Stack(
+              children: [
+                Container(height: 8, color: AppColors.progressTrack),
+                FractionallySizedBox(
+                  widthFactor: ratio,
+                  child: Container(height: 8, color: color),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _componentCard(Map<String, dynamic> component, int index) {
+    final nutrition = _mapOrEmpty(component['nutrition']);
+    final color = bboxColorForIndex(index);
+    final hasBbox = component['bbox'] is Map;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: _card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    component['name'] as String? ?? '-',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                if (hasBbox)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F6F1),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Text(
+                      'BBox',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 8),
+                Text(
+                  '${_formatNumber(component['gram'])} g',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Kalori ${_formatNumber(nutrition['calories'])} kkal • '
+              'Protein ${_formatNumber(nutrition['protein'])} g • '
+              'Lemak ${_formatNumber(nutrition['fat'])} g • '
+              'Karbo ${_formatNumber(nutrition['carbohydrate'])} g • '
+              'Serat ${_formatNumber(nutrition['fiber'])} g',
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.5,
+                fontSize: 11.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statusPill(bool isSesuai) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isSesuai ? const Color(0xFFDCFCE7) : const Color(0xFFFFE4E6),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isSesuai ? Icons.check_circle_outline : Icons.cancel_outlined,
+            size: 13,
+            color: isSesuai ? const Color(0xFF15803D) : const Color(0xFFE11D48),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isSesuai ? 'Sesuai AKG' : 'Tidak Sesuai',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: isSesuai ? const Color(0xFF15803D) : const Color(0xFFE11D48),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _barColor(double percentage) {
+    if (percentage < 85) return const Color(0xFFE11D48);
+    if (percentage > 115) return AppColors.accentAmber;
+    return AppColors.statSesuaiGreen;
   }
 
   Widget _card({required Widget child}) {
@@ -114,7 +366,11 @@ class HistoryDetailScreen extends StatelessWidget {
   Widget _sectionTitle(String text) {
     return Text(
       text,
-      style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+      style: AppTypography.titleMedium.copyWith(
+        fontWeight: FontWeight.w700,
+        color: AppColors.textPrimary,
+        fontSize: 15,
+      ),
     );
   }
 
@@ -132,10 +388,13 @@ class HistoryDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 140,
+            width: 130,
             child: Text(
               label,
-              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
           ),
           Expanded(
@@ -144,79 +403,8 @@ class HistoryDetailScreen extends StatelessWidget {
               style: AppTypography.bodyMedium.copyWith(
                 color: AppColors.textPrimary,
                 fontWeight: FontWeight.w600,
+                fontSize: 12.5,
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _componentCard(Map<String, dynamic> component) {
-    final nutrition = _mapOrEmpty(component['nutrition']);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: _card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    component['name'] as String? ?? '-',
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${_formatNumber(component['gram'])} g',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Kalori ${_formatNumber(nutrition['calories'])} kkal • '
-              'Protein ${_formatNumber(nutrition['protein'])} g • '
-              'Lemak ${_formatNumber(nutrition['fat'])} g • '
-              'Karbo ${_formatNumber(nutrition['carbohydrate'])} g • '
-              'Serat ${_formatNumber(nutrition['fiber'])} g',
-              style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary, height: 1.5),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _nutritionRow(String key, Map<String, dynamic> metric) {
-    final percentage = metric['percentageOfTarget'];
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              key,
-              style: AppTypography.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
-          Text(
-            '${_formatNumber(metric['currentValue'])} / ${_formatNumber(metric['targetValue'])} ${metric['unit'] ?? ''}',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            percentage == null ? '-' : '$percentage%',
-            style: AppTypography.bodySmall.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.primaryDeep,
             ),
           ),
         ],
@@ -226,11 +414,19 @@ class HistoryDetailScreen extends StatelessWidget {
 
   static List<Map<String, dynamic>> _mapList(dynamic value) {
     if (value is! List) return const [];
-    return value.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+    return value
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
   }
 
   static Map<String, dynamic> _mapOrEmpty(dynamic value) {
     return value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{};
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   static String _formatNumber(dynamic value) {
@@ -244,7 +440,12 @@ class HistoryDetailScreen extends StatelessWidget {
     final date = DateTime.tryParse(iso ?? '');
     if (date == null) return '-';
     final local = date.toLocal();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+      'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    ];
     String two(int n) => n.toString().padLeft(2, '0');
-    return '${two(local.day)}/${two(local.month)}/${local.year} ${two(local.hour)}:${two(local.minute)}';
+    return '${two(local.day)} ${months[local.month - 1]} ${local.year} '
+        '${two(local.hour)}:${two(local.minute)} WIB';
   }
 }

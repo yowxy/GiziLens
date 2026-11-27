@@ -56,13 +56,11 @@ class DetectionApiResult {
 /// All LLM / ONNX inference happens server-side; the app only uploads the photo.
 class DetectionApiService {
   String get _baseUrl {
-    String? url;
-    try {
-      if (dotenv.isInitialized) {
-        url = dotenv.env['BACKEND_BASE_URL'];
-      }
-    } catch (_) {}
-    return (url ?? 'http://10.0.2.2:8000').replaceAll(RegExp(r'/+$'), '');
+    final url = dotenv.isInitialized
+        ? dotenv.env['BACKEND_BASE_URL']?.trim()
+        : null;
+    if (url == null || url.isEmpty) return 'https://api.gizilens.web.id';
+    return url.replaceAll(RegExp(r'/+$'), '');
   }
 
   String get _apiKey {
@@ -106,11 +104,19 @@ class DetectionApiService {
       ),
     );
 
-    final streamed = await request.send().timeout(const Duration(seconds: 60));
-    final response = await http.Response.fromStream(streamed);
+    final client = http.Client();
+    final http.Response response;
+    try {
+      response = await client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(const Duration(seconds: 90));
+    } finally {
+      client.close();
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw StateError(_errorMessage(response));
+      throw DetectionApiException(_errorMessage(response));
     }
 
     final payload = jsonDecode(response.body) as Map<String, dynamic>;
@@ -132,13 +138,13 @@ class DetectionApiService {
   String _errorMessage(http.Response response) {
     try {
       final payload = jsonDecode(response.body);
-      if (payload is Map<String, dynamic> && payload['detail'] != null) {
-        return 'API deteksi gagal (${response.statusCode}): ${payload['detail']}';
+      if (payload is Map<String, dynamic> && payload['detail'] is String) {
+        return payload['detail'] as String;
       }
-    } catch (_) {
-      // Fall through to the raw body below.
+    } on FormatException {
+      // A gateway can return an HTML error page.
     }
-    return 'API deteksi gagal (${response.statusCode}): ${response.body}';
+    return 'Analisis gagal (HTTP ${response.statusCode}). Coba lagi.';
   }
 
   ApiFoodItem _parseItem(Map<String, dynamic> item) {
@@ -176,4 +182,10 @@ class DetectionApiService {
     if (value is num) return value.toDouble();
     return double.tryParse(value?.toString() ?? '') ?? 0;
   }
+}
+
+class DetectionApiException implements Exception {
+  final String message;
+
+  const DetectionApiException(this.message);
 }

@@ -36,18 +36,30 @@ class FirebaseAuthService {
     if (prefix.toLowerCase() == 'iklilnajmi') {
       return 'Iklil Najmi';
     }
-    final words = prefix.split(RegExp(r'[._-]+')).where((w) => w.isNotEmpty).toList();
+    final words = prefix
+        .split(RegExp(r'[._-]+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
     if (words.length > 1) {
       return words
-          .map((w) => w.length > 1 ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : w.toUpperCase())
+          .map(
+            (w) => w.length > 1
+                ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}'
+                : w.toUpperCase(),
+          )
           .join(' ');
     } else if (words.length == 1) {
       final w = words.first;
-      final spaced = w.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (m) => '${m[1]} ${m[2]}');
+      final spaced = w.replaceAllMapped(
+        RegExp(r'([a-z])([A-Z])'),
+        (m) => '${m[1]} ${m[2]}',
+      );
       if (spaced.contains(' ')) {
         return spaced;
       }
-      return w.length > 1 ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : w.toUpperCase();
+      return w.length > 1
+          ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}'
+          : w.toUpperCase();
     }
     return prefix;
   }
@@ -87,7 +99,9 @@ class FirebaseAuthService {
         // Send official Firebase email verification directly to user's real email
         try {
           await user.sendEmailVerification();
-          debugPrint('Official Firebase verification email sent to ${user.email}');
+          debugPrint(
+            'Official Firebase verification email sent to ${user.email}',
+          );
         } catch (e) {
           debugPrint('Error sending email verification: $e');
         }
@@ -138,8 +152,11 @@ class FirebaseAuthService {
       // Verify or ensure user document exists in Firestore
       final user = credential.user;
       if (user != null) {
-        final profile = await FirestoreService.instance.getUserProfile(user.uid);
-        final derivedName = (user.displayName != null && user.displayName!.trim().isNotEmpty)
+        final profile = await FirestoreService.instance.getUserProfile(
+          user.uid,
+        );
+        final derivedName =
+            (user.displayName != null && user.displayName!.trim().isNotEmpty)
             ? user.displayName!.trim()
             : formatNameFromEmail(user.email ?? email.trim());
 
@@ -163,7 +180,8 @@ class FirebaseAuthService {
               'createdAt': DateTime.now().toIso8601String(),
             },
           );
-        } else if (profile['fullName'] == 'Petugas SPPG' || (profile['fullName'] as String? ?? '').trim().isEmpty) {
+        } else if (profile['fullName'] == 'Petugas SPPG' ||
+            (profile['fullName'] as String? ?? '').trim().isEmpty) {
           await FirestoreService.instance.updateCurrentUserProfile({
             'fullName': derivedName,
           });
@@ -194,16 +212,65 @@ class FirebaseAuthService {
     }
   }
 
+  /// Extract the `oobCode` from a Firebase password-reset link, or return the
+  /// raw input when the user pastes only the code.
+  static String extractOobCode(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return '';
+    final match = RegExp(r'[?&#]oobCode=([^&\s#]+)').firstMatch(trimmed);
+    if (match != null) {
+      try {
+        return Uri.decodeComponent(match.group(1)!);
+      } catch (_) {
+        return match.group(1)!;
+      }
+    }
+    return trimmed;
+  }
+
+  /// Set a new password using the reset code from the official Firebase email.
+  /// Throws a user-friendly message when the code is invalid or expired.
+  Future<void> confirmPasswordReset({
+    required String resetCode,
+    required String newPassword,
+  }) async {
+    final auth = _auth;
+    if (auth == null) {
+      // Offline/demo mode: nothing to persist, treat as success.
+      return;
+    }
+
+    final oobCode = extractOobCode(resetCode);
+    if (oobCode.isEmpty) {
+      throw 'Kode reset tidak valid. Salin tautan reset lengkap dari email Anda.';
+    }
+
+    try {
+      // Validate the code first so expired/invalid links produce a clear error
+      // instead of a generic failure.
+      await auth.verifyPasswordResetCode(oobCode);
+      await auth.confirmPasswordReset(code: oobCode, newPassword: newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw getFriendlyErrorMessage(e);
+    } catch (e) {
+      throw 'Gagal mengubah kata sandi: ${e.toString()}';
+    }
+  }
+
   /// Send or resend official Firebase email verification link to current user.
   Future<bool> sendEmailVerification() async {
     final user = _auth?.currentUser;
     if (user != null) {
       try {
         await user.sendEmailVerification();
-        debugPrint('Firebase verification email successfully sent to ${user.email}');
+        debugPrint(
+          'Firebase verification email successfully sent to ${user.email}',
+        );
         return true;
       } on FirebaseAuthException catch (e) {
-        debugPrint('FirebaseAuth sendEmailVerification error: ${e.code} - ${e.message}');
+        debugPrint(
+          'FirebaseAuth sendEmailVerification error: ${e.code} - ${e.message}',
+        );
         throw getFriendlyErrorMessage(e);
       } catch (e) {
         debugPrint('Error sending verification email: $e');
@@ -257,10 +324,20 @@ class FirebaseAuthService {
           return 'Terlalu banyak percobaan gagal. Silakan tunggu beberapa saat.';
         case 'network-request-failed':
           return 'Gagal terhubung ke server Firebase. Periksa koneksi internet Anda.';
+        case 'expired-action-code':
+          return 'Tautan reset kata sandi sudah kedaluwarsa. Silakan minta tautan baru.';
+        case 'invalid-action-code':
+          return 'Kode reset tidak valid atau sudah pernah dipakai. Silakan minta tautan baru.';
+        case 'missing-continue-uri':
+        case 'invalid-continue-uri':
+          return 'Konfigurasi tautan reset belum lengkap. Hubungi administrator.';
+        case 'user-token-expired':
+          return 'Sesi Anda telah berakhir. Silakan masuk kembali.';
         case 'operation-not-allowed':
           return 'Metode autentikasi email belum diaktifkan di Firebase Console.';
         default:
-          return error.message ?? 'Terjadi kesalahan autentikasi (${error.code}).';
+          return error.message ??
+              'Terjadi kesalahan autentikasi (${error.code}).';
       }
     }
     return error.toString();

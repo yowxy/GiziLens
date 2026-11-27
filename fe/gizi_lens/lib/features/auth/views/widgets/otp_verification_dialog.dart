@@ -6,21 +6,21 @@ import '../../../../core/constants/app_typography.dart';
 /// Modal dialog confirming successful contact identity verification.
 class OtpVerificationDialog extends StatelessWidget {
   final VoidCallback onNext;
+  final String? subtitle;
 
-  const OtpVerificationDialog({
-    super.key,
-    required this.onNext,
-  });
+  const OtpVerificationDialog({super.key, required this.onNext, this.subtitle});
 
   static Future<void> show(
     BuildContext context, {
     required VoidCallback onNext,
+    String? subtitle,
   }) {
     return showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (ctx) => OtpVerificationDialog(
+        subtitle: subtitle,
         onNext: () {
           Navigator.of(ctx).pop();
           onNext();
@@ -43,10 +43,7 @@ class OtpVerificationDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFFFAF9F4),
             borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: const Color(0xFFE4EDE0),
-              width: 1.4,
-            ),
+            border: Border.all(color: const Color(0xFFE4EDE0), width: 1.4),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x1F0F261E),
@@ -116,7 +113,7 @@ class OtpVerificationDialog extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                AppStrings.verificationSuccessSubtitle,
+                subtitle ?? AppStrings.verificationSuccessSubtitle,
                 textAlign: TextAlign.center,
                 style: AppTypography.bodyMedium.copyWith(
                   fontSize: 13.5,

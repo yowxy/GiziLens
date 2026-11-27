@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../core/services/detection_api_service.dart';
 import '../../../core/services/inspection_session_service.dart';
@@ -78,15 +80,26 @@ class ScanOmprengController extends ChangeNotifier {
         target: InspectionSessionService.instance.targetAkg,
       );
       if (result.items.isEmpty) {
-        throw const FormatException('Tidak ada menu makanan yang terbaca.');
+        _errorMessage = 'Makanan belum terdeteksi. Ambil ulang foto ompreng.';
+        return false;
       }
-      _saveApiComponents(result.items);
 
       final decoded = await decodeImageFromList(bytes);
       final aspectRatio = decoded.width / decoded.height;
       decoded.dispose();
+      _saveApiComponents(result.items);
       InspectionSessionService.instance.setCapturedPhoto(bytes, aspectRatio);
       return true;
+    } on TimeoutException {
+      _errorMessage = 'Server belum merespons. Periksa koneksi lalu coba lagi.';
+      return false;
+    } on http.ClientException {
+      _errorMessage =
+          'Gagal terhubung ke server. Periksa koneksi lalu coba lagi.';
+      return false;
+    } on DetectionApiException catch (error) {
+      _errorMessage = error.message;
+      return false;
     } catch (error) {
       _errorMessage = 'Analisis citra gagal: $error';
       return false;

@@ -6,6 +6,7 @@ import '../../features/auth/views/login_screen.dart';
 import '../../features/auth/views/otp_verification_screen.dart';
 import '../../features/auth/views/register_screen.dart';
 import '../../features/auth/views/register_success_screen.dart';
+import '../../features/auth/views/reset_password_screen.dart';
 import '../../features/dashboard/views/dashboard_screen.dart';
 import '../../features/history/views/history_screen.dart';
 import '../../features/inspection/views/audit_confirmation_screen.dart';
@@ -196,6 +197,38 @@ class AppRouter {
               initialEmail: extra?['email'] as String?,
               initialPhone: extra?['phone'] as String?,
               isForgotPassword: extra?['isForgotPassword'] as bool? ?? false,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(
+                opacity: CurveTween(curve: Curves.easeInOut).animate(animation),
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0.06, 0.0),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  ),
+                  child: child,
+                ),
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 320),
+          );
+        },
+      ),
+      // Reset Password (final step of forgot-password flow)
+      GoRoute(
+        path: RouteNames.resetPassword,
+        name: 'resetPassword',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: ResetPasswordScreen(
+              email: extra?['email'] as String?,
             ),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               return FadeTransition(
