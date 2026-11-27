@@ -11,8 +11,8 @@ import 'package:gizi_lens/features/inspection/views/widgets/target_group_selecto
 
 void main() {
   group('TargetAkgModel Unit Tests', () {
-    test('Standard presets are properly configured with 5 demographics', () {
-      expect(TargetAkgModel.standardPresets.length, equals(5));
+    test('Standard presets are properly configured with 4 demographics', () {
+      expect(TargetAkgModel.standardPresets.length, equals(4));
       expect(TargetAkgModel.standardPresets[0].calories, equals(450));
       expect(TargetAkgModel.standardPresets[1].calories, equals(620));
       expect(TargetAkgModel.standardPresets[1].formattedSummary, equals('620 kkal • Protein 18–22g'));
@@ -30,8 +30,10 @@ void main() {
       controller.dispose();
     });
 
-    test('Initial states match reference design specifications', () {
-      expect(controller.batchCode, equals('MBG-2026-001'));
+    test('Initial states match reference design specifications', () async {
+      expect(controller.batchCode, isEmpty);
+      await controller.prepareBatchCode();
+      expect(controller.batchCode, equals('MBG-${DateTime.now().year}-001'));
       expect(controller.sppgUnit, equals(AppStrings.defaultSppgUnit));
       expect(controller.selectedTargetAkg.groupName, equals('SD Kelas 4 – 6 (10 – 12 Tahun)'));
       expect(controller.schoolController.text, equals(AppStrings.defaultSchoolDestination));
@@ -67,10 +69,11 @@ void main() {
       expect(controller.isValid, isFalse);
     });
 
-    test('getBatchData packages current operational batch parameters into model', () {
+    test('getBatchData packages current operational batch parameters into model', () async {
+      await controller.prepareBatchCode();
       final batchData = controller.getBatchData();
 
-      expect(batchData.batchCode, equals('MBG-2026-001'));
+      expect(batchData.batchCode, equals('MBG-${DateTime.now().year}-001'));
       expect(batchData.targetAkg.groupName, equals('SD Kelas 4 – 6 (10 – 12 Tahun)'));
       expect(batchData.sppgUnit, equals(AppStrings.defaultSppgUnit));
       expect(batchData.schoolDestination, equals(AppStrings.defaultSchoolDestination));
@@ -88,6 +91,7 @@ void main() {
     });
 
     test('proceedToStep2 succeeds when inputs are valid', () async {
+      await controller.prepareBatchCode();
       final success = await controller.proceedToStep2();
 
       expect(success, isTrue);

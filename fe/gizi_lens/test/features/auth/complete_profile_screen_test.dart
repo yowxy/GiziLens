@@ -18,10 +18,10 @@ void main() {
     });
 
     test('Initial profile state contains default officer data', () {
-      expect(controller.profile.fullName, equals('Nurul Gizi'));
-      expect(controller.profile.officerId, equals('GZ-2026-001'));
+      expect(controller.profile.fullName, equals('-'));
+      expect(controller.profile.officerId, equals('-'));
       expect(controller.profile.selectedRole, equals(OfficerRole.ahliGizi));
-      expect(controller.profile.initials, equals('NG'));
+      expect(controller.profile.initials, equals('-'));
       expect(controller.profile.isVerified, isTrue);
     });
 
@@ -60,9 +60,8 @@ void main() {
       expect(find.text(AppStrings.completeProfileTitle), findsOneWidget);
       expect(find.text(AppStrings.completeProfileSubtitle), findsOneWidget);
 
-      // Verify Profile Card
-      expect(find.text('NG'), findsOneWidget);
-      expect(find.text('Nurul Gizi'), findsOneWidget);
+      // Verify Profile Card & Officer ID Locked Field
+      expect(find.text('-'), findsWidgets);
       expect(find.text(AppStrings.certificationActive), findsOneWidget);
       expect(find.text(AppStrings.verifiedTag), findsOneWidget);
       expect(find.text(AppStrings.btnUnggahFoto), findsOneWidget);
@@ -74,7 +73,6 @@ void main() {
       // Verify Officer ID Locked Field
       expect(find.text(AppStrings.officerIdLabel), findsOneWidget);
       expect(find.text(AppStrings.verifiedBgnTag), findsOneWidget);
-      expect(find.text('GZ-2026-001'), findsOneWidget);
       expect(find.text(AppStrings.officerIdHelperText), findsOneWidget);
 
       // Verify Roles

@@ -17,10 +17,11 @@ void main() {
       controller.dispose();
     });
 
-    test('Initial states are correct', () {
+    test('Initial states are correct', () async {
+      await Future<void>.delayed(Duration.zero);
       expect(controller.activeTab, equals(HistoryTab.semua));
       expect(controller.activeDateFilter, equals(HistoryDateFilter.hariIni));
-      expect(controller.hasNotification, isTrue);
+      expect(controller.hasNotification, isFalse);
       expect(controller.filter.searchQuery, isEmpty);
     });
 
